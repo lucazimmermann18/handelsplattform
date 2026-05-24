@@ -6,6 +6,7 @@ import { Topbar } from '@/components/layout/Topbar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Dashboard } from '@/components/views/Dashboard';
 import { OrdersList, OrderDetail } from '@/components/views/Orders';
+import { SuppliersList, SupplierDetail } from '@/components/views/Suppliers';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -110,13 +111,15 @@ export const App = () => {
       case 'buyers':
         return <ComingSoon view="Käufer" />;
       case 'suppliers':
-        return <ComingSoon view="Lieferanten" />;
+        return <SuppliersList lang={lang} onOpen={(id) => navigate('supplier_detail', { id })} />;
       case 'products':
         return <ComingSoon view="Produkte" />;
       case 'buyer_detail':
         return <ComingSoon view={`Käufer ${route.id}`} onBack={() => navigate('buyers')} />;
       case 'supplier_detail':
-        return <ComingSoon view={`Lieferant ${route.id}`} onBack={() => navigate('suppliers')} />;
+        return route.id
+          ? <SupplierDetail id={route.id} lang={lang} onBack={() => navigate('suppliers')} />
+          : <SuppliersList lang={lang} onOpen={(id) => navigate('supplier_detail', { id })} />;
       case 'product_detail':
         return <ComingSoon view={`Produkt ${route.id}`} onBack={() => navigate('products')} />;
       case 'quality':
