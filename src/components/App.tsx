@@ -8,6 +8,7 @@ import { Dashboard } from '@/components/views/Dashboard';
 import { OrdersList, OrderDetail } from '@/components/views/Orders';
 import { SuppliersList, SupplierDetail } from '@/components/views/Suppliers';
 import { ShipmentsView } from '@/components/views/Shipments';
+import { DealsView } from '@/components/views/Deals';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -106,7 +107,7 @@ export const App = () => {
       case 'shipments':
         return <ShipmentsView lang={lang} onOpenOrder={openOrder} />;
       case 'deals':
-        return <ComingSoon view="Deals (Kanban)" />;
+        return <DealsView lang={lang} />;
       case 'offers':
         return <ComingSoon view="Angebote" />;
       case 'buyers':
