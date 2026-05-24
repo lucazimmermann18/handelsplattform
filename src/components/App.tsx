@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Dashboard } from '@/components/views/Dashboard';
+import { OrdersList, OrderDetail } from '@/components/views/Orders';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -95,9 +96,11 @@ export const App = () => {
       case 'dashboard':
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
       case 'orders':
-        return <ComingSoon view="Aufträge" />;
+        return <OrdersList lang={lang} onOpen={openOrder} />;
       case 'order_detail':
-        return <ComingSoon view={`Auftrag ${route.order?.id}`} onBack={() => navigate('orders')} />;
+        return route.order
+          ? <OrderDetail order={route.order} lang={lang} onBack={() => navigate('orders')} />
+          : <OrdersList lang={lang} onOpen={openOrder} />;
       case 'shipments':
         return <ComingSoon view="Shipments & Live-Karte" />;
       case 'deals':
