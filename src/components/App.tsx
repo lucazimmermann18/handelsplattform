@@ -7,6 +7,7 @@ import { StatusBar } from '@/components/layout/StatusBar';
 import { Dashboard } from '@/components/views/Dashboard';
 import { OrdersList, OrderDetail } from '@/components/views/Orders';
 import { SuppliersList, SupplierDetail } from '@/components/views/Suppliers';
+import { ShipmentsView } from '@/components/views/Shipments';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -103,7 +104,7 @@ export const App = () => {
           ? <OrderDetail order={route.order} lang={lang} onBack={() => navigate('orders')} />
           : <OrdersList lang={lang} onOpen={openOrder} />;
       case 'shipments':
-        return <ComingSoon view="Shipments & Live-Karte" />;
+        return <ShipmentsView lang={lang} onOpenOrder={openOrder} />;
       case 'deals':
         return <ComingSoon view="Deals (Kanban)" />;
       case 'offers':
