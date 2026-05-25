@@ -49,6 +49,28 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
     ? M.orders
     : M.orders.filter((o) => o.status === statusFilter);
 
+  const handleExport = () => {
+    const buyer = (id: string) => M.buyers.find(b => b.id === id);
+    const supplier = (id: string) => M.suppliers.find(s => s.id === id);
+    const headers = ['Auftrag-ID', 'Charge', 'Käufer', 'Lieferant', 'Produkt', 'Menge', 'Einheit', 'Umsatz (€)', 'Gewinn (€)', 'Marge (%)', 'Incoterm', 'Ladehafen', 'Zielhafen', 'ETD', 'ETA', 'Zahlung (%)', 'Status'];
+    const rows = filtered.map(o => [
+      o.id, o.batch,
+      buyer(o.buyerId)?.name ?? o.buyerId,
+      supplier(o.supplierId)?.name ?? o.supplierId,
+      o.productVariant, o.qty, o.unit,
+      o.revenue, o.profit,
+      Math.round((o.profit / o.revenue) * 100),
+      o.incoterm, o.portLoad, o.portDest,
+      o.etd, o.eta, o.paid, o.status,
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `auftraege-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const totalRev    = filtered.reduce((s, o) => s + o.revenue, 0);
   const totalProfit = filtered.reduce((s, o) => s + o.profit,  0);
 
@@ -74,7 +96,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
         </div>
         <div className="right">
           <button className="btn"><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button
             className="btn primary"
             onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}
@@ -228,7 +250,18 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
         <div className="sub">{o.productVariant} · {fmtNum(o.qty)} {o.unit} · {buyer?.name}</div>
         <div className="right">
           <button className="btn"><Ic name="history" size={13} /> Historie</button>
-          <button className="btn"><Ic name="mail" size={13} /> Käufer mailen</button>
+          <button
+            className="btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-email', { detail: {
+              type: 'order_confirmation',
+              to: buyer?.email ?? '',
+              subject: `Auftrag ${o.id} — ${o.productVariant}`,
+              recipientName: buyer?.name ?? '',
+              data: { orderId: o.id, product: o.productVariant, qty: o.qty, unit: o.unit, eta: o.eta },
+            }}))}
+          >
+            <Ic name="mail" size={13} /> Käufer mailen
+          </button>
           <button className="btn"><Ic name="download" size={13} /> Auftrag.pdf</button>
           <button className="btn primary"><Ic name="edit" size={13} /> Bearbeiten</button>
         </div>

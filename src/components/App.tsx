@@ -39,6 +39,8 @@ import { ColdChainView } from '@/components/views/ColdChain';
 import { InsuranceView } from '@/components/views/Insurance';
 import { EUDRView } from '@/components/views/EUDR';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
+import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
+import { CommandPalette } from '@/components/ui/CommandPalette';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -244,38 +246,12 @@ export const App = () => {
         <StatusBar />
       </div>
 
-      {/* Command Palette overlay */}
-      {paletteOpen && (
-        <div className="overlay" onClick={() => setPaletteOpen(false)}>
-          <div className="cmd-palette" onClick={(e) => e.stopPropagation()}>
-            <input autoFocus placeholder="Suche · Aufträge, Lieferanten, Module…" />
-            <div className="results">
-              {[
-                { label: 'Dashboard', meta: 'Übersicht', view: 'dashboard' },
-                { label: 'Aufträge', meta: 'nav_orders', view: 'orders' },
-                { label: 'Shipments & Live-Karte', meta: 'Tracking', view: 'shipments' },
-                { label: 'Intelligence Hub', meta: 'KI-Briefing · Risiko · Forecasts', view: 'intelligence' },
-                { label: 'Operations Cockpit', meta: 'Bin ich auf Kurs?', view: 'cockpit' },
-                { label: 'Käufer', meta: 'CRM', view: 'buyers' },
-                { label: 'Lieferanten', meta: 'SRM', view: 'suppliers' },
-                { label: 'Produkte', meta: 'Katalog', view: 'products' },
-                { label: 'Deals (Kanban)', meta: 'Pipeline', view: 'deals' },
-                { label: 'Finanzen', meta: 'Rechnungen · Zahlungen', view: 'finance' },
-                { label: 'Compliance & Zoll', meta: 'HS-Codes · Zertifikate', view: 'compliance' },
-                { label: 'Strategie', meta: 'OKRs · Roadmap', view: 'strategy' },
-                { label: 'Capital Hub', meta: 'Investoren · Trade Finance', view: 'capital' },
-              ].map((r, i) => (
-                <div key={i} className="result-item" onClick={() => { navigate(r.view); setPaletteOpen(false); }}>
-                  <div>
-                    <div className="label">{r.label}</div>
-                    <div className="meta">{r.meta}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Command Palette */}
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onNav={(v, e) => navigate(v, e as Partial<Route>)}
+      />
 
       {/* Notifications Drawer */}
       {notifOpen && (
@@ -293,29 +269,11 @@ export const App = () => {
       )}
 
       {/* AI Copilot Drawer */}
-      {copilotOpen && (
-        <div className="overlay" onClick={() => setCopilotOpen(false)}>
-          <div className="drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-head" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(167,139,250,0.05))', borderBottom: '1px solid rgba(167,139,250,0.18)' }}>
-              <span style={{ color: '#c4b5fd', fontWeight: 600 }}>✦ AI Copilot</span>
-              <span className="tx3" style={{ fontSize: 11 }}>⌘J zum Schließen</span>
-              <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setCopilotOpen(false)}>✕</button>
-            </div>
-            <div className="drawer-body">
-              <div className="ai-card" style={{ marginBottom: 12 }}>
-                <div className="head">
-                  <span style={{ fontWeight: 600, fontSize: 13 }}>Wie kann ich helfen?</span>
-                  <span className="pill">Beta</span>
-                </div>
-                <div className="tx2" style={{ fontSize: 12, lineHeight: 1.5 }}>
-                  Stell mir Fragen zu Aufträgen, Lieferanten, Compliance oder lass mich Berichte generieren.
-                </div>
-              </div>
-              <div className="empty tx3">Tippe eine Frage…</div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CopilotDrawer
+        open={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+        onNav={navigate}
+      />
 
       {/* Email Compose Modal */}
       {emailModal && <EmailModal initial={emailModal} onClose={() => setEmailModal(null)} />}
