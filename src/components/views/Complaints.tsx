@@ -1,12 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
+  padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
+};
 
 // ────────────────────────────────────────────────────────────
 // Complaints List
@@ -25,9 +31,32 @@ const STATUS_META: Record<string, { kind: string }> = {
 };
 
 export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
+  const [newCase, setNewCase] = useState(false);
+  const [form, setForm] = useState({ title: '', orderId: '', buyerId: '', cat: 'Qualität', sev: 'mittel', owner: '', impact: '' });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const open = M.complaints.filter(c => c.status !== 'geschlossen').length;
+
+  const handleSave = async () => {
+    if (!form.title) return;
+    setSaving(true); setSaveError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('complaints').insert({
+        id: `REC-${Date.now().toString().slice(-5)}`,
+        order_id: form.orderId || null, buyer_id: form.buyerId || null,
+        category: form.cat, severity: form.sev, title: form.title,
+        owner: form.owner || 'Admin', status: 'in Bearbeitung',
+        opened_at: new Date().toISOString(), impact: form.impact || '0 €',
+      });
+      if (error) throw new Error(error.message);
+      setNewCase(false); setForm({ title: '', orderId: '', buyerId: '', cat: 'Qualität', sev: 'mittel', owner: '', impact: '' });
+      refresh();
+    } catch (e) { setSaveError((e as Error).message); }
+    finally { setSaving(false); }
+  };
 
   const kpis = [
     { l: 'Offen',          v: open,                                                         c: '#f87171' },
@@ -38,12 +67,13 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
   ];
 
   return (
+    <>
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_complaints')}</h1>
         <div className="sub">{M.complaints.length} Fälle · {open} offen</div>
         <div className="right">
-          <button className="btn primary"><Ic name="plus" size={13} /> Neuer Fall</button>
+          <button className="btn primary" onClick={() => setNewCase(true)}><Ic name="plus" size={13} /> Neuer Fall</button>
         </div>
       </div>
 
@@ -107,6 +137,75 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
         </div>
       </div>
     </div>
+
+    {/* New Complaint Modal */}
+    {newCase && (
+      <div className="overlay" onClick={() => setNewCase(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 460, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ic name="warn" size={14} color="#f87171" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Neuer Reklamationsfall</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNewCase(false)}><Ic name="x" size={13} /></button>
+          </div>
+          <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Beschreibung *</div>
+              <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Was ist das Problem?" style={inputStyle} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Käufer</div>
+                <select value={form.buyerId} onChange={e => setForm(p => ({ ...p, buyerId: e.target.value }))} style={inputStyle}>
+                  <option value="">— wählen —</option>
+                  {M.buyers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Auftrag</div>
+                <select value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))} style={inputStyle}>
+                  <option value="">— wählen —</option>
+                  {M.orders.slice(0,15).map(o => <option key={o.id} value={o.id}>{o.id}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Kategorie</div>
+              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                {['Qualität','Logistik','Lieferung','Dokumente','Preis','Sonstiges'].map(c => (
+                  <span key={c} className={`chip${form.cat === c ? ' on' : ''}`} onClick={() => setForm(p => ({ ...p, cat: c }))} style={{ cursor: 'pointer' }}>{c}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Schwere</div>
+              <div style={{ display: 'flex', gap: 5 }}>
+                {['gering','mittel','kritisch'].map(s => (
+                  <span key={s} className={`chip${form.sev === s ? ' on' : ''}`} onClick={() => setForm(p => ({ ...p, sev: s }))} style={{ cursor: 'pointer' }}>{s}</span>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Verantwortlich</div>
+                <input value={form.owner} onChange={e => setForm(p => ({ ...p, owner: e.target.value }))} placeholder="Admin" style={inputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Kostenwirkung</div>
+                <input value={form.impact} onChange={e => setForm(p => ({ ...p, impact: e.target.value }))} placeholder="z.B. 2.500 €" style={inputStyle} />
+              </div>
+            </div>
+            {saveError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6 }}>{saveError}</div>}
+          </div>
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="btn ghost" onClick={() => setNewCase(false)}>Abbrechen</button>
+            <button className="btn primary" onClick={handleSave} disabled={saving || !form.title}>
+              {saving ? 'Speichern…' : <><Ic name="plus" size={13} /> Fall anlegen</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 };
 

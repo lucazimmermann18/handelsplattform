@@ -19,6 +19,15 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const handleExport = () => {
+    const headers = ['ID','Name','Typ','Land','Region','Stadt','Kontakt','Email','Kapazität','Tier','Score','Risiko','Status'];
+    const rows = M.suppliers.map(s => [s.id, s.name, s.type, s.country, s.region, s.city, s.contact, s.email, s.capacity, s.tier, s.score, s.risk, s.status]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `lieferanten-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const kpis = [
     { l: 'Aktiv', v: M.suppliers.filter(s => s.status === 'aktiv').length, c: '#34d399' },
     { l: 'In Prüfung', v: M.suppliers.filter(s => s.status === 'in Prüfung').length, c: '#fbbf24' },
@@ -34,7 +43,7 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
         <div className="sub">{M.suppliers.length} Lieferanten · 3 Länder · {M.suppliers.filter(s => s.tier === 'A').length} Tier-A</div>
         <div className="right">
           <button className="btn"><Ic name="map" size={13} /> Karte</button>
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button className="btn primary"><Ic name="plus" size={13} /> Neuer Lieferant</button>
         </div>
       </div>

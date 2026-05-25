@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
@@ -14,17 +14,21 @@ interface CalEvent {
   id: string;
 }
 
+const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const MONTH_SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
 export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
   const { data: M } = useData();
+  const [offset, setOffset] = useState(1); // 0=May2026, 1=Jun2026, etc. relative to May2026
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  // June 2026: month index 5 (0-based)
-  const YEAR = 2026;
-  const MONTH = 5; // June
 
-  // firstDay: (new Date('2026-06-01').getDay() + 6) % 7 = (0 + 6) % 7 = 6? No: June 1 2026 is Monday
-  // Sunday=0, Monday=1 ... getDay() for Monday=1 → (1+6)%7 = 0
-  const firstDay = (new Date(YEAR, MONTH, 1).getDay() + 6) % 7; // 0 = Monday
-  const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate(); // 30
+  const baseDate = new Date('2026-05-01');
+  baseDate.setMonth(baseDate.getMonth() + offset);
+  const YEAR  = baseDate.getFullYear();
+  const MONTH = baseDate.getMonth();
+
+  const firstDay    = (new Date(YEAR, MONTH, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
 
   // Build event map: day → CalEvent[]
   const eventMap: Record<number, CalEvent[]> = {};
@@ -62,7 +66,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
   ];
 
   const dayHeaders = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-  const today = new Date('2026-05-24');
+  const today   = new Date('2026-05-24');
   const isToday = (day: number) => day === today.getDate() && MONTH === today.getMonth() && YEAR === today.getFullYear();
 
   return (
@@ -70,17 +74,21 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
       <div className="view-header">
         <div>
           <h1 className="view-title">Kalender</h1>
-          <p className="view-sub">Juni 2026 · ETDs, ETAs, Follow-ups</p>
+          <p className="view-sub">{MONTH_NAMES[MONTH]} {YEAR} · ETDs, ETAs, Follow-ups</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-ghost"><Ic name="chevL" size={14} /> Mai</button>
-          <button className="btn-ghost">Jul <Ic name="chevR" size={14} /></button>
+          <button className="btn" onClick={() => setOffset(o => o - 1)}>
+            <Ic name="chevL" size={14} /> {MONTH_SHORT[(MONTH - 1 + 12) % 12]}
+          </button>
+          <button className="btn" onClick={() => setOffset(o => o + 1)}>
+            {MONTH_SHORT[(MONTH + 1) % 12]} <Ic name="chevR" size={14} />
+          </button>
         </div>
       </div>
 
       <div className="card">
         <div className="card-header" style={{ justifyContent: 'space-between' }}>
-          <span className="card-title" style={{ fontSize: 16, fontWeight: 700 }}>Juni 2026</span>
+          <span className="card-title" style={{ fontSize: 16, fontWeight: 700 }}>{MONTH_NAMES[MONTH]} {YEAR}</span>
           <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
@@ -192,7 +200,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
               <div key={day} style={{ display: 'flex', gap: 16, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ width: 48, flexShrink: 0, textAlign: 'center' }}>
                   <div style={{ fontSize: 18, fontWeight: 700 }}>{day}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Jun</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{MONTH_SHORT[MONTH]}</div>
                 </div>
                 <div style={{ flex: 1 }}>
                   {events.map((ev, i) => (

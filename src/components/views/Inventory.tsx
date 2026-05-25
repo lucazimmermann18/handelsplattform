@@ -28,6 +28,15 @@ export const InventoryView = ({ lang }: InventoryViewProps) => {
   const [locFilter, setLocFilter] = useState<string>('alle');
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const handleExport = () => {
+    const headers = ['Produkt','Menge','Einheit','Standort','Status','Charge','Eingang'];
+    const rows = M.inventory.map(i => [i.product, i.qty, i.unit, i.location, i.status, i.batch, i.received]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `inventar-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const filtered = M.inventory.filter(item => {
     if (statusFilter !== 'alle' && item.status !== statusFilter) return false;
     if (locFilter !== 'alle' && !item.location.includes(locFilter)) return false;
@@ -42,7 +51,7 @@ export const InventoryView = ({ lang }: InventoryViewProps) => {
         <h1>{t(lang, 'nav_inventory')}</h1>
         <div className="sub">{M.inventory.length} Posten · 4 Standorte · {fmtNum(totalQty)} Einheiten gesamt</div>
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> Export</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> Export</button>
           <button className="btn primary"><Ic name="plus" size={13} /> Eingang buchen</button>
         </div>
       </div>

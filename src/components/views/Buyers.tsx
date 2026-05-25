@@ -22,6 +22,15 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const totalRevenue = M.buyers.reduce((s, b) => s + b.revenue, 0);
 
+  const handleExport = () => {
+    const headers = ['ID','Name','Land','Stadt','Branche','Kontakt','Email','Rating','Incoterm','MOQ','Umsatz (€)','Status'];
+    const rows = M.buyers.map(b => [b.id, b.name, b.country, b.city, b.industry, b.contact, b.email, b.rating, b.incoterm, b.moq, b.revenue, b.status]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `kaeufer-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   return (
     <div>
       <div className="section-head">
@@ -30,7 +39,7 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
           {M.buyers.length} Käufer · 7 Länder · {fmtCur(totalRevenue)} YTD
         </div>
         <div className="right">
-          <button className="btn"><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> Export</button>
           <button className="btn primary"><Ic name="plus" size={13} /> Neuer Käufer</button>
         </div>
       </div>
@@ -153,9 +162,22 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
         <Badge kind={b.status === 'aktiv' ? 'success' : 'warning'} dot>{b.status}</Badge>
         <Stars value={b.rating} />
         <div className="right">
-          <button className="btn"><Ic name="mail" size={13} /> Mail</button>
-          <button className="btn"><Ic name="star" size={13} /> Angebot</button>
-          <button className="btn primary"><Ic name="plus" size={13} /> Neuer Auftrag</button>
+          <button
+            className="btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-email', { detail: {
+              type: 'general', to: b.email,
+              subject: `EastAfrica Export — ${new Date().toLocaleDateString('de-DE')}`,
+              recipientName: b.name, data: {},
+            }}))}
+          >
+            <Ic name="mail" size={13} /> Mail
+          </button>
+          <button className="btn" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
+            <Ic name="star" size={13} /> Angebot
+          </button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
+            <Ic name="plus" size={13} /> Neuer Auftrag
+          </button>
         </div>
       </div>
 

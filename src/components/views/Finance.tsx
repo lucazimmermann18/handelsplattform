@@ -57,13 +57,25 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
     { l: 'Marge',         p: Math.round(tProfit/tTotal*100),    c: '#34d399' },
   ].filter(s => s.p > 0);
 
+  const handleExport = () => {
+    const headers = ['Auftrag-ID','Käufer','Produkt','Umsatz (€)','Einkauf (€)','Logistik (€)','Docs (€)','Gewinn (€)','Marge (%)','Incoterm','Status','Zahlung (%)'];
+    const rows = M.orders.map(o => {
+      const buyer = M.buyers.find(b => b.id === o.buyerId);
+      return [o.id, buyer?.name ?? o.buyerId, o.productVariant, o.revenue, o.costGoods, o.costLogistics, o.costDocs, o.profit, Math.round((o.profit/o.revenue)*100), o.incoterm, o.status, o.paid];
+    });
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `finanzen-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   return (
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_finance')}</h1>
         <div className="sub">Controlling pro Auftrag · Margen-Analyse · Zahlungstracking</div>
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
         </div>
       </div>
 

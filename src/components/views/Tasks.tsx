@@ -20,11 +20,39 @@ interface TasksViewProps {
   lang: Lang;
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
+  padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
+};
+
 export const TasksView = ({ lang }: TasksViewProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<StatusFilter>('alle');
+  const [newTask, setNewTask] = useState(false);
+  const [form, setForm] = useState({ title: '', orderId: '', owner: '', prio: 'mittel' as 'hoch'|'mittel'|'niedrig', due: '' });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const handleSaveTask = async () => {
+    if (!form.title || !form.due) return;
+    setSaving(true); setSaveError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('tasks').insert({
+        id: `TSK-${Date.now().toString().slice(-6)}`,
+        title: form.title, order_id: form.orderId || null,
+        owner: form.owner || 'Admin', priority: form.prio,
+        due_date: form.due, status: 'offen',
+      });
+      if (error) throw new Error(error.message);
+      setNewTask(false); setForm({ title: '', orderId: '', owner: '', prio: 'mittel', due: '' });
+      refresh();
+    } catch (e) { setSaveError((e as Error).message); }
+    finally { setSaving(false); }
+  };
 
   const today = new Date(M.todayBase);
   today.setHours(0, 0, 0, 0);
@@ -56,6 +84,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
   ];
 
   return (
+    <>
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_tasks')}</h1>
@@ -63,7 +92,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
           {M.tasks.length} Aufgaben · {M.tasks.filter(x => x.prio === 'hoch').length} hoch · {M.tasks.filter(x => x.status === 'wartet').length} wartet
         </div>
         <div className="right">
-          <button className="btn primary"><Ic name="plus" size={13} /> Neue Aufgabe</button>
+          <button className="btn primary" onClick={() => setNewTask(true)}><Ic name="plus" size={13} /> Neue Aufgabe</button>
         </div>
       </div>
 
@@ -182,5 +211,59 @@ export const TasksView = ({ lang }: TasksViewProps) => {
         </div>
       </div>
     </div>
+
+    {/* New Task Modal */}
+    {newTask && (
+      <div className="overlay" onClick={() => setNewTask(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 440, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ic name="task" size={14} color="#60a5fa" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Neue Aufgabe</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNewTask(false)}><Ic name="x" size={13} /></button>
+          </div>
+          <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Titel *</div>
+              <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Was ist zu tun?" style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Priorität</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['hoch','mittel','niedrig'] as const).map(p => (
+                  <span key={p} className={`chip${form.prio === p ? ' on' : ''}`} onClick={() => setForm(prev => ({ ...prev, prio: p }))} style={{ cursor: 'pointer' }}>
+                    {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Fällig *</div>
+                <input type="date" value={form.due} onChange={e => setForm(p => ({ ...p, due: e.target.value }))} style={inputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Verantwortlich</div>
+                <input value={form.owner} onChange={e => setForm(p => ({ ...p, owner: e.target.value }))} placeholder="Admin" style={inputStyle} />
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Auftrag (optional)</div>
+              <select value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))} style={inputStyle}>
+                <option value="">— kein Auftrag —</option>
+                {M.orders.slice(0, 20).map(o => <option key={o.id} value={o.id}>{o.id} · {o.productVariant}</option>)}
+              </select>
+            </div>
+            {saveError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6 }}>{saveError}</div>}
+          </div>
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="btn ghost" onClick={() => setNewTask(false)}>Abbrechen</button>
+            <button className="btn primary" onClick={handleSaveTask} disabled={saving || !form.title || !form.due}>
+              {saving ? 'Speichern…' : <><Ic name="plus" size={13} /> Aufgabe anlegen</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 };
