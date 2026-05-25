@@ -41,6 +41,7 @@ import { EUDRView } from '@/components/views/EUDR';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { OrderWizard } from '@/components/ui/OrderWizard';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -278,24 +279,12 @@ export const App = () => {
       {/* Email Compose Modal */}
       {emailModal && <EmailModal initial={emailModal} onClose={() => setEmailModal(null)} />}
 
-      {/* Order Wizard Modal */}
-      {wizardOpen && (
-        <div className="overlay" onClick={() => setWizardOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
-              <span style={{ fontWeight: 600, fontSize: 14 }}>Neuer Auftrag</span>
-              <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setWizardOpen(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="tx3">Auftrags-Wizard wird in der nächsten Phase implementiert.</div>
-            </div>
-            <div className="modal-foot">
-              <button className="btn" onClick={() => setWizardOpen(false)}>Abbrechen</button>
-              <button className="btn primary">Anlegen</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Order Wizard */}
+      <OrderWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onSuccess={() => navigate('orders')}
+      />
     </>
   );
 };
