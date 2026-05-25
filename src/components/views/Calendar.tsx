@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -15,6 +15,8 @@ interface CalEvent {
 }
 
 export const CalendarView = ({ lang }: CalendarViewProps) => {
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   // June 2026: month index 5 (0-based)
   const YEAR = 2026;
   const MONTH = 5; // June
@@ -36,12 +38,12 @@ export const CalendarView = ({ lang }: CalendarViewProps) => {
     }
   };
 
-  MOCK.orders.forEach(o => {
+  M.orders.forEach(o => {
     if (o.etd) addEvent(o.etd, { label: `ETD ${o.id.replace('ORD-2026-', '')}`, type: 'etd', id: o.id });
     if (o.eta) addEvent(o.eta, { label: `ETA ${o.id.replace('ORD-2026-', '')}`, type: 'eta', id: o.id });
   });
 
-  MOCK.deals.forEach(d => {
+  M.deals.forEach(d => {
     if (d.nextFollow) addEvent(d.nextFollow, { label: `Follow ${d.id.replace('D-2026-', '')}`, type: 'deal', id: d.id });
   });
 

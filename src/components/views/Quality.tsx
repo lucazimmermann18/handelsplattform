@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
@@ -14,8 +14,10 @@ interface QualityViewProps {
 }
 
 export const QualityView = ({ lang }: QualityViewProps) => {
-  const M = MOCK;
-  const [selected, setSelected] = useState<QualityCheck>(M.quality[0]);
+  const { data: M } = useData();
+  const [selected, setSelected] = useState<QualityCheck | null>(null);
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  const sel = selected ?? M.quality[0];
 
   const kpis = [
     { l: 'Freigegeben', v: M.quality.filter(q => q.status === 'released').length, c: '#34d399' },
@@ -24,7 +26,7 @@ export const QualityView = ({ lang }: QualityViewProps) => {
     { l: 'Prüfungen gesamt', v: M.quality.length, c: '#60a5fa' },
   ];
 
-  const sup = M.suppliers.find(x => x.id === selected?.supplier);
+  const sup = M.suppliers.find(x => x.id === sel?.supplier);
 
   return (
     <div>
@@ -69,7 +71,7 @@ export const QualityView = ({ lang }: QualityViewProps) => {
               <tbody>
                 {M.quality.map(q => {
                   const s = M.suppliers.find(x => x.id === q.supplier);
-                  const isSel = selected?.id === q.id;
+                  const isSel = sel?.id === q.id;
                   return (
                     <tr
                       key={q.id}
@@ -114,41 +116,41 @@ export const QualityView = ({ lang }: QualityViewProps) => {
           </div>
 
           {/* Detail Panel */}
-          {selected && (
+          {sel && (
             <div className="card">
               <div className="card-head">
                 <Ic name="quality" size={14} />
-                <span className="title">{selected.id}</span>
-                {selected.status === 'released' && <Badge kind="success" dot>Freigegeben</Badge>}
-                {selected.status === 'blocked' && <Badge kind="danger" dot>Gesperrt</Badge>}
-                {selected.status === 'in_progress' && <Badge kind="warning" dot>Läuft</Badge>}
+                <span className="title">{sel.id}</span>
+                {sel.status === 'released' && <Badge kind="success" dot>Freigegeben</Badge>}
+                {sel.status === 'blocked' && <Badge kind="danger" dot>Gesperrt</Badge>}
+                {sel.status === 'in_progress' && <Badge kind="warning" dot>Läuft</Badge>}
               </div>
               <div className="card-body">
                 <div className="fields">
-                  <div className="l">Charge</div><div className="v mono">{selected.batch}</div>
-                  <div className="l">Produkt</div><div className="v">{selected.product}</div>
+                  <div className="l">Charge</div><div className="v mono">{sel.batch}</div>
+                  <div className="l">Produkt</div><div className="v">{sel.product}</div>
                   <div className="l">Lieferant</div><div className="v">{sup?.name}</div>
-                  <div className="l">Datum</div><div className="v mono">{fmtDate(selected.date)}</div>
-                  {selected.moisture && <><div className="l">Feuchtigkeit</div><div className="v mono">{selected.moisture} <span className="tx3">(max 5%)</span></div></>}
-                  {selected.purity && <><div className="l">Reinheit</div><div className="v mono">{selected.purity}</div></>}
-                  {selected.foreign && <><div className="l">Fremdkörper</div><div className="v mono">{selected.foreign}</div></>}
-                  {selected.oil && <><div className="l">Ölgehalt</div><div className="v mono">{selected.oil}</div></>}
-                  {selected.cup && <><div className="l">Cup Score (SCA)</div><div className="v mono fw500" style={{ color: '#34d399' }}>{selected.cup}</div></>}
-                  {selected.dryMatter && <><div className="l">Trockensubstanz</div><div className="v mono">{selected.dryMatter}</div></>}
-                  {selected.firmness && <><div className="l">Festigkeit</div><div className="v mono">{selected.firmness}</div></>}
-                  {selected.temp && <><div className="l">Temperatur</div><div className="v mono">{selected.temp}</div></>}
-                  {selected.pH && <><div className="l">pH-Wert</div><div className="v mono">{selected.pH}</div></>}
-                  {(selected.purity || selected.foreign) && <><div className="l">Aflatoxin</div><div className="v mono"><span style={{ color: '#34d399' }}>&lt; 2 ppb</span> <span className="tx3">(EU max 5)</span></div></>}
-                  <div className="l">Labor</div><div className="v">{selected.lab}</div>
-                  <div className="l">Prüfer</div><div className="v">{selected.inspector}</div>
-                  <div className="l">Bericht</div><div className="v"><Badge kind="success">COA_{selected.batch}.pdf</Badge></div>
+                  <div className="l">Datum</div><div className="v mono">{fmtDate(sel.date)}</div>
+                  {sel.moisture && <><div className="l">Feuchtigkeit</div><div className="v mono">{sel.moisture} <span className="tx3">(max 5%)</span></div></>}
+                  {sel.purity && <><div className="l">Reinheit</div><div className="v mono">{sel.purity}</div></>}
+                  {sel.foreign && <><div className="l">Fremdkörper</div><div className="v mono">{sel.foreign}</div></>}
+                  {sel.oil && <><div className="l">Ölgehalt</div><div className="v mono">{sel.oil}</div></>}
+                  {sel.cup && <><div className="l">Cup Score (SCA)</div><div className="v mono fw500" style={{ color: '#34d399' }}>{sel.cup}</div></>}
+                  {sel.dryMatter && <><div className="l">Trockensubstanz</div><div className="v mono">{sel.dryMatter}</div></>}
+                  {sel.firmness && <><div className="l">Festigkeit</div><div className="v mono">{sel.firmness}</div></>}
+                  {sel.temp && <><div className="l">Temperatur</div><div className="v mono">{sel.temp}</div></>}
+                  {sel.pH && <><div className="l">pH-Wert</div><div className="v mono">{sel.pH}</div></>}
+                  {(sel.purity || sel.foreign) && <><div className="l">Aflatoxin</div><div className="v mono"><span style={{ color: '#34d399' }}>&lt; 2 ppb</span> <span className="tx3">(EU max 5)</span></div></>}
+                  <div className="l">Labor</div><div className="v">{sel.lab}</div>
+                  <div className="l">Prüfer</div><div className="v">{sel.inspector}</div>
+                  <div className="l">Bericht</div><div className="v"><Badge kind="success">COA_{sel.batch}.pdf</Badge></div>
                 </div>
 
-                {selected.notes && (
+                {sel.notes && (
                   <>
                     <div className="sep" />
                     <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', marginBottom: 4 }}>Notizen</div>
-                    <div className="tx2" style={{ fontSize: 11.5 }}>{selected.notes}</div>
+                    <div className="tx2" style={{ fontSize: 11.5 }}>{sel.notes}</div>
                   </>
                 )}
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
@@ -17,12 +17,14 @@ const cellBg = (margin: number | null): string => {
 };
 
 export const HeatmapView = ({ lang }: HeatmapViewProps) => {
-  const products = MOCK.products.slice(0, 10);
-  const buyers = MOCK.buyers;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  const products = M.products.slice(0, 10);
+  const buyers = M.buyers;
 
   // Build lookup: productId+buyerId → { margin, revenue }
   const lookup: Record<string, { margin: number; revenue: number }> = {};
-  MOCK.orders.forEach(o => {
+  M.orders.forEach(o => {
     const key = `${o.productId}:${o.buyerId}`;
     if (!lookup[key]) {
       const marginPct = o.revenue > 0 ? Math.round((o.profit / o.revenue) * 100) : 0;

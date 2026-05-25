@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -44,16 +44,18 @@ const TIMELINE = [
 ];
 
 export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState<'overview' | 'suppliers' | 'orders' | 'regs'>('overview');
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   // EUDR-relevant suppliers (have Coffee or Meat products)
-  const eudrSuppliers = MOCK.suppliers.filter(s =>
+  const eudrSuppliers = M.suppliers.filter(s =>
     s.products?.some(p => ['Coffee', 'Arabica', 'Beef', 'Meat', 'Sesame', 'Cashew'].some(kw => p.includes(kw)))
   );
 
   // EUDR-relevant active orders
-  const eudrOrders = MOCK.orders.filter(o => {
-    const prod = MOCK.products.find(p => p.id === o.productId);
+  const eudrOrders = M.orders.filter(o => {
+    const prod = M.products.find(p => p.id === o.productId);
     return prod && EUDR_CATS.includes(prod.cat);
   });
 
@@ -268,8 +270,8 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
               </thead>
               <tbody>
                 {eudrOrders.map(o => {
-                  const prod = MOCK.products.find(p => p.id === o.productId);
-                  const buyer = MOCK.buyers.find(b => b.id === o.buyerId);
+                  const prod = M.products.find(p => p.id === o.productId);
+                  const buyer = M.buyers.find(b => b.id === o.buyerId);
                   const dds = ddsStatus(o.id);
                   const tracesRef = dds === 'submitted'
                     ? `DDS-2026-${o.id.replace('ORD-2026-', '').replace('ORD-2025-', '')}`
@@ -288,7 +290,7 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
                         {o.qty.toLocaleString('de-DE')} {o.unit}
                       </td>
                       <td>
-                        <Badge kind={(MOCK.statusBadge as Record<string, string>)[o.status] as 'success' | 'warning' | 'danger' | 'info' | 'neutral' || 'neutral'} dot>
+                        <Badge kind={(M.statusBadge as Record<string, string>)[o.status] as 'success' | 'warning' | 'danger' | 'info' | 'neutral' || 'neutral'} dot>
                           {o.status}
                         </Badge>
                       </td>

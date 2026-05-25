@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
@@ -18,7 +18,8 @@ interface BuyersListProps {
 }
 
 export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const totalRevenue = M.buyers.reduce((s, b) => s + b.revenue, 0);
 
   return (
@@ -109,7 +110,8 @@ interface BuyerDetailProps {
 }
 
 export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const b = M.buyers.find(x => x.id === id);
   if (!b) return <div className="empty">Käufer nicht gefunden</div>;
 

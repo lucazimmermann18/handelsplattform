@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
@@ -13,7 +13,8 @@ interface DealsViewProps {
 }
 
 export const DealsView = ({ lang }: DealsViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const stages = M.dealStages;
 
   const totalPipeline = M.deals.reduce((s, d) => s + d.value, 0);

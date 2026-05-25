@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
@@ -42,9 +42,11 @@ const CLAIM_TIMELINE = [
 ];
 
 export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState<'policies' | 'claims' | 'coverage'>('policies');
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const policies = MOCK.orders
+  const policies = M.orders
     .filter(o => ['in_transit', 'shipped', 'arrived', 'in_export'].includes(o.status))
     .map(o => {
       const isColdChain = o.productVariant?.toLowerCase().includes('beef')

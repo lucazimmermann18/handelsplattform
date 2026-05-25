@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import type { Buyer, Product } from '@/lib/types';
 
 interface MatchingViewProps { lang: Lang; onNav: (view: string) => void; }
 
-const score = (b: typeof MOCK.buyers[0], p: typeof MOCK.products[0]): number => {
+const score = (b: Buyer, p: Product): number => {
   let s = 0;
   if (b.interests.some(i => p.name.toLowerCase().includes(i.toLowerCase().split(' ')[0]) || i.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]))) s += 60;
   if (p.certs.some(c => b.certs.some(bc => c.toLowerCase().includes(bc.toLowerCase().split(' ')[0])))) s += 20;
@@ -28,11 +29,13 @@ const cellColor = (s: number) => {
 };
 
 export const MatchingView = ({ lang, onNav }: MatchingViewProps) => {
-  const buyers = MOCK.buyers;
-  const products = MOCK.products;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  const buyers = M.buyers;
+  const products = M.products;
 
   // Top matches: score >= 70, no existing order
-  const existingPairs = new Set(MOCK.orders.map(o => `${o.buyerId}:${o.productId}`));
+  const existingPairs = new Set(M.orders.map(o => `${o.buyerId}:${o.productId}`));
 
   const allMatches: { buyer: typeof buyers[0]; product: typeof products[0]; sc: number }[] = [];
   buyers.forEach(b => {

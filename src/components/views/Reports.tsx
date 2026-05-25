@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
@@ -22,7 +22,8 @@ const ROUTES = [
 ];
 
 export const ReportsView = ({ lang }: ReportsViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const sortedBuyers = [...M.buyers]
     .filter(b => b.revenue > 0)
@@ -176,7 +177,7 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
                 ))}
                 <div className="sep" />
                 <div className="tx3" style={{ fontSize: 10 }}>
-                  Basis: {MOCK.quality.length} Prüfungen YTD
+                  Basis: {M.quality.length} Prüfungen YTD
                 </div>
               </div>
             </div>

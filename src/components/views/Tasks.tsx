@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
@@ -21,9 +21,10 @@ interface TasksViewProps {
 }
 
 export const TasksView = ({ lang }: TasksViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<StatusFilter>('alle');
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const today = new Date(M.todayBase);
   today.setHours(0, 0, 0, 0);

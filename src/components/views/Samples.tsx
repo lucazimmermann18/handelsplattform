@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
@@ -33,7 +33,9 @@ const statusLabel: Record<string, string> = {
 };
 
 export const SamplesView = ({ lang }: SamplesViewProps) => {
-  const buyerName = (id: string) => MOCK.buyers.find(b => b.id === id)?.name ?? id;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  const buyerName = (id: string) => M.buyers.find(b => b.id === id)?.name ?? id;
 
   const total = samples.length;
   const inTransit = samples.filter(s => s.status === 'in_transit').length;

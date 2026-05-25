@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
@@ -25,7 +25,8 @@ const STATUS_META: Record<string, { kind: string }> = {
 };
 
 export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const open = M.complaints.filter(c => c.status !== 'geschlossen').length;
 
   const kpis = [
@@ -120,7 +121,8 @@ interface ComplaintDetailProps {
 }
 
 export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const c = M.complaints.find(x => x.id === id) ?? M.complaints[0];
   const order = M.orders.find(o => o.id === c.order);
   const buyer = M.buyers.find(b => b.id === c.buyer);

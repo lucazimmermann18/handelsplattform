@@ -3,7 +3,7 @@
 import React from 'react';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Sparkline, BarChart, Donut } from '@/components/ui/primitives';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import { fmtCur, fmtDate } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -16,7 +16,8 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const activeOrders = M.orders.filter((o) => !['done'].includes(o.status));
   const inShipping = M.orders.filter((o) => ['in_transit', 'shipped', 'arrived', 'in_export'].includes(o.status));
   const inProc = M.orders.filter((o) => o.status === 'procurement').length;
@@ -217,7 +218,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
                     <td className="num mono fw500">{fmtCur(o.revenue)}</td>
                     <td className="mono tx2" style={{ fontSize: 11 }}>{fmtDate(o.eta)}</td>
                     <td>
-                      <Badge kind={(MOCK.statusBadge as Record<string, string>)[o.status] || 'neutral'} dot>
+                      <Badge kind={(M.statusBadge as Record<string, string>)[o.status] || 'neutral'} dot>
                         {t(lang, `s_${o.status}`)}
                       </Badge>
                     </td>

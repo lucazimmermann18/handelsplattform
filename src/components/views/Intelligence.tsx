@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur, fmtNum } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Sparkline, BarChart, StatusBadge } from '@/components/ui/primitives';
-import type { Order } from '@/lib/types';
+import type { Order, Supplier, Document as Doc, QualityCheck } from '@/lib/types';
 
 interface IntelligenceViewProps {
   lang: Lang;
@@ -40,17 +40,17 @@ const palette = (score: number) => {
 interface RiskFactor { k: string; v: number; w: number; note: string; }
 interface RiskResult { score: number; factors: RiskFactor[]; }
 
-function computeRiskScore(order: Order): RiskResult {
+function computeRiskScore(order: Order, suppliers: Supplier[], documents: Doc[], quality: QualityCheck[]): RiskResult {
   const ref = new Date('2026-05-25');
   const etd = new Date(order.etd);
   const daysToETD = Math.round((etd.getTime() - ref.getTime()) / 86400000);
-  const supplier = MOCK.suppliers.find(s => s.id === order.supplierId);
+  const supplier = suppliers.find(s => s.id === order.supplierId);
 
   // 1 Lieferant ×0.20
   const supplierScore = supplier ? (supplier.risk === 'hoch' ? 80 : supplier.risk === 'mittel' ? 45 : 15) : 60;
 
   // 2 Dokumente ×0.20
-  const docs = MOCK.documents.filter(d => d.order === order.id);
+  const docs = documents.filter(d => d.order === order.id);
   const missingDocs = docs.filter(d => d.status === 'fehlt').length;
   const draftDocs = docs.filter(d => d.status === 'Entwurf').length;
   const docScore = missingDocs > 0 ? 80 : draftDocs > 0 ? 50 : docs.length === 0 ? 40 : 10;
@@ -62,7 +62,7 @@ function computeRiskScore(order: Order): RiskResult {
   const etaPressure = daysToETD < 0 ? 90 : daysToETD < 5 ? 75 : daysToETD < 14 ? 45 : 15;
 
   // 5 Qualität ×0.12
-  const qc = MOCK.quality.find(q => q.batch === order.batch);
+  const qc = quality.find(q => q.batch === order.batch);
   const qualScore = qc?.status === 'blocked' ? 90 : qc?.status === 'in_progress' ? 40 : qc?.status === 'released' ? 5 : 35;
 
   // 6 Marge ×0.10
@@ -89,7 +89,8 @@ function computeRiskScore(order: Order): RiskResult {
 // ── Tab 1: Briefing ──────────────────────────────────────────────────────────
 
 const BriefingTab = ({ lang, onOpenOrder, onNav }: IntelligenceViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const ord0144 = M.orders.find(o => o.id === 'ORD-2026-0144')!;
   const ord0118 = M.orders.find(o => o.id === 'ORD-2026-0118')!;
 
@@ -249,14 +250,17 @@ const BriefingTab = ({ lang, onOpenOrder, onNav }: IntelligenceViewProps) => {
 // ── Tab 2: Risk Engine ────────────────────────────────────────────────────────
 
 const RiskEngineTab = ({ onOpenOrder }: { lang: Lang; onOpenOrder: (o: Order) => void }) => {
-  const M = MOCK;
+  const { data: M } = useData();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const ranked = useMemo(() => {
+    if (!M) return [];
     return M.orders
-      .map(o => ({ order: o, ...computeRiskScore(o) }))
+      .map(o => ({ order: o, ...computeRiskScore(o, M.suppliers, M.documents, M.quality) }))
       .sort((a, b) => b.score - a.score);
-  }, [M.orders]);
+  }, [M]);
+
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const selected = ranked.find(r => r.order.id === selectedId);
 
@@ -420,6 +424,8 @@ const AnomalyTab = () => {
 // ── Tab 4: Forecast ───────────────────────────────────────────────────────────
 
 const ForecastTab = () => {
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const demandData = [
     { m: 'Cashew', v: 22 }, { m: 'Coffee', v: 18 }, { m: 'Sesame', v: 31 },
     { m: 'Macad.', v: 8 }, { m: 'Cloves', v: 3 }, { m: 'Sugar', v: 65 }, { m: 'Avocado', v: 9 },
@@ -456,7 +462,7 @@ const ForecastTab = () => {
   ];
 
   // Deterministic payment risk from buyer id seed
-  const paymentRisk = MOCK.buyers.slice(0, 5).map(b => {
+  const paymentRisk = M.buyers.slice(0, 5).map(b => {
     const seed = idSeed(b.id);
     const rng = seedRand(seed);
     const risk = Math.round(20 + rng() * 60);
@@ -464,7 +470,7 @@ const ForecastTab = () => {
   });
 
   // Deterministic quality risk from supplier id seed
-  const qualityRisk = MOCK.suppliers.slice(0, 5).map(s => {
+  const qualityRisk = M.suppliers.slice(0, 5).map(s => {
     const seed = idSeed(s.id);
     const rng = seedRand(seed);
     const risk = Math.round(10 + rng() * 70);

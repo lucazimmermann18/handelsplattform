@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -11,11 +11,14 @@ import type { Order } from '@/lib/types';
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
-const StatusBadge = ({ s, lang }: { s: string; lang: Lang }) => (
-  <Badge kind={(MOCK.statusBadge as Record<string, string>)[s] || 'neutral'} dot>
-    {t(lang, `s_${s}`)}
-  </Badge>
-);
+const StatusBadge = ({ s, lang }: { s: string; lang: Lang }) => {
+  const { data } = useData();
+  return (
+    <Badge kind={(data?.statusBadge as Record<string, string> ?? {})[s] || 'neutral'} dot>
+      {t(lang, `s_${s}`)}
+    </Badge>
+  );
+};
 
 const ORDER_STATUS_FLOW = [
   { k: 'confirmed',   label: 'Bestätigt',         icon: 'task' },
@@ -38,7 +41,8 @@ interface OrdersListProps {
 }
 
 export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filtered = statusFilter === 'all'
@@ -180,7 +184,8 @@ interface OrderDetailProps {
 }
 
 export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const buyer    = M.buyers.find((x) => x.id === o.buyerId);
   const supplier = M.suppliers.find((x) => x.id === o.supplierId);
   const product  = M.products.find((x) => x.id === o.productId);

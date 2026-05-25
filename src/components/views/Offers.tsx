@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
@@ -24,7 +24,8 @@ interface OffersViewProps {
 }
 
 export const OffersView = ({ lang }: OffersViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const totalVolume = M.offers.reduce((s, o) => s + o.value, 0);
 
   return (

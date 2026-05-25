@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
@@ -126,6 +126,7 @@ function partialRoute(route: Coord[], t: number): Coord[] {
 }
 
 const LiveMap = ({ orders, selected, onSelect, compact = false }: LiveMapProps) => {
+  const { data: liveData } = useData();
   const [tick, setTick] = useState(0);
   const [timeStr, setTimeStr] = useState('');
 
@@ -146,7 +147,7 @@ const LiveMap = ({ orders, selected, onSelect, compact = false }: LiveMapProps) 
     return { o, lng, lat, heading, route, t };
   }), [orders, tick]);
 
-  const portList = Object.entries(MOCK.ports);
+  const portList = Object.entries(liveData?.ports ?? {});
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 10 }}>
@@ -242,7 +243,7 @@ const LiveMap = ({ orders, selected, onSelect, compact = false }: LiveMapProps) 
       {!compact && (
         <div style={{ position: 'absolute', right: 12, top: 12, width: 240, background: 'rgba(8,14,24,0.72)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: 4, maxHeight: 'calc(100% - 24px)', overflowY: 'auto' }}>
           {vessels.map(({ o, t }) => {
-            const v = MOCK.vessels[o.vesselIdx];
+            const v = (liveData?.vessels ?? [])[o.vesselIdx];
             const isSel = selected?.id === o.id;
             return (
               <div key={o.id} onClick={() => onSelect(o)} style={{ padding: '8px 9px', borderRadius: 4, cursor: 'pointer', background: isSel ? 'rgba(34,211,238,0.08)' : 'transparent', borderLeft: `2px solid ${isSel ? '#22d3ee' : 'transparent'}`, marginBottom: 1 }}>
@@ -276,11 +277,12 @@ interface ShipmentsViewProps {
 }
 
 export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
-  const M = MOCK;
-  const inTransit = M.orders.filter(o => ['in_export','shipped','in_transit','arrived'].includes(o.status));
-  const [selected, setSelected] = useState<Order | null>(inTransit[1] ?? inTransit[0] ?? null);
+  const { data: M } = useData();
+  const inTransit = (M?.orders ?? []).filter(o => ['in_export','shipped','in_transit','arrived'].includes(o.status));
+  const [selected, setSelected] = useState<Order | null>(null);
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const sel = selected;
+  const sel = selected ?? inTransit[1] ?? inTransit[0] ?? null;
   const v = sel ? M.vessels[sel.vesselIdx] : null;
 
   const kpis = [

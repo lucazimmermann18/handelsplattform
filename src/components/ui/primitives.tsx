@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t as translate } from '@/lib/i18n';
 
@@ -113,6 +113,7 @@ export const Donut = ({ data, size = 110, thickness = 14 }: { data: DonutSlice[]
 
 // StatusBadge
 export const StatusBadge = ({ s, lang }: { s: string; lang: Lang }) => {
-  const kindMap = MOCK.statusBadge as Record<string, string>;
+  const { data } = useData();
+  const kindMap = (data?.statusBadge ?? {}) as Record<string, string>;
   return <Badge kind={kindMap[s] || 'neutral'} dot>{translate(lang, `s_${s}`)}</Badge>;
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK } from '@/lib/mock';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
@@ -28,8 +28,10 @@ interface DocumentsViewProps {
 }
 
 export const DocumentsView = ({ lang }: DocumentsViewProps) => {
-  const M = MOCK;
+  const { data: M } = useData();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('alle');
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
 
   const filtered = typeFilter === 'alle'
     ? M.documents
