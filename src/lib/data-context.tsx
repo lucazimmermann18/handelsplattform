@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * DataContext — replaces static MOCK with live Supabase data.
- * Falls back to MOCK when Supabase is not configured (local dev without keys).
- * Returns the same shape as MockData so all existing views work unchanged.
- */
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
@@ -133,11 +127,16 @@ interface DataContextType {
   data: MockData | null;
   loading: boolean;
   error: string | null;
+  isConnected: boolean;
+  lastSync: Date | null;
+  supabaseUrl: string | null;
   refresh: () => void;
 }
 
 const DataContext = createContext<DataContextType>({
-  data: null, loading: true, error: null, refresh: () => {},
+  data: null, loading: true, error: null,
+  isConnected: false, lastSync: null, supabaseUrl: null,
+  refresh: () => {},
 });
 
 async function fetchAllData(): Promise<MockData> {
@@ -212,24 +211,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<MockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (isSupabaseConfigured()) {
-        const result = await fetchAllData();
-        setData(result);
-      } else {
-        // Dev fallback: use static mock data
-        setData(MOCK);
+      if (!isSupabaseConfigured()) {
+        setError('Supabase nicht konfiguriert — bitte NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY setzen.');
+        setIsConnected(false);
+        setData(null);
+        return;
       }
+      const result = await fetchAllData();
+      setData(result);
+      setIsConnected(true);
+      setLastSync(new Date());
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Datenbankfehler';
       console.error('[DataContext] load error:', msg);
       setError(msg);
-      // Fallback to MOCK so app stays usable
-      setData(MOCK);
+      setIsConnected(false);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -238,7 +243,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <DataContext.Provider value={{ data, loading, error, refresh: load }}>
+    <DataContext.Provider value={{ data, loading, error, isConnected, lastSync, supabaseUrl, refresh: load }}>
       {children}
     </DataContext.Provider>
   );

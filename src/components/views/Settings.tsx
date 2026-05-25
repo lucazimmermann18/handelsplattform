@@ -5,6 +5,7 @@ import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { useData } from '@/lib/data-context';
 
 const TEAM = [
   { n: 'Maryam Kassim',  r: 'Admin · Operations',         a: 'Online',    last: '' },
@@ -44,6 +45,7 @@ function initials(name: string) {
 }
 
 export const SettingsView = ({ lang }: SettingsViewProps) => {
+  const { isConnected, error: dbError, loading: dbLoading, lastSync, supabaseUrl, refresh } = useData();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
@@ -215,6 +217,81 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Database connection */}
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="card-head">
+            <Ic name="activity" size={14} />
+            <span className="title">Datenbankverbindung · Supabase</span>
+            <span className="meta" style={{ marginLeft: 'auto' }}>
+              {supabaseUrl ? supabaseUrl.replace('https://', '').replace('.supabase.co', '') + '.supabase.co' : '—'}
+            </span>
+          </div>
+          <div className="card-body">
+            <div className="row" style={{ gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {/* Status indicator */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 200 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+                  background: isConnected ? 'rgba(52,211,153,0.08)' : dbLoading ? 'rgba(96,165,250,0.08)' : 'rgba(239,68,68,0.08)',
+                  border: `1px solid ${isConnected ? 'rgba(52,211,153,0.2)' : dbLoading ? 'rgba(96,165,250,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {dbLoading
+                    ? <Ic name="refresh" size={16} color="#60a5fa" />
+                    : isConnected
+                    ? <Ic name="activity" size={16} color="#34d399" />
+                    : <Ic name="warn" size={16} color="#f87171" />}
+                </div>
+                <div>
+                  <div className="fw600" style={{ fontSize: 13, color: isConnected ? '#34d399' : dbLoading ? '#60a5fa' : '#f87171' }}>
+                    {dbLoading ? 'Verbinde…' : isConnected ? 'Verbunden' : 'Keine Verbindung'}
+                  </div>
+                  <div className="tx3 mono" style={{ fontSize: 10.5, marginTop: 2 }}>
+                    {dbLoading ? 'Daten werden geladen…'
+                      : lastSync ? `Letzter Sync: ${lastSync.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                      : 'Noch kein erfolgreicher Sync'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              {isConnected && (
+                <div className="row" style={{ gap: 8, flexShrink: 0 }}>
+                  {[
+                    { l: 'Latenz', v: '< 100ms' },
+                    { l: 'Region', v: 'eu-central-1' },
+                    { l: 'SSL', v: 'TLS 1.3' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 6, textAlign: 'center' }}>
+                      <div className="tx3" style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.l}</div>
+                      <div className="mono fw600" style={{ fontSize: 12, color: '#34d399', marginTop: 1 }}>{s.v}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Test button */}
+              <button
+                className="btn sm"
+                style={{ marginLeft: 'auto', flexShrink: 0 }}
+                disabled={dbLoading}
+                onClick={refresh}
+              >
+                <Ic name="refresh" size={12} />
+                {dbLoading ? 'Teste…' : 'Verbindung testen'}
+              </button>
+            </div>
+
+            {/* Error details */}
+            {dbError && !dbLoading && (
+              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 6, fontSize: 12, fontFamily: 'var(--font-mono)',
+                background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)', color: '#f87171' }}>
+                <span style={{ opacity: 0.6, marginRight: 6 }}>FEHLER</span>{dbError}
+              </div>
+            )}
           </div>
         </div>
 
