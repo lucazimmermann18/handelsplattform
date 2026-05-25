@@ -32,7 +32,8 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
 
   // ── Money at Risk ──
   const atSea = M.orders.filter(o => ['in_transit', 'shipped'].includes(o.status)).reduce((s, o) => s + o.revenue, 0);
-  const overdue = 43920;
+  const overdueOrders = M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
+  const overdue = overdueOrders.reduce((s, o) => s + (o.revenue * (100 - o.paid) / 100), 0);
   const blocked = M.orders.filter(o => o.status === 'problem').reduce((s, o) => s + o.revenue, 0);
   const storage = M.inventory.reduce((s, i) => {
     const p = M.products.find(p => i.product.includes(p.name.split(' ')[0]));
@@ -42,38 +43,36 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
 
   const moneyPanels = [
     { label: 'Auf See', value: atSea, count: M.orders.filter(o => ['in_transit', 'shipped'].includes(o.status)).length, color: '#60a5fa', icon: 'ship', nav: 'shipments' },
-    { label: 'Überfällig', value: overdue, count: 2, color: '#f87171', icon: 'warn', nav: 'finance' },
+    { label: 'Überfällig', value: overdue, count: overdueOrders.length, color: '#f87171', icon: 'warn', nav: 'finance' },
     { label: 'Blockiert', value: blocked, count: M.orders.filter(o => o.status === 'problem').length, color: '#ef4444', icon: 'danger', nav: 'orders' },
     { label: 'Lager', value: storage, count: M.inventory.length, color: '#fbbf24', icon: 'inv', nav: 'inventory' },
     { label: 'Pipeline', value: pipeline, count: M.orders.filter(o => ['procurement', 'quality', 'ready', 'in_export'].includes(o.status)).length, color: '#34d399', icon: 'pkg', nav: 'orders' },
   ];
 
   // ── Blockers ──
+  const problemOrders = M.orders.filter(o => o.status === 'problem');
+  const noDownpaymentOrders = M.orders.filter(o => o.paid === 0 && ['confirmed', 'procurement'].includes(o.status));
   const blockers = [
-    {
-      id: 'BLK-01', prio: 'kritisch', title: 'Phyto-Cert ORD-0144 fehlt',
-      desc: 'Phytosanitary Certificate für Cashew W320 Organic nicht beantragt. ETD in 8 Tagen.',
-      order: 'ORD-2026-0144', impact: 61000, daysLeft: 8,
-      action: () => onOpenOrder(M.orders.find(o => o.id === 'ORD-2026-0144')!),
-    },
-    {
-      id: 'BLK-02', prio: 'kritisch', title: 'EU Vet Approval Iringa Meat',
-      desc: 'EU Veterinärzulassung für SUP-072 fehlt. ORD-0118 blockiert, Halal Foods wartet.',
-      order: 'ORD-2026-0118', impact: 113400, daysLeft: 0,
-      action: () => onOpenOrder(M.orders.find(o => o.id === 'ORD-2026-0118')!),
-    },
-    {
-      id: 'BLK-03', prio: 'wichtig', title: 'QC-Hold Sesame SES-2026-031',
-      desc: 'Qualitätsprüfung läuft, Feinanalyse ausstehend. Export blockiert bis Freigabe.',
-      order: 'ORD-2026-0133', impact: 48400, daysLeft: 12,
-      action: () => onOpenOrder(M.orders.find(o => o.id === 'ORD-2026-0133')!),
-    },
-    {
-      id: 'BLK-04', prio: 'wichtig', title: 'Anzahlung Antwerpen Building Supplies',
-      desc: 'ORD-0126 bestätigt, aber 0% Anzahlung erhalten. Produktion kann nicht starten.',
-      order: 'ORD-2026-0126', impact: 13920, daysLeft: 34,
-      action: () => onOpenOrder(M.orders.find(o => o.id === 'ORD-2026-0126')!),
-    },
+    ...problemOrders.map((o, idx) => ({
+      id: `BLK-${String(idx + 1).padStart(2, '0')}`,
+      prio: 'kritisch',
+      title: `Blockierter Auftrag: ${o.id}`,
+      desc: 'Auftrag hat Status "Problem". Sofortige Klärung erforderlich.',
+      order: o.id,
+      impact: o.revenue,
+      daysLeft: 0,
+      action: () => onOpenOrder(o),
+    })),
+    ...noDownpaymentOrders.map((o, idx) => ({
+      id: `BLK-A${String(idx + 1).padStart(2, '0')}`,
+      prio: 'wichtig',
+      title: `Fehlende Anzahlung: ${o.id}`,
+      desc: 'Auftrag bestätigt, aber noch keine Anzahlung erhalten. Produktion kann nicht starten.',
+      order: o.id,
+      impact: o.revenue,
+      daysLeft: 30,
+      action: () => onOpenOrder(o),
+    })),
   ];
 
   // ── Ready to Ship ──
@@ -84,22 +83,18 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
   const docRisk = M.documents.filter(d => ['fehlt', 'läuft ab', 'Entwurf'].includes(d.status));
 
   // ── Free Days / Demurrage ──
-  const containers = [
-    { id: 'MSCU4421889', order: 'ORD-2026-0142', port: 'Hamburg', carrier: 'MSC', daysLeft: 4, demurragePerDay: 85, freeDays: 14 },
-    { id: 'LMCU8814226', order: 'ORD-2026-0137', port: 'Genova', carrier: 'Hapag-Lloyd', daysLeft: 2, demurragePerDay: 95, freeDays: 10 },
-    { id: 'CMAU1108742', order: 'ORD-2026-0139', port: 'Rotterdam', carrier: 'CMA CGM', daysLeft: 7, demurragePerDay: 120, freeDays: 14 },
-    { id: 'HLXU9982311', order: 'ORD-2026-0135', port: 'Felixstowe', carrier: 'ONE', daysLeft: 11, demurragePerDay: 75, freeDays: 14 },
-  ];
 
   // ── Plausibility Checks ──
   const plausibilityChecks = [
-    { id: 'PC-01', sev: 'warn', msg: 'ORD-0144: Sell-Price 6,10 USD/kg < Marktpreis 7,10 USD/kg. Preis anpassen?' },
-    { id: 'PC-02', sev: 'warn', msg: 'ORD-0118: ETD heute — EU Vet Approval fehlt. Verschiffung unmöglich.' },
-    { id: 'PC-03', sev: 'info', msg: 'ORD-0126: Käufer-Incoterm CFR, aber kein Spediteur gebucht.' },
-    { id: 'PC-04', sev: 'warn', msg: 'SUP-018 Organic-Zertifikat läuft in 14d ab — 2 laufende Aufträge betroffen.' },
-    { id: 'PC-05', sev: 'info', msg: 'ORD-0133: QC pending > 3 Tage — Eskalation an Labor empfohlen.' },
-    { id: 'PC-06', sev: 'info', msg: 'Deal D-2026-0179: Follow-up 1 Tag überfällig (Hanseatic Coffee).' },
-    { id: 'PC-07', sev: 'warn', msg: 'ORD-0135: Paid = 100%, aber Status noch "in_transit" — Abschlussbuchung prüfen.' },
+    ...M.orders.filter(o => o.paid === 0 && o.status === 'confirmed').map(o => ({
+      id: `PC-${o.id}`, sev: 'warn', msg: `${o.id}: Bestätigt, aber 0% Anzahlung erhalten.`,
+    })),
+    ...M.orders.filter(o => o.paid === 100 && o.status === 'in_transit').map(o => ({
+      id: `PC-P-${o.id}`, sev: 'info', msg: `${o.id}: 100% bezahlt, Status noch "in_transit" — Abschlussbuchung prüfen.`,
+    })),
+    ...M.documents.filter(d => d.status === 'fehlt' && d.order).map(d => ({
+      id: `PC-D-${d.id}`, sev: 'warn', msg: `${d.order}: Dokument "${d.name}" fehlt.`,
+    })),
   ];
 
   const showSection = (id: string) => section === 'all' || section === id;
@@ -165,6 +160,9 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                     </tr>
                   </thead>
                   <tbody>
+                    {blockers.length === 0 && (
+                      <tr><td colSpan={6} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine Blocker — alles im grünen Bereich</td></tr>
+                    )}
                     {blockers.map(b => (
                       <tr key={b.id}>
                         <td><Badge kind={b.prio === 'kritisch' ? 'danger' : 'warning'}>{b.prio}</Badge></td>
@@ -320,24 +318,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {containers.map(c => (
-                      <tr key={c.id}>
-                        <td className="mono" style={{ fontSize: 11 }}>{c.id}</td>
-                        <td className="mono" style={{ fontSize: 11, color: '#60a5fa', cursor: 'pointer' }} onClick={() => onNav('orders')}>{c.order.replace('ORD-2026-', 'ORD-')}</td>
-                        <td style={{ fontSize: 11 }}>{c.port}</td>
-                        <td className="tx2" style={{ fontSize: 11 }}>{c.carrier}</td>
-                        <td className="mono" style={{ fontSize: 11 }}>{c.freeDays}d</td>
-                        <td className="mono fw600" style={{ fontSize: 12, color: c.daysLeft <= 3 ? '#ef4444' : c.daysLeft <= 7 ? '#f59e0b' : '#34d399' }}>
-                          {c.daysLeft}d
-                        </td>
-                        <td className="mono" style={{ fontSize: 11 }}>€ {c.demurragePerDay}/d</td>
-                        <td>
-                          <Badge kind={c.daysLeft <= 3 ? 'danger' : c.daysLeft <= 7 ? 'warning' : 'success'}>
-                            {c.daysLeft <= 3 ? 'kritisch' : c.daysLeft <= 7 ? 'beobachten' : 'ok'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
+                    <tr><td colSpan={8} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine Container-Tracking-Daten erfasst</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -353,7 +334,9 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
             </div>
             <div className="card">
               <div className="card-body" style={{ padding: '8px 0' }}>
-                {plausibilityChecks.map(pc => (
+                {plausibilityChecks.length === 0 ? (
+                  <div className="tx3" style={{ padding: '12px 16px', fontSize: 12, textAlign: 'center' }}>Keine Plausibilitätswarnungen</div>
+                ) : plausibilityChecks.map(pc => (
                   <div key={pc.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '6px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <Ic name={pc.sev === 'warn' ? 'warn' : 'info'} size={14} color={pc.sev === 'warn' ? '#f59e0b' : '#60a5fa'} />
                     <span className="tx2" style={{ fontSize: 11.5, lineHeight: 1.5 }}>{pc.msg}</span>

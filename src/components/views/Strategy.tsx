@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
@@ -29,60 +30,10 @@ interface Objective {
   krs: KR[];
 }
 
-const OBJECTIVES: Objective[] = [
-  {
-    id: 'O1', title: 'Q3 2026 Umsatz auf 1.4M € steigern', why: 'Break-Even-Schwelle', owner: 'CEO',
-    krs: [
-      { id: 'KR-1', text: 'Run-Rate ≥470k', cur: 380, target: 470, unit: 'k €' },
-      { id: 'KR-2', text: '5 neue EU-Käufer', cur: 3, target: 5, unit: '' },
-      { id: 'KR-3', text: 'Marge ≥32%', cur: 31, target: 32, unit: '%' },
-      { id: 'KR-4', text: 'Win-Rate ≥45%', cur: 38, target: 45, unit: '%' },
-    ],
-  },
-  {
-    id: 'O2', title: 'Lieferanten-Netzwerk auf 18 Tier-A/B', why: 'Beschaffungssicherheit', owner: 'Operations',
-    krs: [
-      { id: 'KR-1', text: 'Aktive Lieferanten ≥18', cur: 10, target: 18, unit: '' },
-      { id: 'KR-2', text: '4 neue Länder', cur: 2, target: 4, unit: '' },
-      { id: 'KR-3', text: 'Ø Score ≥4.5', cur: 4.4, target: 4.5, unit: '' },
-      { id: 'KR-4', text: '12 Audits abgeschlossen', cur: 7, target: 12, unit: '' },
-    ],
-  },
-  {
-    id: 'O3', title: 'EUDR-Compliance vollständig', why: 'Regulatorische Pflicht', owner: 'Compliance',
-    krs: [
-      { id: 'KR-1', text: '100% GPS-Koordinaten erfasst', cur: 88, target: 100, unit: '%' },
-      { id: 'KR-2', text: 'Sentinel-2 Monitoring aktiv', cur: 80, target: 100, unit: '%' },
-      { id: 'KR-3', text: 'DDS live', cur: 1, target: 1, unit: '' },
-      { id: 'KR-4', text: '0 Lieferanten-Verzögerungen', cur: 0, target: 0, unit: '' },
-    ],
-  },
-  {
-    id: 'O4', title: 'Operational Excellence: Cycle-Time -20%', why: 'Effizienz & Skalierung', owner: 'Operations',
-    krs: [
-      { id: 'KR-1', text: 'Cycle-Time ≤18 Tage', cur: 22, target: 18, unit: '' },
-      { id: 'KR-2', text: 'Dokument-Vollständigkeit ≥95%', cur: 78, target: 95, unit: '%' },
-      { id: 'KR-3', text: 'Reklamationsquote ≤1.5%', cur: 2.3, target: 1.5, unit: '%' },
-      { id: 'KR-4', text: 'KI-Nutzung ≥5 Tage/Woche', cur: 4, target: 5, unit: '' },
-    ],
-  },
-  {
-    id: 'O5', title: 'Marken-Aufbau: 3 Origin-Stories', why: 'Differenzierung & Premiumpreis', owner: 'Marketing',
-    krs: [
-      { id: 'KR-1', text: '3 Origin-Stories live', cur: 1, target: 3, unit: '' },
-      { id: 'KR-2', text: 'Specialty-Anteil ≥35%', cur: 28, target: 35, unit: '%' },
-      { id: 'KR-3', text: 'LinkedIn ≥8k Follower', cur: 3200, target: 8000, unit: '' },
-    ],
-  },
-];
+const OBJECTIVES: Objective[] = [];
 
 function krProgress(kr: KR): number {
   if (kr.target === 0) return 100;
-  // For KRs where lower is better (cycle-time, reklamationsquote)
-  if (kr.id === 'KR-1' && kr.cur > kr.target && kr.target < kr.cur) {
-    const raw = (1 - (kr.cur - kr.target) / kr.target) * 100;
-    return Math.max(0, Math.min(100, raw));
-  }
   return Math.min(100, (kr.cur / Math.max(kr.target, 1)) * 100);
 }
 
@@ -114,17 +65,17 @@ interface GanttItem {
 }
 
 const GANTT_ITEMS: GanttItem[] = [
-  { id: 1,  name: 'EUDR-Workflow live',            cat: 'Compliance', start: 0, end: 1,  state: 'done',    owner: 'Compliance' },
-  { id: 2,  name: 'Lieferanten-Akquise Mtwara',    cat: 'Supply',     start: 1, end: 4,  state: 'active',  owner: 'Operations' },
-  { id: 3,  name: 'Markteintritt Frankreich',       cat: 'Sales',      start: 2, end: 6,  state: 'active',  owner: 'Sales' },
-  { id: 4,  name: 'BRC-Zertifizierung Mtwara',      cat: 'Quality',    start: 3, end: 7,  state: 'planned', owner: 'Compliance' },
-  { id: 5,  name: 'Avocado-Programm Ausbau Mbeya', cat: 'Product',    start: 4, end: 9,  state: 'planned', owner: 'Operations' },
-  { id: 6,  name: 'Cold-Outreach EU Spice Buyers', cat: 'Sales',      start: 5, end: 7,  state: 'planned', owner: 'Sales' },
-  { id: 7,  name: 'Macadamia Expansion Kenya',      cat: 'Supply',     start: 5, end: 10, state: 'planned', owner: 'Operations' },
-  { id: 8,  name: 'Markteintritt Schweden+Dänemark',cat: 'Sales',      start: 6, end: 11, state: 'planned', owner: 'Sales' },
-  { id: 9,  name: 'CBAM-Compliance Setup',          cat: 'Compliance', start: 7, end: 10, state: 'planned', owner: 'Compliance' },
-  { id: 10, name: 'Investor Round Series Seed',     cat: 'Capital',    start: 8, end: 11, state: 'planned', owner: 'CEO' },
-  { id: 11, name: 'WhatsApp-Lieferanten-Integration',cat: 'Tech',      start: 8, end: 9,  state: 'planned', owner: 'Tech' },
+  { id: 1,  name: 'EUDR-Workflow live',             cat: 'Compliance', start: 0, end: 1,  state: 'done',    owner: 'Compliance' },
+  { id: 2,  name: 'Lieferanten-Akquise Mtwara',     cat: 'Supply',     start: 1, end: 4,  state: 'active',  owner: 'Operations' },
+  { id: 3,  name: 'Markteintritt Frankreich',        cat: 'Sales',      start: 2, end: 6,  state: 'active',  owner: 'Sales' },
+  { id: 4,  name: 'BRC-Zertifizierung',              cat: 'Quality',    start: 3, end: 7,  state: 'planned', owner: 'Compliance' },
+  { id: 5,  name: 'Avocado-Programm Ausbau',        cat: 'Product',    start: 4, end: 9,  state: 'planned', owner: 'Operations' },
+  { id: 6,  name: 'Cold-Outreach EU Spice Buyers',  cat: 'Sales',      start: 5, end: 7,  state: 'planned', owner: 'Sales' },
+  { id: 7,  name: 'Macadamia Expansion Kenya',       cat: 'Supply',     start: 5, end: 10, state: 'planned', owner: 'Operations' },
+  { id: 8,  name: 'Markteintritt Schweden+Dänemark', cat: 'Sales',      start: 6, end: 11, state: 'planned', owner: 'Sales' },
+  { id: 9,  name: 'CBAM-Compliance Setup',           cat: 'Compliance', start: 7, end: 10, state: 'planned', owner: 'Compliance' },
+  { id: 10, name: 'Investor Round Series Seed',      cat: 'Capital',    start: 8, end: 11, state: 'planned', owner: 'CEO' },
+  { id: 11, name: 'WhatsApp-Lieferanten-Integration',cat: 'Tech',       start: 8, end: 9,  state: 'planned', owner: 'Tech' },
 ];
 
 const MONTHS = ['Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb','Mär','Apr','Mai'];
@@ -146,16 +97,16 @@ interface Market {
 }
 
 const MARKETS: Market[] = [
-  { code: 'DE', name: 'Deutschland',    flag: '🇩🇪', status: 'active',       priority: 'core',          revenue: 312000, buyers: 4, pipeline: 180000, desc: 'Kernmarkt mit etablierten Buyer-Relationships. Fokus Specialty Coffee & Cashew.',           products: ['Cashew','Coffee','Sesame'] },
-  { code: 'NL', name: 'Niederlande',    flag: '🇳🇱', status: 'active',       priority: 'core',          revenue: 86000,  buyers: 2, pipeline: 90000,  desc: 'Rotierend als Hub für Weiterverteilung in Benelux. Avocado & Macadamia.',                  products: ['Avocado','Macadamia'] },
-  { code: 'FR', name: 'Frankreich',     flag: '🇫🇷', status: 'building',     priority: 'priority',      revenue: 0,      buyers: 1, pipeline: 220000, desc: 'Aktiver Markteintritt Q3 2026. Erste LOI von 2 Käufern vorhanden.',                       products: ['Coffee','Sesame','Spices'] },
-  { code: 'GB', name: 'Vereinigtes Königreich', flag: '🇬🇧', status: 'active', priority: 'core',       revenue: 92000,  buyers: 2, pipeline: 60000,  desc: 'Post-Brexit stabile Lage. GBP-Risiko wird gehedgt.',                                       products: ['Cashew','Coffee'] },
-  { code: 'IT', name: 'Italien',        flag: '🇮🇹', status: 'active',       priority: 'maintain',      revenue: 145000, buyers: 3, pipeline: 75000,  desc: 'Starke Nachfrage für Specialty Coffee & Macadamia. Zahlungsfristen 60-90 Tage.',          products: ['Coffee','Macadamia','Sesame'] },
-  { code: 'SE', name: 'Schweden',       flag: '🇸🇪', status: 'prospecting',  priority: 'priority',      revenue: 0,      buyers: 0, pipeline: 140000, desc: 'Skandinavischer Markt hochattraktiv für Sustainability-Positionierung.',                   products: ['Coffee','Cashew'] },
-  { code: 'BE', name: 'Belgien',        flag: '🇧🇪', status: 'building',     priority: 'opportunistic', revenue: 0,      buyers: 1, pipeline: 80000,  desc: 'Nähe zu Rotterdam-Hub erleichtert Logistik. Chocolatiers als Zielgruppe.',                products: ['Cashew','Sesame'] },
-  { code: 'ES', name: 'Spanien',        flag: '🇪🇸', status: 'planned',      priority: 'next',          revenue: 0,      buyers: 0, pipeline: 95000,  desc: 'Country Readiness in Vorbereitung. Fokus auf Mediterranean Food Distributoren.',          products: ['Sesame','Spices'] },
-  { code: 'PL', name: 'Polen',          flag: '🇵🇱', status: 'planned',      priority: 'next',          revenue: 0,      buyers: 0, pipeline: 70000,  desc: 'Wachstumsmarkt für Nüsse & Trockenfrüchte. Low-cost Eintrittsstrategie.',                products: ['Cashew','Macadamia'] },
-  { code: 'CH', name: 'Schweiz',        flag: '🇨🇭', status: 'planned',      priority: 'opportunistic', revenue: 0,      buyers: 0, pipeline: 110000, desc: 'Premium-Segment für Bio & Fairtrade. Bio-Knospe Zertifizierung in Planung.',             products: ['Coffee','Cashew'] },
+  { code: 'DE', name: 'Deutschland',    flag: '🇩🇪', status: 'active',       priority: 'core',          revenue: 0, buyers: 0, pipeline: 0, desc: 'Kernmarkt. Fokus Specialty Coffee & Cashew.',                                         products: ['Cashew','Coffee','Sesame'] },
+  { code: 'NL', name: 'Niederlande',    flag: '🇳🇱', status: 'active',       priority: 'core',          revenue: 0, buyers: 0, pipeline: 0, desc: 'Hub für Weiterverteilung in Benelux. Avocado & Macadamia.',                           products: ['Avocado','Macadamia'] },
+  { code: 'FR', name: 'Frankreich',     flag: '🇫🇷', status: 'building',     priority: 'priority',      revenue: 0, buyers: 0, pipeline: 0, desc: 'Aktiver Markteintritt. Fokus Coffee, Sesame, Spices.',                                products: ['Coffee','Sesame','Spices'] },
+  { code: 'GB', name: 'Vereinigtes Königreich', flag: '🇬🇧', status: 'active', priority: 'core',       revenue: 0, buyers: 0, pipeline: 0, desc: 'Post-Brexit stabile Lage. GBP-Risiko wird gehedgt.',                                  products: ['Cashew','Coffee'] },
+  { code: 'IT', name: 'Italien',        flag: '🇮🇹', status: 'active',       priority: 'maintain',      revenue: 0, buyers: 0, pipeline: 0, desc: 'Starke Nachfrage für Specialty Coffee & Macadamia.',                                  products: ['Coffee','Macadamia','Sesame'] },
+  { code: 'SE', name: 'Schweden',       flag: '🇸🇪', status: 'prospecting',  priority: 'priority',      revenue: 0, buyers: 0, pipeline: 0, desc: 'Skandinavischer Markt hochattraktiv für Sustainability-Positionierung.',              products: ['Coffee','Cashew'] },
+  { code: 'BE', name: 'Belgien',        flag: '🇧🇪', status: 'building',     priority: 'opportunistic', revenue: 0, buyers: 0, pipeline: 0, desc: 'Nähe zu Rotterdam-Hub erleichtert Logistik.',                                        products: ['Cashew','Sesame'] },
+  { code: 'ES', name: 'Spanien',        flag: '🇪🇸', status: 'planned',      priority: 'next',          revenue: 0, buyers: 0, pipeline: 0, desc: 'Fokus auf Mediterranean Food Distributoren.',                                        products: ['Sesame','Spices'] },
+  { code: 'PL', name: 'Polen',          flag: '🇵🇱', status: 'planned',      priority: 'next',          revenue: 0, buyers: 0, pipeline: 0, desc: 'Wachstumsmarkt für Nüsse & Trockenfrüchte.',                                         products: ['Cashew','Macadamia'] },
+  { code: 'CH', name: 'Schweiz',        flag: '🇨🇭', status: 'planned',      priority: 'opportunistic', revenue: 0, buyers: 0, pipeline: 0, desc: 'Premium-Segment für Bio & Fairtrade. Bio-Knospe Zertifizierung in Planung.',         products: ['Coffee','Cashew'] },
 ];
 
 const STATUS_KIND: Record<string, string> = {
@@ -178,16 +129,7 @@ interface PipelineItem {
   tests: number;
 }
 
-const PIPELINE: PipelineItem[] = [
-  { name: 'Macadamia Style 2',          stage: 'launching',  readiness: 92, launch: 'Q3 2026', revenue: '180k €',  supplier: 'Kenya Macadamia Ltd.',     tests: 4 },
-  { name: 'Pekannuss-Pilot Tanzania',   stage: 'piloting',   readiness: 32, launch: 'Q1 2027', revenue: '60k €',   supplier: 'Iringa Nut Farm',          tests: 2 },
-  { name: 'Specialty Microlots Coffee', stage: 'launching',  readiness: 78, launch: 'Q3 2026', revenue: '220k €',  supplier: 'Kilimo Arusha',            tests: 5 },
-  { name: 'Black Sesame',               stage: 'research',   readiness: 18, launch: 'Q2 2027', revenue: '40k €',   supplier: 'TBD',                      tests: 1 },
-  { name: 'Bird-Eye Chili',             stage: 'piloting',   readiness: 48, launch: 'Q4 2026', revenue: '35k €',   supplier: 'Mtwara Agri Co-op',        tests: 2 },
-  { name: 'Cassava Flour',              stage: 'research',   readiness: 22, launch: 'Q2 2027', revenue: '55k €',   supplier: 'TBD',                      tests: 1 },
-  { name: 'Vanille Madagaskar',         stage: 'evaluating', readiness: 8,  launch: 'Q3 2027', revenue: '90k €',   supplier: 'Madagascar Vanilla Coop',  tests: 0 },
-  { name: 'Hibiskusblüten',             stage: 'piloting',   readiness: 38, launch: 'Q1 2027', revenue: '28k €',   supplier: 'Dodoma Flower Farms',      tests: 2 },
-];
+const PIPELINE: PipelineItem[] = [];
 
 const STAGE_KIND: Record<string, string> = {
   research: 'neutral', evaluating: 'info', piloting: 'warning', launching: 'success',
@@ -352,13 +294,7 @@ interface Competitor {
   threat: string;
 }
 
-const COMPETITORS: Competitor[] = [
-  { name: 'East African Commodity Brokers', country: 'Kenya',   focus: 'Coffee + Cashew',       tier: 'B', strength: 'Preisführerschaft',          weakness: 'Dokumentenqualität',   threat: 'medium' },
-  { name: 'Afri-Export GmbH',              country: 'Germany',  focus: 'All-round',              tier: 'A', strength: 'EU-Netzwerk',               weakness: 'Margen dünn',          threat: 'high' },
-  { name: 'Tanzania Commodity Exchange',   country: 'Tanzania', focus: 'Bulk Commodities',       tier: 'C', strength: 'Volumen',                    weakness: 'Langsame Docs',        threat: 'low' },
-  { name: 'Nordic Agri Imports',           country: 'Sweden',   focus: 'Nüsse + Coffee',         tier: 'B', strength: 'Skandinavisches Netzwerk',  weakness: 'Afrika-Footprint',     threat: 'medium' },
-  { name: 'Atlas Trading House',           country: 'Morocco',  focus: 'Nordafrika + Gewürze',   tier: 'B', strength: 'Mediterranean',             weakness: 'Kein East Africa',     threat: 'low' },
-];
+const COMPETITORS: Competitor[] = [];
 
 const THREAT_KIND: Record<string, string> = { high: 'danger', medium: 'warning', low: 'success' };
 const TIER_KIND: Record<string, string> = { A: 'danger', B: 'warning', C: 'neutral' };
@@ -366,6 +302,7 @@ const TIER_KIND: Record<string, string> = { A: 'danger', B: 'warning', C: 'neutr
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export const StrategyView = ({ lang }: StrategyViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState('okr');
   const [selectedCountry, setSelectedCountry] = useState('ES');
 
@@ -378,12 +315,31 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
     { id: 'compete',  label: 'Competitor Intel',     icon: 'chart' },
   ];
 
-  // Overall OKR progress
   const allKRs = OBJECTIVES.flatMap(o => o.krs);
-  const overallProgress = Math.round(allKRs.reduce((s, kr) => s + krProgress(kr), 0) / allKRs.length);
+  const overallProgress = allKRs.length > 0
+    ? Math.round(allKRs.reduce((s, kr) => s + krProgress(kr), 0) / allKRs.length)
+    : 0;
 
   const circ = 213.6;
   const ringDash = (overallProgress / 100) * circ;
+
+  const onTrack = OBJECTIVES.filter(o => Math.round(objProgress(o)) >= 70).length;
+  const needsFocus = OBJECTIVES.filter(o => { const p = Math.round(objProgress(o)); return p >= 40 && p < 70; }).length;
+  const atRisk = OBJECTIVES.filter(o => Math.round(objProgress(o)) < 40).length;
+
+  // Compute real market revenue/buyers/pipeline from DB
+  const marketsWithData = MARKETS.map(mkt => {
+    if (!M) return mkt;
+    const countryBuyers = M.buyers.filter(b => b.country === mkt.code);
+    const revenue = M.orders
+      .filter(o => countryBuyers.some(b => b.id === o.buyerId))
+      .reduce((s, o) => s + o.revenue, 0);
+    const buyers = countryBuyers.length;
+    const pipeline = M.deals
+      .filter(d => countryBuyers.some(b => b.id === d.buyerId))
+      .reduce((s, d) => s + d.value, 0);
+    return { ...mkt, revenue, buyers, pipeline };
+  });
 
   return (
     <div>
@@ -428,18 +384,25 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
                   <text x={40} y={45} textAnchor="middle" fill="white" fontSize={16} fontWeight={700} fontFamily="var(--font-mono)">{overallProgress}%</text>
                 </svg>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>5 Objectives · 19 Key Results · Ø {overallProgress}% Fortschritt</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+                    {OBJECTIVES.length} Objectives · {allKRs.length} Key Results · Ø {overallProgress}% Fortschritt
+                  </div>
                   <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-                    <span style={{ color: '#34d399' }}>● 3 on track</span>
-                    <span style={{ color: '#fbbf24' }}>● 2 needs focus</span>
-                    <span style={{ color: '#f87171' }}>● 0 at risk</span>
+                    <span style={{ color: '#34d399' }}>● {onTrack} on track</span>
+                    <span style={{ color: '#fbbf24' }}>● {needsFocus} needs focus</span>
+                    <span style={{ color: '#f87171' }}>● {atRisk} at risk</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Objective cards */}
-            {OBJECTIVES.map(obj => {
+            {OBJECTIVES.length === 0 ? (
+              <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine OKRs definiert</div>
+                <div style={{ fontSize: 12 }}>Füge Objectives und Key Results hinzu um den Fortschritt zu tracken.</div>
+              </div>
+            ) : OBJECTIVES.map(obj => {
               const prog = Math.round(objProgress(obj));
               return (
                 <div key={obj.id} className="card" style={{ marginBottom: 10 }}>
@@ -578,8 +541,10 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
                 <span className="title">Umsatz-Verteilung — Aktive Märkte</span>
               </div>
               <div className="card-body">
-                {MARKETS.filter(m => m.revenue > 0).map((m, i) => {
-                  const total = MARKETS.reduce((s, x) => s + x.revenue, 0);
+                {marketsWithData.filter(m => m.revenue > 0).length === 0 ? (
+                  <div className="tx3" style={{ fontSize: 12, textAlign: 'center', padding: '8px 0' }}>Noch kein Umsatz in Märkten erfasst</div>
+                ) : marketsWithData.filter(m => m.revenue > 0).map((m, i) => {
+                  const total = marketsWithData.reduce((s, x) => s + x.revenue, 0);
                   const pct = Math.round((m.revenue / total) * 100);
                   return (
                     <div key={i} style={{ marginBottom: 8 }}>
@@ -598,7 +563,7 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
 
             {/* Market cards */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {MARKETS.map((m, i) => (
+              {marketsWithData.map((m, i) => (
                 <div key={i} className="card" style={{ padding: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     <span style={{ fontSize: 22 }}>{m.flag}</span>
@@ -611,9 +576,9 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 8 }}>
                     {[
-                      { l: 'Umsatz', v: fmtCur(m.revenue) },
-                      { l: 'Käufer', v: String(m.buyers) },
-                      { l: 'Pipeline', v: fmtCur(m.pipeline) },
+                      { l: 'Umsatz', v: m.revenue > 0 ? fmtCur(m.revenue) : '—' },
+                      { l: 'Käufer', v: m.buyers > 0 ? String(m.buyers) : '—' },
+                      { l: 'Pipeline', v: m.pipeline > 0 ? fmtCur(m.pipeline) : '—' },
                     ].map((kpi, ki) => (
                       <div key={ki} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '6px 8px' }}>
                         <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{kpi.l}</div>
@@ -636,64 +601,73 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
         {/* ── TAB: Products Pipeline ────────────────────────────────────────── */}
         {tab === 'products' && (
           <div>
-            {/* Stage KPI tiles */}
-            {(() => {
-              const stages = ['research', 'evaluating', 'piloting', 'launching'];
-              const stageCounts = stages.map(s => ({ stage: s, count: PIPELINE.filter(p => p.stage === s).length }));
-              return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 12 }}>
-                  {stageCounts.map((sc, i) => (
-                    <div key={i} className="card" style={{ padding: 14 }}>
-                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 4 }}>{sc.stage}</div>
-                      <div className="mono fw700" style={{ fontSize: 28 }}>{sc.count}</div>
-                      <Badge kind={STAGE_KIND[sc.stage] || 'neutral'}>{sc.stage}</Badge>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-
-            {/* Pipeline table */}
-            <div className="card">
-              <div className="card-head">
-                <Ic name="product" size={14} />
-                <span className="title">Produkt-Pipeline</span>
-                <span className="meta">{PIPELINE.length} Produkte</span>
+            {PIPELINE.length === 0 ? (
+              <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine Produkt-Pipeline definiert</div>
+                <div style={{ fontSize: 12 }}>Füge neue Produkte in Entwicklung oder Pilotierung hinzu.</div>
               </div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Produkt</th>
-                    <th>Stage</th>
-                    <th>Readiness</th>
-                    <th>Launch-Fenster</th>
-                    <th className="num">Umsatz-Erwartung</th>
-                    <th>Lieferant</th>
-                    <th className="num">Tests</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PIPELINE.map((p, i) => (
-                    <tr key={i}>
-                      <td className="fw500">{p.name}</td>
-                      <td><Badge kind={STAGE_KIND[p.stage] || 'neutral'}>{p.stage}</Badge></td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div className="progress" style={{ width: 80 }}>
-                            <div style={{ width: p.readiness + '%', background: p.readiness >= 70 ? '#34d399' : p.readiness >= 40 ? '#fbbf24' : '#a78bfa' }} />
-                          </div>
-                          <span className="mono" style={{ fontSize: 11 }}>{p.readiness}%</span>
+            ) : (
+              <>
+                {/* Stage KPI tiles */}
+                {(() => {
+                  const stages = ['research', 'evaluating', 'piloting', 'launching'];
+                  const stageCounts = stages.map(s => ({ stage: s, count: PIPELINE.filter(p => p.stage === s).length }));
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 12 }}>
+                      {stageCounts.map((sc, i) => (
+                        <div key={i} className="card" style={{ padding: 14 }}>
+                          <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 4 }}>{sc.stage}</div>
+                          <div className="mono fw700" style={{ fontSize: 28 }}>{sc.count}</div>
+                          <Badge kind={STAGE_KIND[sc.stage] || 'neutral'}>{sc.stage}</Badge>
                         </div>
-                      </td>
-                      <td style={{ fontSize: 12 }}>{p.launch}</td>
-                      <td className="num mono fw500">{p.revenue}</td>
-                      <td style={{ fontSize: 11, color: 'var(--text-2)' }}>{p.supplier}</td>
-                      <td className="num mono">{p.tests}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Pipeline table */}
+                <div className="card">
+                  <div className="card-head">
+                    <Ic name="product" size={14} />
+                    <span className="title">Produkt-Pipeline</span>
+                    <span className="meta">{PIPELINE.length} Produkte</span>
+                  </div>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Produkt</th>
+                        <th>Stage</th>
+                        <th>Readiness</th>
+                        <th>Launch-Fenster</th>
+                        <th className="num">Umsatz-Erwartung</th>
+                        <th>Lieferant</th>
+                        <th className="num">Tests</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {PIPELINE.map((p, i) => (
+                        <tr key={i}>
+                          <td className="fw500">{p.name}</td>
+                          <td><Badge kind={STAGE_KIND[p.stage] || 'neutral'}>{p.stage}</Badge></td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div className="progress" style={{ width: 80 }}>
+                                <div style={{ width: p.readiness + '%', background: p.readiness >= 70 ? '#34d399' : p.readiness >= 40 ? '#fbbf24' : '#a78bfa' }} />
+                              </div>
+                              <span className="mono" style={{ fontSize: 11 }}>{p.readiness}%</span>
+                            </div>
+                          </td>
+                          <td style={{ fontSize: 12 }}>{p.launch}</td>
+                          <td className="num mono fw500">{p.revenue}</td>
+                          <td style={{ fontSize: 11, color: 'var(--text-2)' }}>{p.supplier}</td>
+                          <td className="num mono">{p.tests}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -785,60 +759,46 @@ export const StrategyView = ({ lang }: StrategyViewProps) => {
         {/* ── TAB: Competitor Intel ─────────────────────────────────────────── */}
         {tab === 'compete' && (
           <div>
-            <div className="card" style={{ marginBottom: 12 }}>
-              <div className="card-head">
-                <Ic name="chart" size={14} />
-                <span className="title">Wettbewerber-Analyse</span>
-                <span className="meta">{COMPETITORS.length} Wettbewerber getrackt</span>
+            {COMPETITORS.length === 0 ? (
+              <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine Wettbewerber erfasst</div>
+                <div style={{ fontSize: 12 }}>Füge Wettbewerber hinzu um das Competitive Landscape zu tracken.</div>
               </div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Wettbewerber</th>
-                    <th>Land</th>
-                    <th>Fokus</th>
-                    <th>Tier</th>
-                    <th>Stärke</th>
-                    <th>Schwäche</th>
-                    <th>Bedrohungslevel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPETITORS.map((c, i) => (
-                    <tr key={i}>
-                      <td className="fw500">{c.name}</td>
-                      <td style={{ fontSize: 12 }}>{c.country}</td>
-                      <td style={{ fontSize: 12 }}>{c.focus}</td>
-                      <td><Badge kind={TIER_KIND[c.tier] || 'neutral'}>Tier {c.tier}</Badge></td>
-                      <td style={{ fontSize: 12, color: '#34d399' }}>{c.strength}</td>
-                      <td style={{ fontSize: 12, color: '#fbbf24' }}>{c.weakness}</td>
-                      <td><Badge kind={THREAT_KIND[c.threat] || 'neutral'}>{c.threat}</Badge></td>
+            ) : (
+              <div className="card" style={{ marginBottom: 12 }}>
+                <div className="card-head">
+                  <Ic name="chart" size={14} />
+                  <span className="title">Wettbewerber-Analyse</span>
+                  <span className="meta">{COMPETITORS.length} Wettbewerber getrackt</span>
+                </div>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Wettbewerber</th>
+                      <th>Land</th>
+                      <th>Fokus</th>
+                      <th>Tier</th>
+                      <th>Stärke</th>
+                      <th>Schwäche</th>
+                      <th>Bedrohungslevel</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* AI analysis */}
-            <div className="card" style={{ padding: 16 }}>
-              <div className="card-head" style={{ padding: '0 0 10px', marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <Ic name="sparkle" size={14} color="#a78bfa" />
-                <span className="title">KI-Wettbewerbs-Analyse</span>
+                  </thead>
+                  <tbody>
+                    {COMPETITORS.map((c, i) => (
+                      <tr key={i}>
+                        <td className="fw500">{c.name}</td>
+                        <td style={{ fontSize: 12 }}>{c.country}</td>
+                        <td style={{ fontSize: 12 }}>{c.focus}</td>
+                        <td><Badge kind={TIER_KIND[c.tier] || 'neutral'}>Tier {c.tier}</Badge></td>
+                        <td style={{ fontSize: 12, color: '#34d399' }}>{c.strength}</td>
+                        <td style={{ fontSize: 12, color: '#fbbf24' }}>{c.weakness}</td>
+                        <td><Badge kind={THREAT_KIND[c.threat] || 'neutral'}>{c.threat}</Badge></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <p style={{ fontSize: 12.5, lineHeight: 1.7, color: 'var(--text-2)', margin: 0 }}>
-                Das kompetitive Umfeld im ostafrika-europäischen Agrargüterhandel wird von Afri-Export GmbH
-                als Tier-A-Wettbewerber dominiert, der starke EU-Netzwerke nutzt, jedoch unter dünnen Margen
-                leidet — ein strukturelles Differenzierungspotenzial für EastAfrica Export OS durch
-                Premiumpositionierung und EUDR-Compliance-Leadership. East African Commodity Brokers
-                konkurriert primär über Preis mit schwacher Dokumentenqualität, was unsere Stärke in
-                transparenter Rückverfolgbarkeit und digitalem Dokumentenmanagement hervorhebt.
-                Nordic Agri Imports repräsentiert die größte strategische Bedrohung für die
-                Skandinavien-Expansion (SE/DK), da das Netzwerk bereits etabliert ist — jedoch ohne
-                eigene ostafrikanische Sourcing-Kapazität. Tanzania Commodity Exchange und Atlas Trading House
-                sind als Tier-B/C-Akteure weniger bedrohlich, bieten aber Kooperationspotenzial für
-                Spot-Transaktionen und regionale Marktinformationen.
-              </p>
-            </div>
+            )}
           </div>
         )}
 
