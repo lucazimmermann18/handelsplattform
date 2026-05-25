@@ -294,21 +294,8 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
                 <button className="btn sm"><Ic name="plus" size={11} /> Notiz</button>
               </div>
             </div>
-            <div>
-              {[
-                { who: 'M. Kassim', what: 'Telefon', when: 'vor 2 Tagen', body: 'Bestätigt Erntefenster Cashew Mtwara: 15. Oktober – 15. Januar. Erwartete Erntemenge: 140t.' },
-                { who: 'N. Otieno', what: 'Field Visit', when: 'vor 3 Wochen', body: 'Lagerhaus inspiziert. Trocknungsanlage in Top-Zustand. 3 neue Wiegeskalen installiert. Foto-Doku: 12 Bilder.' },
-                { who: s.contact, what: 'WhatsApp', when: 'vor 4 Wochen', body: 'Preisanpassung gewünscht: +4% wegen FX. Wir können bei 4,35 €/kg liefern, wenn Abnahme >40t.' },
-              ].map((m, i) => (
-                <div key={i} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
-                  <div className="row" style={{ marginBottom: 4 }}>
-                    <span className="fw500" style={{ fontSize: 12 }}>{m.who}</span>
-                    <span className="tx3" style={{ fontSize: 11 }}>· {m.what}</span>
-                    <span className="tx3 mono" style={{ marginLeft: 'auto', fontSize: 10.5 }}>{m.when}</span>
-                  </div>
-                  <div className="tx2" style={{ fontSize: 11.5 }}>{m.body}</div>
-                </div>
-              ))}
+            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+              <div className="tx3" style={{ fontSize: 12 }}>Noch keine Kommunikation erfasst</div>
             </div>
           </div>
         </div>
@@ -407,23 +394,10 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
             <div className="card-head">
               <Ic name="pin" size={14} />
               <span className="title">Field Visits &amp; Audits</span>
+              <button className="btn sm" style={{ marginLeft: 'auto' }}><Ic name="plus" size={11} /> Hinzufügen</button>
             </div>
-            <div className="card-body" style={{ padding: 0 }}>
-              {[
-                { d: 'Mai 2026', t: 'Q2 Audit', who: 'N. Otieno', r: 'A' },
-                { d: 'Feb 2026', t: 'Hygiene-Inspektion', who: 'M. Kassim', r: 'A' },
-                { d: 'Nov 2025', t: 'Erntebesuch', who: 'M. Kassim', r: 'B' },
-                { d: 'Aug 2025', t: 'Initial Audit', who: 'External: BV', r: 'A' },
-              ].map((f, i) => (
-                <div key={i} className="row" style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', gap: 8 }}>
-                  <span className="mono tx3" style={{ width: 60, fontSize: 10.5 }}>{f.d}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12 }} className="fw500">{f.t}</div>
-                    <div className="tx3" style={{ fontSize: 10.5 }}>{f.who}</div>
-                  </div>
-                  <Badge kind={f.r === 'A' ? 'success' : 'warning'}>{f.r}</Badge>
-                </div>
-              ))}
+            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+              <div className="tx3" style={{ fontSize: 12 }}>Noch keine Field Visits erfasst</div>
             </div>
           </div>
         </div>

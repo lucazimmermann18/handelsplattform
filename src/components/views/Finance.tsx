@@ -31,20 +31,31 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
   const totalExpected = M.revTrend.reduce((s, r) => s + r.exp, 0) * 1000;
   const totalRealized = M.revTrend.reduce((s, r) => s + r.real, 0) * 1000;
 
+  const receivableCount = M.orders.filter(o => o.paid < 100 && o.status !== 'done').length;
+  const overdueOrders = M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
+  const overdueAmount = overdueOrders.reduce((s, o) => s + (o.revenue * (100 - o.paid) / 100), 0);
+  const avgMarginPct = M.orders.length > 0 ? Math.round(M.orders.reduce((s, o) => s + (o.profit / Math.max(o.revenue, 1)) * 100, 0) / M.orders.length) : 0;
+
   const kpis = [
-    { l: 'Umsatz · Pipeline',     v: fmtCur(total),       sub: `${M.orders.length} Aufträge`,  c: '#60a5fa', delta: '+18%' },
-    { l: 'Erwarteter Gewinn',     v: fmtCur(totalProfit), sub: 'Ø Marge 31%',                  c: '#34d399', delta: '+2pp' },
-    { l: 'Offene Forderungen',    v: fmtCur(receivable),  sub: '6 Aufträge',                   c: '#fbbf24', delta: undefined },
-    { l: 'Überfällig',            v: fmtCur(43920),       sub: '2 Aufträge · Ø 18 Tage',      c: '#f87171', delta: undefined },
+    { l: 'Umsatz · Pipeline',  v: fmtCur(total),          sub: `${M.orders.length} Aufträge`,           c: '#60a5fa', delta: undefined },
+    { l: 'Erwarteter Gewinn',  v: fmtCur(totalProfit),    sub: `Ø Marge ${avgMarginPct}%`,              c: '#34d399', delta: undefined },
+    { l: 'Offene Forderungen', v: fmtCur(receivable),     sub: `${receivableCount} Aufträge`,           c: '#fbbf24', delta: undefined },
+    { l: 'Überfällig',         v: overdueAmount > 0 ? fmtCur(overdueAmount) : '—', sub: `${overdueOrders.length} Aufträge`, c: '#f87171', delta: undefined },
   ];
 
+  const tGoods     = M.orders.reduce((s, o) => s + o.costGoods, 0);
+  const tLogistics = M.orders.reduce((s, o) => s + o.costLogistics, 0);
+  const tDocs      = M.orders.reduce((s, o) => s + o.costDocs, 0);
+  const tProfit    = M.orders.reduce((s, o) => s + o.profit, 0);
+  const tTotal     = Math.max(total, 1);
+  const pOther     = Math.max(0, 100 - Math.round(tGoods/tTotal*100) - Math.round(tLogistics/tTotal*100) - Math.round(tDocs/tTotal*100) - Math.round(tProfit/tTotal*100));
   const costSlices = [
-    { l: 'Einkauf Ware',  p: 68, c: '#3b82f6' },
-    { l: 'Seetransport',  p: 12, c: '#22d3ee' },
-    { l: 'Inland/Hafen',  p:  5, c: '#f59e0b' },
-    { l: 'Dok/Zoll',      p:  4, c: '#a78bfa' },
-    { l: 'Marge',         p: 11, c: '#34d399' },
-  ];
+    { l: 'Einkauf Ware',  p: Math.round(tGoods/tTotal*100),     c: '#3b82f6' },
+    { l: 'Logistik',      p: Math.round(tLogistics/tTotal*100), c: '#22d3ee' },
+    { l: 'Dok/Zoll',      p: Math.round(tDocs/tTotal*100),      c: '#a78bfa' },
+    { l: 'Sonstiges',     p: pOther,                            c: '#f59e0b' },
+    { l: 'Marge',         p: Math.round(tProfit/tTotal*100),    c: '#34d399' },
+  ].filter(s => s.p > 0);
 
   return (
     <div>

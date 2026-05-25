@@ -35,23 +35,37 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
     lbl: string; v: number | string; sub: string; target: string; icon: string;
     spark?: number[]; up?: boolean; down?: boolean; alert?: boolean; warn?: boolean;
   }
+  const activeSupplierCountries = Array.from(new Set(M.suppliers.filter(s => s.status === 'aktiv').map(s => s.country))).length;
+  const openOffers = M.offers.filter((o) => ['sent', 'viewed', 'negotiation'].includes(o.status));
+  const overdueOrders = M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
+  const overdueAmount = overdueOrders.reduce((s, o) => s + (o.revenue * (100 - o.paid) / 100), 0);
+  const criticalAlerts = M.alerts.filter((a: { sev: string }) => a.sev === 'r').length;
+  const expiringDocs = M.documents.filter(d => {
+    if (!d.expires) return false;
+    const diff = (new Date(d.expires).getTime() - new Date(M.todayBase).getTime()) / 86400000;
+    return diff >= 0 && diff <= 30;
+  });
+  const dealsInNegotiation = M.deals.filter(d => d.stage === 'Verhandlung' || d.stage === 'negotiation').length;
+  const tasksHigh = M.tasks.filter(x => x.prio === 'hoch' && x.status !== 'erledigt').length;
+  const tasksWaiting = M.tasks.filter(x => x.status === 'wartet').length;
+
   const kpis: KpiEntry[] = [
     { lbl: t(lang, 'kpi_active_orders'), v: activeOrders.length, sub: `${inShipping.length} in Verschiffung`, spark: [8,9,10,9,11,10,12,11,12], target: 'orders', icon: 'box' },
-    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: '4 Container · 3 Reefer', spark: [3,4,3,5,4,5,4,5,4], target: 'shipments', icon: 'ship' },
-    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: '2 Lieferanten aktiv', spark: [2,3,2,3,2,2,3,2,2], target: 'orders', icon: 'pkg' },
-    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: '1 in Labor', spark: [1,1,2,1,2,1,1,2,1], target: 'quality', icon: 'quality' },
-    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: '+18% vs. Vormonat', up: true, spark: [62,68,72,78,76,82,85,88,92], target: 'finance', icon: 'finance' },
-    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev * 4.8), sub: '932k YTD', spark: [40,52,58,68,72,84,88,92,99], target: 'finance', icon: 'chart' },
-    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: '+2pp vs. Q1', up: true, spark: [27,28,28,30,29,31,30,32,31], target: 'reports', icon: 'activity' },
-    { lbl: t(lang, 'kpi_inventory_value'), v: fmtCur(invValue), sub: `${M.inventory.length} SKU · 4 Standorte`, spark: [120,140,135,150,162,158,170,175,182], target: 'inventory', icon: 'inv' },
+    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: `${M.orders.filter(o => o.status === 'in_transit').length} auf See`, spark: [3,4,3,5,4,5,4,5,4], target: 'shipments', icon: 'ship' },
+    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: `${M.suppliers.filter(s => s.status === 'aktiv').length} Lieferanten aktiv`, spark: [2,3,2,3,2,2,3,2,2], target: 'orders', icon: 'pkg' },
+    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: `${M.quality.filter(q => q.status === 'in_progress').length} in Labor`, spark: [1,1,2,1,2,1,1,2,1], target: 'quality', icon: 'quality' },
+    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: `${M.orders.filter(o => !['paid','done','delivered'].includes(o.status)).length} offene Aufträge`, spark: [62,68,72,78,76,82,85,88,92], target: 'finance', icon: 'finance' },
+    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev), sub: `${M.orders.filter(o => ['paid','delivered','done'].includes(o.status)).length} abgeschlossen`, spark: [40,52,58,68,72,84,88,92,99], target: 'finance', icon: 'chart' },
+    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: `${M.orders.length} Aufträge`, spark: [27,28,28,30,29,31,30,32,31], target: 'reports', icon: 'activity' },
+    { lbl: t(lang, 'kpi_inventory_value'), v: fmtCur(invValue), sub: `${M.inventory.length} SKU`, spark: [120,140,135,150,162,158,170,175,182], target: 'inventory', icon: 'inv' },
     { lbl: t(lang, 'kpi_open_deals'), v: M.deals.length, sub: fmtCur(pipelineValue) + ' gewichtet', target: 'deals', icon: 'deals' },
-    { lbl: t(lang, 'kpi_open_offers'), v: M.offers.filter((o) => ['sent', 'viewed', 'negotiation'].includes(o.status)).length, sub: '3 unbeantwortet > 7d', target: 'offers', icon: 'offer' },
-    { lbl: t(lang, 'kpi_supplier_docs'), v: 7, sub: '1 läuft in 14d ab', warn: true, target: 'documents', icon: 'doc' },
-    { lbl: t(lang, 'kpi_overdue_payments'), v: 2, sub: fmtCur(43900) + ' offen', alert: true, target: 'finance', icon: 'warn' },
-    { lbl: t(lang, 'kpi_critical_alerts'), v: 3, sub: 'Compliance · Zertifikate', alert: true, target: 'compliance', icon: 'danger' },
-    { lbl: t(lang, 'kpi_suppliers_active'), v: M.suppliers.filter((s) => s.status === 'aktiv').length, sub: '3 Länder', target: 'suppliers', icon: 'supplier' },
-    { lbl: t(lang, 'kpi_buyers_pipeline'), v: M.buyers.length, sub: '4 in Verhandlung', target: 'buyers', icon: 'buyer' },
-    { lbl: t(lang, 'section_tasks'), v: M.tasks.filter((x) => x.status !== 'erledigt').length, sub: '2 hoch · 1 wartet', target: 'tasks', icon: 'task' },
+    { lbl: t(lang, 'kpi_open_offers'), v: openOffers.length, sub: `${M.offers.length} gesamt`, target: 'offers', icon: 'offer' },
+    { lbl: t(lang, 'kpi_supplier_docs'), v: M.documents.length, sub: expiringDocs.length > 0 ? `${expiringDocs.length} laufen ab (30d)` : 'alle aktuell', warn: expiringDocs.length > 0, target: 'documents', icon: 'doc' },
+    { lbl: t(lang, 'kpi_overdue_payments'), v: overdueOrders.length, sub: overdueAmount > 0 ? fmtCur(overdueAmount) + ' offen' : 'keine', alert: overdueOrders.length > 0, target: 'finance', icon: 'warn' },
+    { lbl: t(lang, 'kpi_critical_alerts'), v: criticalAlerts, sub: `${M.alerts.length} gesamt`, alert: criticalAlerts > 0, target: 'compliance', icon: 'danger' },
+    { lbl: t(lang, 'kpi_suppliers_active'), v: M.suppliers.filter((s) => s.status === 'aktiv').length, sub: `${activeSupplierCountries} ${activeSupplierCountries === 1 ? 'Land' : 'Länder'}`, target: 'suppliers', icon: 'supplier' },
+    { lbl: t(lang, 'kpi_buyers_pipeline'), v: M.buyers.length, sub: `${dealsInNegotiation} in Verhandlung`, target: 'buyers', icon: 'buyer' },
+    { lbl: t(lang, 'section_tasks'), v: M.tasks.filter((x) => x.status !== 'erledigt').length, sub: `${tasksHigh} hoch · ${tasksWaiting} wartet`, target: 'tasks', icon: 'task' },
   ];
 
   const byStatus = ['procurement','quality','ready','in_export','in_transit','arrived','delivered','paid','problem'].map((s) => {
@@ -73,19 +87,16 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4, gap: 8 }}>
             <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 3, background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>AI · Tagesbriefing</span>
-            <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 8 }}>07:14 · 86% Konfidenz</span>
-            <button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => onNav('intelligence')}><Ic name="arrow_r" size={11} /> Vollständig</button>
+            <button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => onNav('intelligence')}><Ic name="arrow_r" size={11} /> Intelligence</button>
           </div>
-          <div className="fw600" style={{ fontSize: 14, marginBottom: 4 }}>Guten Morgen, Maryam. 5 wichtige Punkte heute.</div>
-          <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.55 }}>
-            <span className="fw500" style={{ color: '#f87171' }}>🔴 Kritisch:</span> Phyto-Cert ORD-0144 fehlt (ETD in 8d, 61k €) · <span className="fw500" style={{ color: '#f87171' }}>🔴</span> EU Vet Iringa blockiert ORD-0118 (113k €) · <span className="fw500" style={{ color: '#fbbf24' }}>🟡</span> Mediterraneo überfällig 18d (23,9k €) · <span className="fw500" style={{ color: '#34d399' }}>🟢 Umsatz:</span> Nordic Nuts Follow-up (110k €) · <span className="fw500" style={{ color: '#34d399' }}>🟢</span> Hanseatic Specialty Cross-sell (~90k €).
-          </div>
+          <div className="fw600" style={{ fontSize: 14, marginBottom: 4 }}>KI-Briefing noch nicht konfiguriert</div>
+          <div className="tx2" style={{ fontSize: 11.5 }}>Verbinde eine KI-Integration unter Intelligence um automatische Tagesanalysen zu erhalten.</div>
         </div>
       </div>
 
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 }}>
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{t(lang, 'welcome_back')}, Maryam</h1>
+        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{t(lang, 'welcome_back')}</h1>
         <span className="tx3" style={{ fontSize: 12 }}>{t(lang, 'overview')} · {new Date(M.todayBase).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           <button className="btn"><Ic name="refresh" size={13} /> {t(lang, 'refresh')}</button>

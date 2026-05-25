@@ -7,34 +7,14 @@ import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { useData } from '@/lib/data-context';
 
-const TEAM = [
-  { n: 'Maryam Kassim',  r: 'Admin · Operations',         a: 'Online',    last: '' },
-  { n: 'Aksel Bauer',    r: 'Operations',                  a: 'vor 2 Min', last: '' },
-  { n: 'Nyota Otieno',   r: 'Einkauf · Lieferanten',       a: 'vor 14 Min',last: '' },
-  { n: 'Lisa Höffken',   r: 'Sales · Käufer',              a: 'gestern',   last: '' },
-  { n: 'Roland Volkmann',r: 'Finance',                     a: 'gestern',   last: '' },
-  { n: 'Hassan Idris',   r: 'Compliance',                  a: 'vor 1 Std', last: '' },
-];
+const TEAM: { n: string; r: string; a: string }[] = [];
 
 const INTEGRATIONS = [
-  { n: 'Maersk Spot · Booking & Tracking',  s: 'verbunden', d: 'API · Last sync vor 4 Min' },
-  { n: 'MSC eBL',                           s: 'verbunden', d: 'API · Last sync vor 12 Min' },
-  { n: 'TRACES NT (EU)',                    s: 'verbunden', d: 'OAuth · gültig bis 2027' },
-  { n: 'SGS Lab Portal',                    s: 'verbunden', d: 'API · COA auto-pull' },
-  { n: 'TanTrade · Certificate of Origin',  s: 'verbunden', d: 'SOAP' },
-  { n: 'Stripe · Käuferzahlungen',          s: 'verbunden', d: 'Webhook live' },
-  { n: 'Sage · Buchhaltung',                s: 'pending',   d: 'Setup ausstehend' },
-  { n: 'WhatsApp Business · Lieferanten',   s: 'pending',   d: 'Verifizierung läuft' },
+  { n: 'Supabase · Datenbank',   s: 'konfiguriert', d: 'PostgreSQL · RLS aktiv' },
+  { n: 'Resend · E-Mail',        s: 'konfiguriert', d: 'Transactional Email' },
 ];
 
-const AUDIT_TRAIL = [
-  { ts: 'vor 4 Min',  u: 'M. Kassim',   a: 'Status geändert',               o: 'ORD-2026-0144 · in_export' },
-  { ts: 'vor 12 Min', u: 'A. Bauer',    a: 'Dokument hochgeladen',           o: 'Packing List 0144.xlsx' },
-  { ts: 'vor 28 Min', u: 'N. Otieno',   a: 'Qualitätsprüfung freigegeben',  o: 'QC-2026-0077' },
-  { ts: 'vor 1 Std',  u: 'M. Kassim',   a: 'Preis angepasst',               o: 'ORD-2026-0130 · 13.60 → 13.80' },
-  { ts: 'vor 2 Std',  u: 'H. Idris',    a: 'Reklamation eröffnet',          o: 'C-2026-0014' },
-  { ts: 'vor 3 Std',  u: 'L. Höffken',  a: 'Deal verschoben',               o: 'D-2026-0211 · Angebot → Verhandlung' },
-];
+const AUDIT_TRAIL: { ts: string; u: string; a: string; o: string }[] = [];
 
 interface SettingsViewProps {
   lang: Lang;
@@ -152,48 +132,45 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
               <span className="title">Team &amp; Rollen</span>
               <span className="meta">{TEAM.length} Mitglieder</span>
             </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Rolle</th>
-                  <th>Aktivität</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {TEAM.map((u, i) => {
-                  const online = u.a === 'Online';
-                  return (
-                    <tr key={i}>
-                      <td>
-                        <div className="row" style={{ gap: 8 }}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, color: 'white', fontWeight: 700, flexShrink: 0,
-                          }}>
-                            {initials(u.n)}
+            {TEAM.length === 0 ? (
+              <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                <div className="tx3" style={{ fontSize: 12, marginBottom: 10 }}>Noch keine Benutzer angelegt</div>
+                <button className="btn primary" onClick={() => { setInviteOpen(true); setInviteResult(null); }}>
+                  <Ic name="plus" size={12} /> Ersten Benutzer einladen
+                </button>
+              </div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr><th>Name</th><th>Rolle</th><th>Aktivität</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {TEAM.map((u, i) => {
+                    const online = u.a === 'Online';
+                    return (
+                      <tr key={i}>
+                        <td>
+                          <div className="row" style={{ gap: 8 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'white', fontWeight: 700, flexShrink: 0 }}>
+                              {initials(u.n)}
+                            </div>
+                            <span className="fw500" style={{ fontSize: 12 }}>{u.n}</span>
                           </div>
-                          <span className="fw500" style={{ fontSize: 12 }}>{u.n}</span>
-                        </div>
-                      </td>
-                      <td><Badge kind="neutral">{u.r}</Badge></td>
-                      <td>
-                        <div className="row" style={{ gap: 6, fontSize: 11 }}>
-                          <span className="dot" style={{ background: online ? '#34d399' : '#5d667d', boxShadow: online ? '0 0 6px #34d399' : 'none' }} />
-                          <span className="tx2">{u.a}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <button className="btn sm ghost"><Ic name="more" size={11} /></button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td><Badge kind="neutral">{u.r}</Badge></td>
+                        <td>
+                          <div className="row" style={{ gap: 6, fontSize: 11 }}>
+                            <span className="dot" style={{ background: online ? '#34d399' : '#5d667d', boxShadow: online ? '0 0 6px #34d399' : 'none' }} />
+                            <span className="tx2">{u.a}</span>
+                          </div>
+                        </td>
+                        <td><button className="btn sm ghost"><Ic name="more" size={11} /></button></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Integrations */}
@@ -301,35 +278,35 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
             <Ic name="history" size={14} />
             <span className="title">Audit Trail</span>
             <span className="meta">Letzte 24 Stunden</span>
-            <button className="btn sm ghost" style={{ marginLeft: 'auto' }}>Vollständig anzeigen</button>
           </div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Zeitstempel</th>
-                <th>Benutzer</th>
-                <th>Aktion</th>
-                <th>Objekt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {AUDIT_TRAIL.map((l, i) => (
-                <tr key={i}>
-                  <td className="mono tx2" style={{ fontSize: 11 }}>{l.ts}</td>
-                  <td>
-                    <div className="row" style={{ gap: 6 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: 'white', fontWeight: 700 }}>
-                        {initials(l.u)}
+          {AUDIT_TRAIL.length === 0 ? (
+            <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+              <div className="tx3" style={{ fontSize: 12 }}>Noch keine Aktivitäten aufgezeichnet</div>
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr><th>Zeitstempel</th><th>Benutzer</th><th>Aktion</th><th>Objekt</th></tr>
+              </thead>
+              <tbody>
+                {AUDIT_TRAIL.map((l, i) => (
+                  <tr key={i}>
+                    <td className="mono tx2" style={{ fontSize: 11 }}>{l.ts}</td>
+                    <td>
+                      <div className="row" style={{ gap: 6 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: 'white', fontWeight: 700 }}>
+                          {initials(l.u)}
+                        </div>
+                        <span style={{ fontSize: 12 }}>{l.u}</span>
                       </div>
-                      <span style={{ fontSize: 12 }}>{l.u}</span>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 12 }}>{l.a}</td>
-                  <td className="mono tx2" style={{ fontSize: 11 }}>{l.o}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td style={{ fontSize: 12 }}>{l.a}</td>
+                    <td className="mono tx2" style={{ fontSize: 11 }}>{l.o}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

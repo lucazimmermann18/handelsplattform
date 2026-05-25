@@ -118,17 +118,16 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
   const buyerOrders = M.orders.filter(o => o.buyerId === id);
   const buyerDeals = M.deals.filter(d => d.buyerId === id);
 
-  // Deterministic revenue history using buyer id as seed
-  const seed = b.id.charCodeAt(4) || 42;
-  const revHistory = useMemo(() =>
-    Array.from({ length: 12 }).map((_, i) => ({
-      m: ['J','F','M','A','M','J','J','A','S','O','N','D'][i],
-      v: Math.max(0, parseFloat((8 + Math.sin(i / 2 + seed) * 6 + ((seed * (i + 3) * 11) % 100) / 25).toFixed(1))),
-    })),
-    [seed]
-  );
+  const revHistory = useMemo(() => {
+    const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const byMonth = new Array(12).fill(0);
+    buyerOrders.forEach(o => {
+      const m = new Date(o.created).getMonth();
+      byMonth[m] += o.revenue / 1000;
+    });
+    return months.map((m, i) => ({ m, v: parseFloat(byMonth[i].toFixed(1)) }));
+  }, [buyerOrders]);
 
-  const avgPayDays = 15 + (seed % 15);
   const creditLimit = b.revenue * 1.5 + 50000;
   const creditUsed = b.revenue * 0.3;
 
@@ -276,7 +275,7 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
               <div className="sep" />
               <div className="fields">
                 <div className="l">Zahlungsziel</div><div className="v">{b.terms}</div>
-                <div className="l">Ø Zahlungsdauer</div><div className="v mono">{avgPayDays} Tage</div>
+                <div className="l">Ø Zahlungsdauer</div><div className="v mono">{b.terms || '—'}</div>
                 <div className="l">Bonität</div>
                 <div className="v">
                   <Badge kind={b.rating >= 4 ? 'success' : b.rating >= 3 ? 'warning' : 'danger'} dot>

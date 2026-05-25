@@ -430,23 +430,8 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
                 <button className="btn sm"><Ic name="plus" size={11} /> Notiz</button>
               </div>
             </div>
-            <div style={{ padding: 0 }}>
-              {[
-                { who: 'M. Kassim',           what: 'E-Mail an Käufer',  when: 'vor 2 Std',   kind: 'mail',  body: `Update zu Verschiffung: ETD bestätigt für ${fmtDate(o.etd)}. Phyto-Cert wird heute beantragt.` },
-                { who: 'A. Bauer',            what: 'Telefonnotiz',      when: 'gestern',      kind: 'phone', body: `Spediteur Kühne+Nagel: Container LMCU2287733 bereitgestellt am ${fmtDate(o.etd)}, Stuffing Slot 09:00.` },
-                { who: supplier?.contact || 'Lieferant', what: 'WhatsApp', when: 'vor 2 Tagen', kind: 'mail',  body: `Ware ist verladebereit. Foto folgt.` },
-                { who: buyer?.contact || 'Käufer',      what: 'E-Mail',   when: 'vor 3 Tagen', kind: 'mail',  body: 'Bitte COA und Phyto vor Verschiffung an unseren Customs Broker senden. Danke!' },
-              ].map((m, i) => (
-                <div key={i} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <Ic name={m.kind} size={12} color="#5d667d" />
-                    <span className="fw500" style={{ fontSize: 12 }}>{m.who}</span>
-                    <span className="tx3" style={{ fontSize: 11 }}>· {m.what}</span>
-                    <span className="tx3 mono" style={{ fontSize: 10.5, marginLeft: 'auto' }}>{m.when}</span>
-                  </div>
-                  <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.5 }}>{m.body}</div>
-                </div>
-              ))}
+            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+              <div className="tx3" style={{ fontSize: 12 }}>Noch keine Kommunikation erfasst</div>
             </div>
           </div>
         </div>
@@ -500,52 +485,36 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
           </div>
 
           {/* Open tasks */}
-          <div className="card">
-            <div className="card-head">
-              <Ic name="task" size={14} />
-              <span className="title">{t(lang, 'open_tasks')}</span>
-              <span className="meta">4</span>
-            </div>
-            <div>
-              {[
-                { t: 'Phytosanitary Certificate beantragen', prio: 'hoch',    due: 'morgen' },
-                { t: 'Packing List finalisieren',            prio: 'mittel',  due: 'in 3 Tagen' },
-                { t: 'Containerbooking bestätigen',          prio: 'mittel',  due: 'in 4 Tagen' },
-                { t: 'Restzahlung anfordern',                prio: 'niedrig', due: 'in 7 Tagen' },
-              ].map((task, i) => (
-                <div key={i} className="alert-row" style={{ padding: '9px 12px', alignItems: 'center' }}>
-                  <span
-                    className="dot"
-                    style={{
-                      background: task.prio === 'hoch' ? '#ef4444' : task.prio === 'mittel' ? '#f59e0b' : '#5d667d',
-                      width: 6, height: 6, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
-                    }}
-                  />
-                  <div className="body">
-                    <div className="t">{task.t}</div>
-                    <div className="m">{task.prio} · fällig {task.due}</div>
-                  </div>
-                  <input type="checkbox" style={{ accentColor: '#3b82f6' }} />
+          {(() => {
+            const orderTasks = M.tasks.filter(tk => tk.order === o.id);
+            return (
+              <div className="card">
+                <div className="card-head">
+                  <Ic name="task" size={14} />
+                  <span className="title">{t(lang, 'open_tasks')}</span>
+                  <span className="meta">{orderTasks.length}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Risks */}
-          <div className="ai-card">
-            <div className="head">
-              <span className="pill">AI</span>
-              <span className="fw600" style={{ fontSize: 12 }}>{t(lang, 'ai_risks')}</span>
-            </div>
-            <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.6 }}>
-              <span style={{ color: '#f87171', fontWeight: 500 }}>Hoch:</span> Phyto-Cert noch nicht beantragt, ETD in 8 Tagen. Behörde TZ braucht 5 AT.<br />
-              <span style={{ color: '#fbbf24', fontWeight: 500 }}>Mittel:</span> 70% Restzahlung gegen B/L-Kopie — Empfehlung: 50% gegen Booking.<br />
-              <span style={{ color: '#34d399', fontWeight: 500 }}>OK:</span> Lieferant Score {supplier?.score}, COA + Lab Report vorhanden.
-            </div>
-            <div style={{ marginTop: 10 }}>
-              <button className="btn sm">Aktion vorschlagen</button>
-            </div>
-          </div>
+                {orderTasks.length === 0 ? (
+                  <div style={{ padding: '20px 14px', textAlign: 'center' }}>
+                    <div className="tx3" style={{ fontSize: 12 }}>Keine offenen Aufgaben</div>
+                  </div>
+                ) : (
+                  <div>
+                    {orderTasks.map((task, i) => (
+                      <div key={i} className="alert-row" style={{ padding: '9px 12px', alignItems: 'center' }}>
+                        <span className="dot" style={{ background: task.prio === 'hoch' ? '#ef4444' : task.prio === 'mittel' ? '#f59e0b' : '#5d667d', width: 6, height: 6, borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
+                        <div className="body">
+                          <div className="t">{task.t}</div>
+                          <div className="m">{task.prio} · fällig {task.due}</div>
+                        </div>
+                        <input type="checkbox" style={{ accentColor: '#3b82f6' }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Related entities */}
           <div className="card">

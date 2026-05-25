@@ -88,71 +88,16 @@ function computeRiskScore(order: Order, suppliers: Supplier[], documents: Doc[],
 
 // ── Tab 1: Briefing ──────────────────────────────────────────────────────────
 
-const BriefingTab = ({ lang, onOpenOrder, onNav }: IntelligenceViewProps) => {
+const BriefingTab = ({ onNav }: IntelligenceViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  const ord0144 = M.orders.find(o => o.id === 'ORD-2026-0144')!;
-  const ord0118 = M.orders.find(o => o.id === 'ORD-2026-0118')!;
 
-  const actions = [
-    {
-      prio: 'kritisch', conf: 92, impact: 61000,
-      title: 'Phytosanitary Certificate für ORD-2026-0144 beantragen',
-      desc: 'Verschiffung in 8 Tagen — kein Zertifikat, ETD 02.06.2026',
-      action: () => onOpenOrder(ord0144),
-      btnLabel: 'Auftrag öffnen',
-    },
-    {
-      prio: 'kritisch', conf: 95, impact: 113400,
-      title: 'EU Vet-Approval-Status Iringa Meat klären (ORD-0118)',
-      desc: 'Auftrag blockiert — EU-Veterinärzulassung fehlt',
-      action: () => onOpenOrder(ord0118),
-      btnLabel: 'Auftrag öffnen',
-    },
-    {
-      prio: 'wichtig', conf: 88, impact: 23920,
-      title: 'Mediterraneo Sugar Zahlungsmahnung',
-      desc: '18 Tage überfällig — 23.920 € ausstehend',
-      action: () => onNav('tradefinance'),
-      btnLabel: 'Trade Finance',
-    },
-    {
-      prio: 'umsatz', conf: 74, impact: 110400,
-      title: 'Nordic Nuts AB Follow-up Q-2026-0088',
-      desc: 'Angebot seit 10 Tagen unbeantwortet — 110.400 €',
-      action: () => onNav('content'),
-      btnLabel: 'Content öffnen',
-    },
-    {
-      prio: 'umsatz', conf: 68, impact: 90000,
-      title: 'Hanseatic Coffee Cross-sell',
-      desc: 'Potential für Specialty Arabica Erweiterung ~90k €',
-      action: () => onNav('samples'),
-      btnLabel: 'Muster',
-    },
-  ];
-
-  const prioColor: Record<string, string> = { kritisch: '#ef4444', wichtig: '#f59e0b', umsatz: '#34d399' };
-
-  const probItems = [
-    { pct: 87, label: 'ORD-0118 wird weitere 14d verzögert (EU Vet)' },
-    { pct: 74, label: 'Mediterreneo-Mahnung eskaliert zu Streit' },
-    { pct: 68, label: 'Nordic Nuts AB unterzeichnet bis 31.05.' },
-    { pct: 55, label: 'Cashew Q3 Preiskorrektur +8%' },
-    { pct: 42, label: 'Hanseatic Coffee erweitert Bestellung' },
-  ];
-
-  const aiLog = [
-    { time: '23:14', action: 'Phyto-Cert Antrag vorbereitet und zur Unterschrift vorgelegt' },
-    { time: '22:08', action: 'ETA für ORD-0137 angepasst — Suezkanal-Verzögerung 1.5d' },
-    { time: '20:44', action: 'Mediterraneo Zahlungserinnerung automatisch versendet' },
-    { time: '18:30', action: 'Qualitätsbericht SES-2026-031 geprüft und freigegeben' },
-    { time: '16:11', action: 'Nordic Nuts Follow-up Email generiert (wartet auf Genehmigung)' },
-  ];
+  const criticalOrders = M.orders.filter(o => o.status === 'problem');
+  const overduePayments = M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
+  const openOffers = M.offers.filter(o => ['sent', 'viewed'].includes(o.status));
 
   return (
     <div style={{ padding: 16 }}>
-      {/* AI Greeting */}
       <div className="ai-card" style={{ padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
           <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #6366f1, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -161,15 +106,11 @@ const BriefingTab = ({ lang, onOpenOrder, onNav }: IntelligenceViewProps) => {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 4, background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>AI · Morgen-Briefing</span>
-              <span className="tx3 mono" style={{ fontSize: 10 }}>07:14 · Montag, 25. Mai 2026</span>
+              <button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => onNav('intelligence')}>Intelligence</button>
             </div>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Guten Morgen, Maryam. Heute gibt es 5 wichtige Punkte.</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>KI-Briefing noch nicht konfiguriert</div>
             <div className="tx2" style={{ fontSize: 12, lineHeight: 1.6 }}>
-              <span style={{ color: '#f87171', fontWeight: 500 }}>🔴 Kritisch:</span> Phyto-Cert ORD-0144 fehlt (ETD in 8d, 61k €) ·{' '}
-              <span style={{ color: '#f87171', fontWeight: 500 }}>🔴</span> EU Vet Iringa blockiert ORD-0118 (113k €) ·{' '}
-              <span style={{ color: '#fbbf24', fontWeight: 500 }}>🟡 Wichtig:</span> Mediterraneo überfällig 18d (23,9k €) ·{' '}
-              <span style={{ color: '#34d399', fontWeight: 500 }}>🟢 Umsatz:</span> Nordic Nuts Follow-up (110k €) ·{' '}
-              <span style={{ color: '#34d399', fontWeight: 500 }}>🟢</span> Hanseatic Coffee Cross-sell (~90k €).
+              Verbinde eine KI-Integration um automatische Tagesanalysen, Empfehlungen und Wahrscheinlichkeiten zu erhalten.
             </div>
           </div>
         </div>
@@ -177,68 +118,64 @@ const BriefingTab = ({ lang, onOpenOrder, onNav }: IntelligenceViewProps) => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
         <div>
-          {/* Next Best Actions */}
           <div className="card" style={{ marginBottom: 12 }}>
             <div className="card-head">
               <Ic name="sparkle" size={14} />
-              <span className="title">Next Best Actions — KI-Empfehlungen</span>
-              <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 'auto' }}>86% Ø Konfidenz</span>
+              <span className="title">Aktuelle Situation — Live aus Datenbank</span>
             </div>
-            <div className="card-body" style={{ padding: '6px 0' }}>
-              {actions.map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 16px', borderBottom: i < actions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                  <div style={{ width: 3, height: 44, borderRadius: 2, background: prioColor[a.prio], flexShrink: 0, marginTop: 2 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <Badge kind={a.prio === 'kritisch' ? 'danger' : a.prio === 'wichtig' ? 'warning' : 'success'}>{a.prio}</Badge>
-                      <span className="tx3 mono" style={{ fontSize: 10 }}>{a.conf}% Konfidenz</span>
-                      <span className="tx3" style={{ fontSize: 10, marginLeft: 'auto' }}>Impact: <span className="mono" style={{ color: prioColor[a.prio] }}>{fmtCur(a.impact)}</span></span>
+            <div className="card-body">
+              {criticalOrders.length === 0 && overduePayments.length === 0 && openOffers.length === 0 ? (
+                <div className="tx3" style={{ textAlign: 'center', padding: '20px 0' }}>Keine kritischen Einträge gefunden</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {criticalOrders.map(o => (
+                    <div key={o.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <Badge kind="danger">Problem</Badge>
+                      <div style={{ flex: 1, fontSize: 12 }}>{o.id} · {o.productVariant}</div>
+                      <span className="mono tx3" style={{ fontSize: 11 }}>{fmtCur(o.revenue)}</span>
                     </div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 2 }}>{a.title}</div>
-                    <div className="tx2" style={{ fontSize: 11 }}>{a.desc}</div>
-                  </div>
-                  <button className="btn sm" onClick={a.action} style={{ flexShrink: 0, fontSize: 11 }}>{a.btnLabel}</button>
+                  ))}
+                  {overduePayments.map(o => (
+                    <div key={o.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <Badge kind="warning">Überfällig</Badge>
+                      <div style={{ flex: 1, fontSize: 12 }}>{o.id} · {o.paid}% bezahlt</div>
+                      <span className="mono tx3" style={{ fontSize: 11 }}>{fmtCur(o.revenue * (100 - o.paid) / 100)} offen</span>
+                    </div>
+                  ))}
+                  {openOffers.map(o => (
+                    <div key={o.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <Badge kind="info">Angebot</Badge>
+                      <div style={{ flex: 1, fontSize: 12 }}>{o.id} · Status: {o.status}</div>
+                      <span className="mono tx3" style={{ fontSize: 11 }}>{fmtCur(o.value)}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
 
         <div>
-          {/* Probability Panel */}
           <div className="card" style={{ marginBottom: 12 }}>
-            <div className="card-head">
-              <Ic name="activity" size={14} />
-              <span className="title">Wahrscheinlichkeiten</span>
-            </div>
+            <div className="card-head"><Ic name="activity" size={14} /><span className="title">Übersicht</span></div>
             <div className="card-body">
-              {probItems.map((item, i) => (
-                <div key={i} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span style={{ fontSize: 11 }}>{item.label}</span>
-                    <span className="mono fw600" style={{ fontSize: 11, color: item.pct >= 70 ? '#ef4444' : item.pct >= 50 ? '#f59e0b' : '#60a5fa' }}>{item.pct}%</span>
-                  </div>
-                  <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${item.pct}%`, background: item.pct >= 70 ? '#ef4444' : item.pct >= 50 ? '#f59e0b' : '#60a5fa', borderRadius: 2 }} />
-                  </div>
+              {[
+                { l: 'Aufträge gesamt', v: M.orders.length },
+                { l: 'Problem-Aufträge', v: criticalOrders.length },
+                { l: 'Offene Angebote', v: openOffers.length },
+                { l: 'Überfällige Zahlungen', v: overduePayments.length },
+              ].map((s, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span className="tx2">{s.l}</span>
+                  <span className="mono fw600">{s.v}</span>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* AI Activity Log */}
           <div className="card">
-            <div className="card-head">
-              <Ic name="history" size={14} />
-              <span className="title">KI-Aktivitätslog (gestern)</span>
-            </div>
-            <div className="card-body">
-              {aiLog.map((entry, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8, fontSize: 11 }}>
-                  <span className="mono tx3" style={{ flexShrink: 0, fontSize: 10 }}>{entry.time}</span>
-                  <span className="tx2">{entry.action}</span>
-                </div>
-              ))}
+            <div className="card-head"><Ic name="history" size={14} /><span className="title">KI-Aktivitätslog</span></div>
+            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+              <div className="tx3" style={{ fontSize: 12 }}>Noch keine KI-Aktionen aufgezeichnet</div>
             </div>
           </div>
         </div>
@@ -374,49 +311,63 @@ const RiskEngineTab = ({ onOpenOrder }: { lang: Lang; onOpenOrder: (o: Order) =>
 // ── Tab 3: Anomalies ──────────────────────────────────────────────────────────
 
 const AnomalyTab = () => {
-  const [filter, setFilter] = useState('all');
+  const { data: M } = useData();
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const anomalies = [
-    { id: 'AN-01', cat: 'supplier', sev: 'high' as const, title: 'Iringa Meat Qualitätskontrolle blockiert', message: 'Charge BEF-2026-002 seit 5 Tagen in QC-Hold — EU Vet Freigabe fehlt. Risiko: 113.400 €.', when: 'vor 2h', confidence: 94, chartData: [28, 32, 29, 45, 52, 49, 68, 71] },
-    { id: 'AN-02', cat: 'price', sev: 'medium' as const, title: 'Cashew-Weltmarktpreis +11% in 30d', message: 'W320 Kurs stieg von USD 6.40 auf USD 7.10/kg. Marge auf ORD-0144 sinkt auf 19%.', when: 'vor 4h', confidence: 88, chartData: [64, 64, 65, 66, 67, 68, 70, 71] },
-    { id: 'AN-03', cat: 'complaint', sev: 'medium' as const, title: 'Amsterdam Spice Reklamation Feuchtigkeit', message: 'Cloves Charge CLV-2026-009: Feuchte 12% statt vertragl. 10%. Gutschrift 1.800 € erwartet.', when: 'vor 6h', confidence: 82 },
-    { id: 'AN-04', cat: 'cost', sev: 'low' as const, title: 'Logistikkosten ORD-0135 +8%', message: 'Reefer-Surcharge Mombasa–Felixstowe gestiegen. Profit sinkt um ca. 1.200 €.', when: 'vor 8h', confidence: 76, chartData: [6400, 6600, 6700, 6800, 6900, 7000, 7100, 7200] },
-    { id: 'AN-05', cat: 'engagement', sev: 'low' as const, title: 'Nordic Nuts AB kein Antwort 10 Tage', message: 'Angebot Q-2026-0088 seit 10 Tagen ohne Rückmeldung. Abschlusswahrscheinlichkeit sinkt.', when: 'vor 9h', confidence: 71 },
-    { id: 'AN-06', cat: 'delay', sev: 'medium' as const, title: 'ORD-0137 ETA-Warnung', message: 'HAPAG SAVANNAH liegt 1.5 Tage hinter Plan. Neue ETA: 02.06. statt 01.06. Demurrage-Risiko.', when: 'vor 12h', confidence: 85, chartData: [0, 0, 0, 0, 1, 1.5, 1.5, 1.5] },
-    { id: 'AN-07', cat: 'supplier', sev: 'high' as const, title: 'SUP-018 Organic-Zertifikat läuft ab', message: 'Kilimo Co-op Arusha: Organic EU Zertifikat läuft in 14 Tagen ab. 2 aktive Aufträge betroffen.', when: 'vor 14h', confidence: 100 },
-    { id: 'AN-08', cat: 'data', sev: 'low' as const, title: 'Preisinkongruenz ORD-0126', message: 'Verkaufspreis 0,58 €/Stk — COA zeigt Einkaufspreis 0,33 € statt 0,32 €. Ggf. Datenfehler.', when: 'vor 18h', confidence: 64 },
-  ];
+  const complaints = M.complaints.filter(c => c.status !== 'geschlossen');
+  const blockedQC = M.quality.filter(q => q.status === 'blocked');
+  const problemOrders = M.orders.filter(o => o.status === 'problem');
 
-  const filters = ['all', 'supplier', 'price', 'complaint', 'cost', 'engagement', 'delay', 'data'];
-  const visible = filter === 'all' ? anomalies : anomalies.filter(a => a.cat === filter);
-  const sevColor = { high: '#ef4444', medium: '#f59e0b', low: '#60a5fa' };
+  const hasItems = complaints.length > 0 || blockedQC.length > 0 || problemOrders.length > 0;
 
   return (
     <div style={{ padding: 16 }}>
-      {/* Filter chips */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-        {filters.map(f => (
-          <button key={f} className={`btn sm ${filter === f ? 'primary' : ''}`} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'Alle' : f}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {visible.map(a => (
-          <div key={a.id} className="card" style={{ borderLeft: `3px solid ${sevColor[a.sev]}` }}>
-            <div style={{ padding: '10px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <Badge kind={a.sev === 'high' ? 'danger' : a.sev === 'medium' ? 'warning' : 'info'}>{a.sev}</Badge>
-                <span className="tx3 mono" style={{ fontSize: 10 }}>{a.cat}</span>
-                <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 'auto' }}>{a.confidence}% · {a.when}</span>
-              </div>
-              <div style={{ fontWeight: 600, fontSize: 12.5, marginBottom: 4 }}>{a.title}</div>
-              <div className="tx2" style={{ fontSize: 11, lineHeight: 1.5, marginBottom: a.chartData ? 8 : 0 }}>{a.message}</div>
-              {a.chartData && <Sparkline data={a.chartData} w={300} h={36} color={sevColor[a.sev]} />}
-            </div>
+      {!hasItems ? (
+        <div className="card">
+          <div className="card-body" style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ marginBottom: 8 }}><Ic name="activity" size={28} color="var(--text-3)" /></div>
+            <div className="fw600" style={{ fontSize: 14, marginBottom: 6 }}>Keine Anomalien erkannt</div>
+            <div className="tx3" style={{ fontSize: 12 }}>KI-Anomalie-Erkennung noch nicht konfiguriert. Aktuell werden offene Reklamationen, blockierte QC-Checks und Problem-Aufträge angezeigt.</div>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {problemOrders.map(o => (
+            <div key={o.id} className="card" style={{ borderLeft: '3px solid #ef4444' }}>
+              <div style={{ padding: '10px 14px' }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <Badge kind="danger">Problem-Auftrag</Badge>
+                </div>
+                <div className="fw600" style={{ fontSize: 12.5, marginBottom: 4 }}>{o.id} · {o.productVariant}</div>
+                <div className="tx2" style={{ fontSize: 11 }}>{fmtCur(o.revenue)} · {o.status}</div>
+              </div>
+            </div>
+          ))}
+          {blockedQC.map(q => (
+            <div key={q.id} className="card" style={{ borderLeft: '3px solid #f59e0b' }}>
+              <div style={{ padding: '10px 14px' }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <Badge kind="warning">QC blockiert</Badge>
+                </div>
+                <div className="fw600" style={{ fontSize: 12.5, marginBottom: 4 }}>{q.id} · {q.product}</div>
+                <div className="tx2" style={{ fontSize: 11 }}>Charge: {q.batch} · {q.date}</div>
+              </div>
+            </div>
+          ))}
+          {complaints.map(c => (
+            <div key={c.id} className="card" style={{ borderLeft: '3px solid #60a5fa' }}>
+              <div style={{ padding: '10px 14px' }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <Badge kind="info">Reklamation</Badge>
+                  <Badge kind={c.sev === 'hoch' ? 'danger' : c.sev === 'mittel' ? 'warning' : 'neutral'}>{c.sev}</Badge>
+                </div>
+                <div className="fw600" style={{ fontSize: 12.5, marginBottom: 4 }}>{c.t}</div>
+                <div className="tx2" style={{ fontSize: 11 }}>{c.id} · {c.cat}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -426,110 +377,48 @@ const AnomalyTab = () => {
 const ForecastTab = () => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  const demandData = [
-    { m: 'Cashew', v: 22 }, { m: 'Coffee', v: 18 }, { m: 'Sesame', v: 31 },
-    { m: 'Macad.', v: 8 }, { m: 'Cloves', v: 3 }, { m: 'Sugar', v: 65 }, { m: 'Avocado', v: 9 },
-  ] as unknown as Record<string, number | string>[];
 
-  const prices = [
-    { label: 'Coffee C', current: '168.2', forecast: '175.0', trend: 'up', pct: '+4.0%' },
-    { label: 'Robusta', current: '2.94', forecast: '3.02', trend: 'up', pct: '+2.7%' },
-    { label: 'Sugar #11', current: '21.8', forecast: '20.1', trend: 'down', pct: '-7.8%' },
-    { label: 'Cocoa', current: '7.42', forecast: '7.80', trend: 'up', pct: '+5.1%' },
-    { label: 'Cashew Spot', current: '7.10', forecast: '7.45', trend: 'up', pct: '+4.9%' },
-    { label: 'Sesame TZ', current: '2.20', forecast: '2.18', trend: 'down', pct: '-0.9%' },
-  ];
+  const activeOrders = M.orders.filter(o => !['done','paid','delivered'].includes(o.status));
+  const marginData = activeOrders.map(o => ({
+    m: o.id.slice(-4),
+    v: o.revenue > 0 ? parseFloat(((o.profit / o.revenue) * 100).toFixed(1)) : 0,
+  })) as unknown as Record<string, number | string>[];
 
-  const etaComparisons = [
-    { order: 'ORD-0142', aiEta: '13.06.', carrierEta: '12.06.', diff: '+1d', prod: 'Arabica SCA' },
-    { order: 'ORD-0135', aiEta: '08.06.', carrierEta: '08.06.', diff: '0d', prod: 'Avocado Hass' },
-    { order: 'ORD-0137', aiEta: '02.06.', carrierEta: '01.06.', diff: '+1.5d', prod: 'Sugar VHP' },
-    { order: 'ORD-0139', aiEta: '21.05.', carrierEta: '21.05.', diff: '0d', prod: 'Cloves' },
-  ];
-
-  const portCongestion = [
-    { port: 'Hamburg', level: 'niedrig', wait: '1-2d', trend: 'stabil' },
-    { port: 'Rotterdam', level: 'mittel', wait: '3-4d', trend: '↑' },
-    { port: 'Dar es Salaam', level: 'hoch', wait: '6-8d', trend: '↓' },
-    { port: 'Mombasa', level: 'mittel', wait: '2-3d', trend: 'stabil' },
-  ];
-
-  const marginErosion = [
-    { order: 'ORD-0144', product: 'Cashew Organic', originalMargin: 19.7, currentMargin: 17.2, reason: 'Cashew +11%' },
-    { order: 'ORD-0137', product: 'Sugar VHP', originalMargin: 17.0, currentMargin: 15.8, reason: 'Logistik +3%' },
-    { order: 'ORD-0135', product: 'Avocado Hass', originalMargin: 37.2, currentMargin: 34.4, reason: 'Reefer +8%' },
-    { order: 'ORD-0118', product: 'Frozen Beef', originalMargin: 18.1, currentMargin: 14.9, reason: 'Compliance' },
-  ];
-
-  // Deterministic payment risk from buyer id seed
-  const paymentRisk = M.buyers.slice(0, 5).map(b => {
-    const seed = idSeed(b.id);
-    const rng = seedRand(seed);
-    const risk = Math.round(20 + rng() * 60);
+  const paymentRisk = M.buyers.slice(0, 8).map(b => {
+    const buyerOrders = M.orders.filter(o => o.buyerId === b.id);
+    const avgPaid = buyerOrders.length > 0
+      ? buyerOrders.reduce((s, o) => s + o.paid, 0) / buyerOrders.length
+      : 100;
+    const risk = Math.max(0, Math.min(100, Math.round(100 - avgPaid)));
     return { name: b.name.split(' ').slice(0, 2).join(' '), risk };
-  });
+  }).sort((a, b) => b.risk - a.risk);
 
-  // Deterministic quality risk from supplier id seed
-  const qualityRisk = M.suppliers.slice(0, 5).map(s => {
-    const seed = idSeed(s.id);
-    const rng = seedRand(seed);
-    const risk = Math.round(10 + rng() * 70);
+  const qualityRisk = M.suppliers.slice(0, 8).map(s => {
+    const risk = s.risk === 'hoch' ? 75 : s.risk === 'mittel' ? 45 : 15;
     return { name: s.name.split(' ').slice(0, 2).join(' '), risk };
-  });
+  }).sort((a, b) => b.risk - a.risk);
 
   return (
     <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-      {/* Demand Forecast */}
-      <div className="card">
-        <div className="card-head"><Ic name="chart" size={14} /><span className="title">Nachfrage-Forecast Q3 2026 (t)</span></div>
-        <div className="card-body"><BarChart data={demandData} w={400} h={120} color="#3b82f6" valKey="v" lblKey="m" /></div>
-      </div>
-
-      {/* Price Forecast */}
-      <div className="card">
-        <div className="card-head"><Ic name="finance" size={14} /><span className="title">Preis-Forecast (30d)</span></div>
-        <div className="card-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {prices.map((p, i) => (
-              <div key={i} style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>
-                <div className="tx3" style={{ fontSize: 10 }}>{p.label}</div>
-                <div className="mono fw600" style={{ fontSize: 14 }}>{p.current}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                  <span style={{ fontSize: 11, color: p.trend === 'up' ? '#34d399' : '#f87171' }}>{p.pct}</span>
-                  <span className="tx3" style={{ fontSize: 10 }}>→ {p.forecast}</span>
-                </div>
-              </div>
-            ))}
+      {/* Margin overview from real orders */}
+      <div className="card" style={{ gridColumn: 'span 2' }}>
+        <div className="card-head"><Ic name="chart" size={14} /><span className="title">Marge je aktivem Auftrag (%)</span></div>
+        {activeOrders.length === 0 ? (
+          <div className="card-body" style={{ textAlign: 'center', padding: 32 }}>
+            <div className="tx3" style={{ fontSize: 12 }}>Keine aktiven Aufträge</div>
           </div>
-        </div>
+        ) : (
+          <div className="card-body"><BarChart data={marginData} w={800} h={120} color="#34d399" valKey="v" lblKey="m" /></div>
+        )}
       </div>
 
-      {/* AI-ETA vs Carrier */}
-      <div className="card">
-        <div className="card-head"><Ic name="ship" size={14} /><span className="title">KI-ETA vs. Carrier-ETA</span></div>
-        <div className="card-body" style={{ padding: 0 }}>
-          <table className="tbl" style={{ width: '100%' }}>
-            <thead><tr><th>Auftrag</th><th>Produkt</th><th>KI-ETA</th><th>Carrier</th><th>Delta</th></tr></thead>
-            <tbody>
-              {etaComparisons.map((e, i) => (
-                <tr key={i}>
-                  <td className="mono" style={{ fontSize: 11 }}>{e.order}</td>
-                  <td style={{ fontSize: 11 }}>{e.prod}</td>
-                  <td className="mono" style={{ fontSize: 11, color: '#60a5fa' }}>{e.aiEta}</td>
-                  <td className="mono" style={{ fontSize: 11 }}>{e.carrierEta}</td>
-                  <td className="mono fw600" style={{ fontSize: 11, color: e.diff === '0d' ? '#34d399' : '#f59e0b' }}>{e.diff}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Payment Risk */}
+      {/* Payment Risk — computed from real order payment data */}
       <div className="card">
         <div className="card-head"><Ic name="finance" size={14} /><span className="title">Zahlungsrisiko je Käufer</span></div>
         <div className="card-body">
-          {paymentRisk.map((p, i) => (
+          {paymentRisk.length === 0 ? (
+            <div className="tx3" style={{ textAlign: 'center', fontSize: 12 }}>Keine Käufer</div>
+          ) : paymentRisk.map((p, i) => (
             <div key={i} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
                 <span>{p.name}</span>
@@ -543,11 +432,13 @@ const ForecastTab = () => {
         </div>
       </div>
 
-      {/* Quality Risk */}
+      {/* Quality Risk — computed from supplier risk field */}
       <div className="card">
         <div className="card-head"><Ic name="quality" size={14} /><span className="title">Qualitätsrisiko je Lieferant</span></div>
         <div className="card-body">
-          {qualityRisk.map((q, i) => (
+          {qualityRisk.length === 0 ? (
+            <div className="tx3" style={{ textAlign: 'center', fontSize: 12 }}>Keine Lieferanten</div>
+          ) : qualityRisk.map((q, i) => (
             <div key={i} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
                 <span>{q.name}</span>
@@ -561,48 +452,12 @@ const ForecastTab = () => {
         </div>
       </div>
 
-      {/* Port Congestion */}
-      <div className="card">
-        <div className="card-head"><Ic name="ship" size={14} /><span className="title">Hafen-Auslastung</span></div>
-        <div className="card-body" style={{ padding: 0 }}>
-          <table className="tbl" style={{ width: '100%' }}>
-            <thead><tr><th>Hafen</th><th>Level</th><th>Wartezeit</th><th>Trend</th></tr></thead>
-            <tbody>
-              {portCongestion.map((p, i) => (
-                <tr key={i}>
-                  <td style={{ fontSize: 12 }}>{p.port}</td>
-                  <td><Badge kind={p.level === 'hoch' ? 'danger' : p.level === 'mittel' ? 'warning' : 'success'}>{p.level}</Badge></td>
-                  <td className="mono" style={{ fontSize: 11 }}>{p.wait}</td>
-                  <td className="tx2" style={{ fontSize: 11 }}>{p.trend}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Margin Erosion */}
+      {/* Forecast placeholder */}
       <div className="card" style={{ gridColumn: 'span 2' }}>
-        <div className="card-head"><Ic name="activity" size={14} /><span className="title">Margenerosion — laufende Aufträge</span></div>
-        <div className="card-body" style={{ padding: 0 }}>
-          <table className="tbl" style={{ width: '100%' }}>
-            <thead><tr><th>Auftrag</th><th>Produkt</th><th>Urspr. Marge</th><th>Aktuelle Marge</th><th>Delta</th><th>Grund</th></tr></thead>
-            <tbody>
-              {marginErosion.map((m, i) => {
-                const delta = m.currentMargin - m.originalMargin;
-                return (
-                  <tr key={i}>
-                    <td className="mono" style={{ fontSize: 11 }}>{m.order}</td>
-                    <td style={{ fontSize: 11 }}>{m.product}</td>
-                    <td className="mono" style={{ fontSize: 11 }}>{m.originalMargin.toFixed(1)}%</td>
-                    <td className="mono fw600" style={{ fontSize: 11, color: palette(60 - m.currentMargin) }}>{m.currentMargin.toFixed(1)}%</td>
-                    <td className="mono" style={{ fontSize: 11, color: '#f87171' }}>{delta.toFixed(1)}pp</td>
-                    <td className="tx2" style={{ fontSize: 11 }}>{m.reason}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="card-head"><Ic name="chart" size={14} /><span className="title">Preis- &amp; Nachfrage-Forecast</span></div>
+        <div className="card-body" style={{ textAlign: 'center', padding: 32 }}>
+          <div className="tx3" style={{ fontSize: 12, marginBottom: 8 }}>Noch keine Marktdaten-Integration konfiguriert</div>
+          <div className="tx3" style={{ fontSize: 11 }}>Verbinde eine Marktdaten-Quelle (z.B. Bloomberg, Reuters) um Preis- und Nachfrageforecast zu aktivieren.</div>
         </div>
       </div>
     </div>
@@ -612,161 +467,15 @@ const ForecastTab = () => {
 // ── Tab 5: Decision Support ───────────────────────────────────────────────────
 
 const DecisionTab = () => {
-  const [selectedDc, setSelectedDc] = useState('DC-01');
-
-  const decisions = [
-    {
-      id: 'DC-01', cat: 'Auftrag', title: 'Phyto-Cert Eilantrag — ORD-0144',
-      verdict: 'sofort', verdictKind: 'danger',
-      dataPoints: [
-        { k: 'ETD', v: '02.06.2026 (8 Tage)' }, { k: 'Zertifikat', v: 'fehlt' },
-        { k: 'Auftragswert', v: '61.000 €' }, { k: 'Risiko', v: 'Verschiffung blockiert' },
-      ],
-      options: [
-        { title: 'Eilantrag TPHC (24h)', score: 92, desc: 'Teuerste Option, sicherste Lösung' },
-        { title: 'Standardantrag (5-7d)', score: 44, desc: 'Zu langsam für ETD' },
-        { title: 'ETD verschieben (+10d)', score: 31, desc: 'Strafzahlung + Kundenunzufriedenheit' },
-      ],
-      reasoning: 'Der Eilantrag ist die einzige Option, die ETD einhält. Kosten ca. 800 € — Opportunitätskosten bei Verzögerung ca. 8.000 €.',
-    },
-    {
-      id: 'DC-02', cat: 'Logistik', title: 'ORD-0137 — Umbuchung wegen ETA-Risiko',
-      verdict: 'prüfen', verdictKind: 'warning',
-      dataPoints: [
-        { k: 'Aktueller Carrier', v: 'HAPAG-Lloyd' }, { k: 'Delta', v: '+1.5d Verspätung' },
-        { k: 'Demurrage', v: '350 €/d' }, { k: 'Wert', v: '23.920 €' },
-      ],
-      options: [
-        { title: 'Umbuchung MSC +3d', score: 72, desc: 'Vermeidet Demurrage-Risiko' },
-        { title: 'Abwarten + Puffer', score: 68, desc: 'Günstiger, aber risikobehaftet' },
-        { title: 'Käufer informieren', score: 58, desc: 'Transparenz, kein Aktionsaufwand' },
-      ],
-      reasoning: 'Bei aktuellem Puffer von 2 Tagen im Hafen Rotterdam ist Umbuchung nur bei weiterer Verzögerung nötig.',
-    },
-    {
-      id: 'DC-03', cat: 'Pricing', title: 'Cashew W320 Preis anpassen',
-      verdict: 'empfohlen', verdictKind: 'success',
-      dataPoints: [
-        { k: 'Marktpreis', v: 'USD 7.10/kg (+11%)' }, { k: 'Unser Preis', v: 'USD 6.10/kg' },
-        { k: 'Margendruck', v: '-2.5pp in 30d' }, { k: 'Offene Angebote', v: '2 (Q-0094, Q-0088)' },
-      ],
-      options: [
-        { title: 'Preis +8% (6.59$/kg)', score: 84, desc: 'Marktgerecht, Marge gesichert' },
-        { title: 'Preis +5% (6.41$/kg)', score: 71, desc: 'Kompromiss — niedrigeres Risiko' },
-        { title: 'Preis halten', score: 32, desc: 'Marge fällt unter 20%' },
-      ],
-      reasoning: 'Weltmarktpreisanstieg +11% erfordert Preisanpassung. Kunden sind preissensibel, aber Qualitätsdifferenzierung erlaubt +8%.',
-    },
-    {
-      id: 'DC-04', cat: 'Sourcing', title: 'Alternativer Cashew-Lieferant',
-      verdict: 'analyse', verdictKind: 'neutral',
-      dataPoints: [
-        { k: 'Aktuell', v: 'SUP-024 (Kapazität voll)' }, { k: 'Bedarf Q3', v: '+20t' },
-        { k: 'Lead-Time', v: '8-12 Wochen' }, { k: 'Budget', v: 'offen' },
-      ],
-      options: [
-        { title: 'Kenya Cashew Board prüfen', score: 76, desc: 'Neue Region, Organic verfügbar' },
-        { title: 'Mosambik SUP anfragen', score: 62, desc: 'Günstigere Preise, unbekannte Qualität' },
-        { title: 'SUP-024 Kapazität erhöhen', score: 54, desc: 'Bestehende Beziehung, aber Risikokonzentration' },
-      ],
-      reasoning: 'Risikokonzentration bei einem Cashew-Lieferanten. Diversifikation empfohlen vor Q3-Saison.',
-    },
-    {
-      id: 'DC-05', cat: 'Käufer', title: 'Nordic Nuts AB — Eskalation Follow-up',
-      verdict: 'prüfen', verdictKind: 'warning',
-      dataPoints: [
-        { k: 'Angebot', v: 'Q-2026-0088 (10d ohne Antwort)' }, { k: 'Wert', v: '110.400 €' },
-        { k: 'Stadium', v: 'Verhandlung 70%' }, { k: 'Follow-up', v: 'überfällig +3d' },
-      ],
-      options: [
-        { title: 'Persönlicher Anruf CEO', score: 88, desc: 'Höchste Erfolgsquote' },
-        { title: 'Formelles Erinnerungsschreiben', score: 61, desc: 'Standard-Prozess' },
-        { title: 'Preis -2% anbieten', score: 45, desc: 'Risiko: Signalisiert Schwäche' },
-      ],
-      reasoning: 'Bei 70% Abschlusswahrscheinlichkeit und 10d Inaktivität: direkter Kontakt notwendig.',
-    },
-    {
-      id: 'DC-06', cat: 'FX', title: 'USD/EUR Hedging Q3',
-      verdict: 'analyse', verdictKind: 'neutral',
-      dataPoints: [
-        { k: 'Aktueller Kurs', v: 'EUR/USD 1.088' }, { k: 'Exposure', v: 'USD 340k' },
-        { k: 'Forecast', v: '1.05–1.11 (90d)' }, { k: 'Ungesichert', v: '280k USD' },
-      ],
-      options: [
-        { title: 'Forward-Kontrakt 6M', score: 79, desc: 'Kurs sichern, Planungssicherheit' },
-        { title: 'Partial Hedge 50%', score: 71, desc: 'Balance zwischen Risiko und Chancen' },
-        { title: 'Keine Absicherung', score: 38, desc: 'Volles FX-Risiko' },
-      ],
-      reasoning: 'Bei USD-Exposure > 300k ist Forward-Hedging empfohlen. Aktuelle Volatilität erhöht FX-Risiko.',
-    },
-  ];
-
-  const selected = decisions.find(d => d.id === selectedDc)!;
-
   return (
-    <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
-      {/* Sidebar */}
-      <div className="card" style={{ height: 'fit-content' }}>
-        <div className="card-head"><Ic name="sparkle" size={14} /><span className="title">Entscheidungen</span></div>
-        <div className="card-body" style={{ padding: '4px 0' }}>
-          {decisions.map(d => (
-            <div
-              key={d.id}
-              onClick={() => setSelectedDc(d.id)}
-              style={{
-                padding: '8px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                background: d.id === selectedDc ? 'rgba(99,102,241,0.1)' : 'transparent',
-                borderLeft: d.id === selectedDc ? '2px solid #6366f1' : '2px solid transparent',
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600 }}>{d.id} · {d.cat}</div>
-                <div className="tx2" style={{ fontSize: 10 }}>{d.title}</div>
-              </div>
-              <Badge kind={d.verdictKind}>{d.verdict}</Badge>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Detail */}
+    <div style={{ padding: 16 }}>
       <div className="card">
-        <div className="card-head">
-          <Ic name="info" size={14} />
-          <span className="title">{selected.id} — {selected.title}</span>
-          <span style={{ marginLeft: 'auto' }}><Badge kind={selected.verdictKind}>{selected.verdict}</Badge></span>
-        </div>
-        <div className="card-body">
-          {/* Data Points */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
-            {selected.dataPoints.map((dp, i) => (
-              <div key={i} style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>
-                <div className="tx3" style={{ fontSize: 10 }}>{dp.k}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}>{dp.v}</div>
-              </div>
-            ))}
+        <div className="card-body" style={{ padding: 48, textAlign: 'center' }}>
+          <div style={{ marginBottom: 10 }}><Ic name="sparkle" size={32} color="var(--text-3)" /></div>
+          <div className="fw600" style={{ fontSize: 14, marginBottom: 6 }}>KI-Decision-Support noch nicht konfiguriert</div>
+          <div className="tx3" style={{ fontSize: 12 }}>
+            Verbinde eine KI-Integration um automatische Entscheidungsempfehlungen mit Optionen und Begründungen zu erhalten.
           </div>
-          {/* Options */}
-          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 8, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Optionen</div>
-          {selected.options.map((opt, i) => (
-            <div key={i} style={{ marginBottom: 10, padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, borderLeft: i === 0 ? '3px solid #6366f1' : '3px solid transparent' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 12, fontWeight: i === 0 ? 700 : 500 }}>{opt.title}</span>
-                <span className="mono fw700" style={{ fontSize: 11, color: opt.score >= 70 ? '#34d399' : opt.score >= 50 ? '#f59e0b' : '#f87171', marginLeft: 'auto' }}>{opt.score}</span>
-              </div>
-              <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 4 }}>
-                <div style={{ height: '100%', width: `${opt.score}%`, background: opt.score >= 70 ? '#34d399' : opt.score >= 50 ? '#f59e0b' : '#f87171', borderRadius: 2 }} />
-              </div>
-              <div className="tx2" style={{ fontSize: 11 }}>{opt.desc}</div>
-            </div>
-          ))}
-          {/* Reasoning */}
-          <details style={{ marginTop: 12 }}>
-            <summary style={{ fontSize: 12, cursor: 'pointer', color: '#a78bfa', userSelect: 'none' }}>KI-Begründung anzeigen</summary>
-            <div className="tx2" style={{ fontSize: 11, lineHeight: 1.6, marginTop: 8, padding: '10px 12px', background: 'rgba(167,139,250,0.06)', borderRadius: 6 }}>
-              {selected.reasoning}
-            </div>
-          </details>
         </div>
       </div>
     </div>
@@ -796,13 +505,7 @@ const ContentDocTab = () => {
     { id: 'customs_letter', label: 'Zollbegleitschreiben' },
   ];
 
-  const sampleTexts: Record<string, string> = {
-    offer_letter: `Betreff: Angebot Cashew Kernels W320 Organic — Q-2026-0094\n\nSehr geehrter Herr Lindqvist,\n\nvielen Dank für Ihr Interesse an unseren Premium Cashew Kernels aus Tansania. Gerne unterbreiten wir Ihnen folgendes Angebot:\n\nProdukt: Cashew Kernels W320 Organic EU\nHerkunft: Mtwara Region, Tansania\nMenge: 8.000 kg (1 × 20ft Container)\nPreis: USD 13,80/kg CIF Hamburg\nZertifizierungen: Organic EU, HACCP, Bureau Veritas\nLieferzeit: 42–48 Tage ab Auftragsbestätigung\n\nDie Ware entspricht Ihrer BRC-Anforderung und kann auf Wunsch mit SGS-Inspektion begleitet werden.\n\nWir freuen uns auf Ihre Rückmeldung und stehen für Rückfragen gerne zur Verfügung.\n\nMit freundlichen Grüßen\nMaryam Kassim · EastAfrica Export OS`,
-    follow_up: `Betreff: Follow-Up: Ihr Angebot Q-2026-0088 — Nordic Nuts AB\n\nSehr geehrter Herr Lindqvist,\n\nich möchte mich bezüglich unseres Angebots vom 15. Mai 2026 für Macadamia Kernels Style 1L melden.\n\nHaben Sie die Unterlagen erhalten? Für Rückfragen stehe ich jederzeit gern zur Verfügung.`,
-    payment_reminder: `Betreff: Zahlungserinnerung — Rechnung RE-2026-0137\n\nSehr geehrter Herr Romano,\n\nwie unseren Unterlagen zu entnehmen ist, steht die Zahlung unserer Rechnung RE-2026-0137 über EUR 23.920,00 bereits 18 Tage aus.\n\nWir bitten um umgehende Begleichung bis zum 28.05.2026.`,
-  };
-
-  const currentText = sampleTexts[template] || `[KI-generierter Inhalt für "${templates.find(t => t.id === template)?.label}" — Audience: ${audience}, Ton: ${tone}, Sprache: ${contentLang}]\n\nKlicke auf "Generieren" um einen vollständigen Text zu erstellen.`;
+  const currentText = `[KI-generierter Inhalt für "${templates.find(t => t.id === template)?.label}" — Zielgruppe: ${audience}, Ton: ${tone}, Sprache: ${contentLang}]\n\nVerbinde eine KI-Integration und klicke auf "Generieren" um einen vollständigen Text zu erstellen.`;
 
   return (
     <div style={{ padding: 16 }}>

@@ -285,13 +285,14 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
   const sel = selected ?? inTransit[1] ?? inTransit[0] ?? null;
   const v = sel ? M.vessels[sel.vesselIdx] : null;
 
+  const lateOrders = M.orders.filter(o => o.status === 'problem' && ['in_export','shipped','in_transit','arrived'].includes(o.status));
   const kpis = [
     { l: 'Auf See', v: M.orders.filter(o => o.status === 'in_transit').length, c: '#22d3ee' },
     { l: 'Im Hafen', v: M.orders.filter(o => o.status === 'arrived').length, c: '#34d399' },
     { l: 'Exportdok.', v: M.orders.filter(o => o.status === 'in_export').length, c: '#fbbf24' },
-    { l: 'Container Total', v: 12, c: '#60a5fa' },
-    { l: 'Ø Transit Zeit', v: '28 Tage', c: '#a78bfa' },
-    { l: 'Verspätet', v: 1, c: '#f87171' },
+    { l: 'Aktive Verschiffungen', v: inTransit.length, c: '#60a5fa' },
+    { l: 'Verschiffungen gesamt', v: M.orders.filter(o => ['in_export','shipped','in_transit','arrived','delivered','paid'].includes(o.status)).length, c: '#a78bfa' },
+    { l: 'Verspätet / Problem', v: lateOrders.length, c: '#f87171' },
   ];
 
   const pct = sel?.progressPct ?? 0;
