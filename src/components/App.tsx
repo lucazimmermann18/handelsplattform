@@ -17,6 +17,10 @@ import { ComplaintsList, ComplaintDetail } from '@/components/views/Complaints';
 import { QualityView } from '@/components/views/Quality';
 import { InventoryView } from '@/components/views/Inventory';
 import { DocumentsView } from '@/components/views/Documents';
+import { FinanceView } from '@/components/views/Finance';
+import { ReportsView } from '@/components/views/Reports';
+import { ComplianceView } from '@/components/views/Compliance';
+import { SettingsView } from '@/components/views/Settings';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -141,11 +145,11 @@ export const App = () => {
       case 'inventory':
         return <InventoryView lang={lang} />;
       case 'compliance':
-        return <ComingSoon view="Export & Zoll" />;
+        return <ComplianceView lang={lang} />;
       case 'documents':
         return <DocumentsView lang={lang} />;
       case 'finance':
-        return <ComingSoon view="Finanzen" />;
+        return <FinanceView lang={lang} />;
       case 'tasks':
         return <TasksView lang={lang} />;
       case 'complaints':
@@ -155,9 +159,9 @@ export const App = () => {
           ? <ComplaintDetail id={route.id} lang={lang} onBack={() => navigate('complaints')} />
           : <ComplaintsList lang={lang} onOpen={(id) => navigate('complaint_detail', { id })} />;
       case 'reports':
-        return <ComingSoon view="Reports" />;
+        return <ReportsView lang={lang} />;
       case 'settings':
-        return <ComingSoon view="Einstellungen" />;
+        return <SettingsView lang={lang} />;
       case 'import':
         return <ComingSoon view="Daten-Import" />;
       case 'eudr':
