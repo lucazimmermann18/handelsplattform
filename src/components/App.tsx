@@ -24,6 +24,17 @@ import { SettingsView } from '@/components/views/Settings';
 import { IntelligenceView } from '@/components/views/Intelligence';
 import { CockpitView } from '@/components/views/Cockpit';
 import { CashflowView } from '@/components/views/Cashflow';
+import { StrategyView } from '@/components/views/Strategy';
+import { CapitalView } from '@/components/views/Capital';
+import { ComplianceRoadmapView } from '@/components/views/ComplianceRoadmap';
+import { TradeFinanceView } from '@/components/views/TradeFinance';
+import { CalendarView } from '@/components/views/Calendar';
+import { SamplesView } from '@/components/views/Samples';
+import { ForwardersView } from '@/components/views/Forwarders';
+import { MatchingView } from '@/components/views/Matching';
+import { HeatmapView } from '@/components/views/Heatmap';
+import { MarketView } from '@/components/views/Market';
+import { ImportView } from '@/components/views/Import';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -166,23 +177,23 @@ export const App = () => {
       case 'settings':
         return <SettingsView lang={lang} />;
       case 'import':
-        return <ComingSoon view="Daten-Import" />;
+        return <ImportView lang={lang} />;
       case 'eudr':
         return <ComingSoon view="EUDR Compliance" />;
       case 'matching':
-        return <ComingSoon view="Käufer-Produkt-Matching" />;
+        return <MatchingView lang={lang} onNav={navigate} />;
       case 'heatmap':
-        return <ComingSoon view="Profitabilitäts-Heatmap" />;
+        return <HeatmapView lang={lang} />;
       case 'market':
-        return <ComingSoon view="Marktdaten" />;
+        return <MarketView lang={lang} />;
       case 'tradefinance':
-        return <ComingSoon view="Trade Finance" />;
+        return <TradeFinanceView lang={lang} />;
       case 'calendar':
-        return <ComingSoon view="Versand-Kalender" />;
+        return <CalendarView lang={lang} />;
       case 'samples':
-        return <ComingSoon view="Musterbestellungen" />;
+        return <SamplesView lang={lang} />;
       case 'forwarders':
-        return <ComingSoon view="Spediteure" />;
+        return <ForwardersView lang={lang} />;
       case 'intelligence':
         return <IntelligenceView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cockpit':
@@ -190,11 +201,11 @@ export const App = () => {
       case 'cashflow':
         return <CashflowView lang={lang} />;
       case 'strategy':
-        return <ComingSoon view="Strategy Hub" />;
+        return <StrategyView lang={lang} />;
       case 'compliance_roadmap':
-        return <ComingSoon view="Compliance Roadmap" />;
+        return <ComplianceRoadmapView lang={lang} />;
       case 'capital':
-        return <ComingSoon view="Capital Hub" />;
+        return <CapitalView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }
