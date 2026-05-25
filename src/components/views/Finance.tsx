@@ -6,7 +6,7 @@ import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
-import { Badge, BarChart, Donut } from '@/components/ui/primitives';
+import { BarChart, Donut } from '@/components/ui/primitives';
 
 interface FinanceViewProps {
   lang: Lang;

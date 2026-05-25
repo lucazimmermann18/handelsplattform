@@ -2,8 +2,7 @@
 
 import React from 'react';
 import type { Lang } from '@/lib/i18n';
-import { Ic } from '@/components/ui/icons';
-import { Badge, Sparkline } from '@/components/ui/primitives';
+import { Sparkline } from '@/components/ui/primitives';
 
 interface MarketViewProps { lang: Lang; }
 
@@ -22,7 +21,7 @@ const series = [
 
 const isPositive = (change: string) => change.startsWith('+');
 
-export const MarketView = ({ lang }: MarketViewProps) => {
+export const MarketView = ({ lang: _lang }: MarketViewProps) => {
   return (
     <div className="view-content">
       <div className="view-header">

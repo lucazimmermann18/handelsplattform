@@ -6,7 +6,7 @@ import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
-import { Badge, StatusBadge } from '@/components/ui/primitives';
+import { StatusBadge } from '@/components/ui/primitives';
 import type { Order } from '@/lib/types';
 
 // ────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ function segLengthsOf(route: Coord[]) {
 function positionOnRoute(route: Coord[], t: number): { lng: number; lat: number; heading: number } {
   const lens = segLengthsOf(route);
   const total = lens.reduce((s, v) => s + v, 0);
-  let target = Math.max(0, Math.min(1, t)) * total;
+  const target = Math.max(0, Math.min(1, t)) * total;
   let cum = 0;
   for (let i = 0; i < lens.length; i++) {
     if (cum + lens[i] >= target) {
@@ -108,7 +108,7 @@ function positionOnRoute(route: Coord[], t: number): { lng: number; lat: number;
 function partialRoute(route: Coord[], t: number): Coord[] {
   const lens = segLengthsOf(route);
   const total = lens.reduce((s, v) => s + v, 0);
-  let target = Math.max(0, Math.min(1, t)) * total;
+  const target = Math.max(0, Math.min(1, t)) * total;
   let cum = 0;
   const partial: Coord[] = [route[0]];
   for (let i = 0; i < lens.length; i++) {

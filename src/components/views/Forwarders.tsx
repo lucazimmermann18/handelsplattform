@@ -6,7 +6,6 @@ import { Ic } from '@/components/ui/icons';
 
 interface ForwardersViewProps { lang: Lang; }
 
-const priceLabel: Record<string, string> = { low: '€', mid: '€€', high: '€€€' };
 
 export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
   return (

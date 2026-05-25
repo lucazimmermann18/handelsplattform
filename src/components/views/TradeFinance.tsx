@@ -3,7 +3,7 @@
 import React from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
-import { t } from '@/lib/i18n';
+
 import { fmtCur, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -36,7 +36,7 @@ const paymentSteps = [
   { label: 'Nach Ankunft (30%)', pct: 30, amount: 18300, status: 'upcoming', date: '2026-07-15' },
 ];
 
-export const TradeFinanceView = ({ lang }: TradeFinanceViewProps) => {
+export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const buyerName = (id: string) => M.buyers.find(b => b.id === id)?.name ?? id;

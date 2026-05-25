@@ -42,7 +42,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
   };
 
   const toggle = (id: string) =>
-    setChecked(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setChecked(prev => { const s = new Set(prev); if (s.has(id)) s.delete(id); else s.add(id); return s; });
 
   const sorted = [...M.tasks].sort((a, b) => (PRIO_ORDER[a.prio] ?? 3) - (PRIO_ORDER[b.prio] ?? 3));
   const filtered = filter === 'alle' ? sorted : sorted.filter(tk => tk.status === filter);

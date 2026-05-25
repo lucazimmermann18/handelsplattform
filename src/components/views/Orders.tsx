@@ -42,8 +42,8 @@ interface OrdersListProps {
 
 export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
   const { data: M } = useData();
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const [statusFilter, setStatusFilter] = useState('all');
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const filtered = statusFilter === 'all'
     ? M.orders

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
-import { t } from '@/lib/i18n';
+
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -301,7 +301,7 @@ const TIER_KIND: Record<string, string> = { A: 'danger', B: 'warning', C: 'neutr
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const StrategyView = ({ lang }: StrategyViewProps) => {
+export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState('okr');
   const [selectedCountry, setSelectedCountry] = useState('ES');

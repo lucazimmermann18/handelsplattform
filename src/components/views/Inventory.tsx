@@ -9,8 +9,7 @@ import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 
 const LOCATIONS = ['Dar es Salaam', 'Arusha', 'Dodoma', 'Mbeya'];
-const STATUS_FILTERS = ['alle', 'released', 'reserved', 'quality_hold', 'blocked'] as const;
-type StatusFilter = typeof STATUS_FILTERS[number];
+type StatusFilter = 'alle' | 'released' | 'reserved' | 'quality_hold' | 'blocked';
 
 const STATUS_META: Record<string, { kind: string; label: string }> = {
   released:     { kind: 'success', label: 'Freigegeben' },

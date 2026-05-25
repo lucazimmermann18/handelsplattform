@@ -131,7 +131,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-head">
             <Ic name="bell" size={14} />
             <span className="title">{t(lang, 'section_alerts')}</span>
-            <Badge kind="danger">{M.alerts.filter((a: any) => a.sev === 'r').length} kritisch</Badge>
+            <Badge kind="danger">{M.alerts.filter(a => a.sev === 'r').length} kritisch</Badge>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
               <span className="chip on">Alle</span>
               <span className="chip">Kritisch</span>
@@ -139,7 +139,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
             </div>
           </div>
           <div>
-            {M.alerts.map((a: any, i: number) => (
+            {M.alerts.map((a, i) => (
               <div className="alert-row" key={i}>
                 <div className={`ic ${a.sev}`}><Ic name={a.sev === 'r' ? 'warn' : a.sev === 'w' ? 'clock' : 'info'} size={11} /></div>
                 <div className="body">
@@ -171,7 +171,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
 
         {/* Pipeline */}
         <div className="card">
-          <div className="card-head"><Ic name="deals" size={14} /><span className="title">{t(lang, 'section_pipeline')}</span><span className="meta">{fmtCur(M.deals.reduce((s: number, d: any) => s + d.value, 0))} brutto</span></div>
+          <div className="card-head"><Ic name="deals" size={14} /><span className="title">{t(lang, 'section_pipeline')}</span><span className="meta">{fmtCur(M.deals.reduce((s, d) => s + d.value, 0))} brutto</span></div>
           <div className="card-body" style={{ paddingTop: 4 }}>
             <BarChart data={byStage} w={380} h={120} color="#3b82f6" lblKey="m" valKey="v" />
             <div style={{ display: 'flex', fontSize: 10, marginTop: 4, justifyContent: 'space-between', color: 'var(--text-3)' }}>
@@ -255,9 +255,9 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 500, color: tk.status === 'erledigt' ? 'var(--text-3)' : 'var(--text)' }}>{tk.t}</div>
-                  <div className="tx3" style={{ fontSize: 10.5 }}>{(tk as any).order} · {fmtDate(tk.due)}</div>
+                  <div className="tx3" style={{ fontSize: 10.5 }}>{tk.order} · {fmtDate(tk.due)}</div>
                 </div>
-                <Badge kind={(tk as any).prio === 'hoch' ? 'danger' : (tk as any).prio === 'mittel' ? 'warning' : 'neutral'}>{(tk as any).prio}</Badge>
+                <Badge kind={tk.prio === 'hoch' ? 'danger' : tk.prio === 'mittel' ? 'warning' : 'neutral'}>{tk.prio}</Badge>
               </div>
             ))}
           </div>

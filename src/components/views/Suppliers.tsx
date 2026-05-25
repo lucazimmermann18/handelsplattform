@@ -121,14 +121,10 @@ interface SupplierDetailProps {
 
 export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
   const { data: M } = useData();
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  const s = M.suppliers.find(x => x.id === id);
-  if (!s) return <div className="empty">Lieferant nicht gefunden</div>;
+  const s = M?.suppliers.find(x => x.id === id);
+  const orders = M && s ? M.orders.filter(o => o.supplierId === s.id) : [];
 
-  const orders = M.orders.filter(o => o.supplierId === s.id);
-
-  // Deterministic price history based on supplier id hash
-  const seed = s.id.charCodeAt(s.id.length - 1);
+  const seed = s ? s.id.charCodeAt(s.id.length - 1) : 0;
   const priceHistory = useMemo(() =>
     Array.from({ length: 12 }).map((_, i) => ({
       m: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i],
@@ -136,6 +132,9 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
     })),
     [seed]
   );
+
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (!s) return <div className="empty">Lieferant nicht gefunden</div>;
 
   const circumference = 2 * Math.PI * 38;
   const scoreDash = (s.score / 5) * circumference;

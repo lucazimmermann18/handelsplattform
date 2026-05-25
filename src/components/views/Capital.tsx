@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
-import { t } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars } from '@/components/ui/primitives';
@@ -203,7 +202,7 @@ const INVESTORS: Investor[] = [
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CapitalView = ({ lang }: CapitalViewProps) => {
+export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
   const [tab, setTab] = useState('forecast');
   const [scenario, setScenario] = useState<Scenario>('base');
   const [selectedUpdate, setSelectedUpdate] = useState('U-05');

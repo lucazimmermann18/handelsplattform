@@ -3,7 +3,7 @@
 import React from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
-import { fmtCur } from '@/lib/utils';
+
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import type { Buyer, Product } from '@/lib/types';
@@ -28,7 +28,7 @@ const cellColor = (s: number) => {
   return 'rgba(16,185,129,0.35)';
 };
 
-export const MatchingView = ({ lang, onNav }: MatchingViewProps) => {
+export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const buyers = M.buyers;

@@ -111,12 +111,9 @@ interface BuyerDetailProps {
 
 export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
   const { data: M } = useData();
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  const b = M.buyers.find(x => x.id === id);
-  if (!b) return <div className="empty">Käufer nicht gefunden</div>;
-
-  const buyerOrders = M.orders.filter(o => o.buyerId === id);
-  const buyerDeals = M.deals.filter(d => d.buyerId === id);
+  const b = M?.buyers.find(x => x.id === id);
+  const buyerOrders = M ? M.orders.filter(o => o.buyerId === id) : [];
+  const buyerDeals = M ? M.deals.filter(d => d.buyerId === id) : [];
 
   const revHistory = useMemo(() => {
     const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -127,6 +124,9 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
     });
     return months.map((m, i) => ({ m, v: parseFloat(byMonth[i].toFixed(1)) }));
   }, [buyerOrders]);
+
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (!b) return <div className="empty">Käufer nicht gefunden</div>;
 
   const creditLimit = b.revenue * 1.5 + 50000;
   const creditUsed = b.revenue * 0.3;

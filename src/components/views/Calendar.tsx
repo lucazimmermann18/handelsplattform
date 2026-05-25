@@ -14,7 +14,7 @@ interface CalEvent {
   id: string;
 }
 
-export const CalendarView = ({ lang }: CalendarViewProps) => {
+export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   // June 2026: month index 5 (0-based)

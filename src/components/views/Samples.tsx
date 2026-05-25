@@ -32,7 +32,7 @@ const statusLabel: Record<string, string> = {
   rejected: 'Abgelehnt',
 };
 
-export const SamplesView = ({ lang }: SamplesViewProps) => {
+export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const buyerName = (id: string) => M.buyers.find(b => b.id === id)?.name ?? id;

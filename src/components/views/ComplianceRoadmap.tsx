@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
-import { t } from '@/lib/i18n';
+
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 
@@ -104,7 +104,7 @@ function auditReadiness(audit: Audit): number {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const ComplianceRoadmapView = ({ lang }: ComplianceRoadmapViewProps) => {
+export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProps) => {
   const [tab, setTab] = useState('certs');
   const [selectedAudit, setSelectedAudit] = useState('');
 

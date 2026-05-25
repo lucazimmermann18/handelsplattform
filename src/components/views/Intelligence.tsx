@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
-import { fmtCur, fmtNum } from '@/lib/utils';
+import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
-import { Badge, Sparkline, BarChart, StatusBadge } from '@/components/ui/primitives';
+import { Badge, Sparkline, BarChart } from '@/components/ui/primitives';
 import type { Order, Supplier, Document as Doc, QualityCheck } from '@/lib/types';
 
 interface IntelligenceViewProps {

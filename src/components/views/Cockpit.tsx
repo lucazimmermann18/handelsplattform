@@ -97,8 +97,6 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
     })),
   ];
 
-  const showSection = (id: string) => section === 'all' || section === id;
-
   return (
     <div>
       <div className="section-head">

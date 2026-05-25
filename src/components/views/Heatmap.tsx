@@ -4,8 +4,6 @@ import React from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
-import { Ic } from '@/components/ui/icons';
-
 interface HeatmapViewProps { lang: Lang; }
 
 const cellBg = (margin: number | null): string => {
@@ -16,7 +14,7 @@ const cellBg = (margin: number | null): string => {
   return 'rgba(239,68,68,0.30)';
 };
 
-export const HeatmapView = ({ lang }: HeatmapViewProps) => {
+export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const products = M.products.slice(0, 10);

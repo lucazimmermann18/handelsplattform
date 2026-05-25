@@ -33,7 +33,7 @@ const fieldMapping = [
   { source: 'Products', target: 'Produkte', confidence: 74 },
 ];
 
-export const ImportView = ({ lang }: ImportViewProps) => {
+export const ImportView = ({ lang: _lang }: ImportViewProps) => {
   const [step, setStep] = useState(0);
   const [type, setType] = useState('suppliers');
   const [importing, setImporting] = useState(false);

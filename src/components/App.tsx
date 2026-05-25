@@ -49,15 +49,6 @@ interface Route {
   id?: string;
 }
 
-// Placeholder for views not yet fully implemented
-const ComingSoon = ({ view, onBack }: { view: string; onBack?: () => void }) => (
-  <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
-    <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
-    <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>{view}</div>
-    <div style={{ fontSize: 13, marginBottom: 20 }}>Dieses Modul wird in der nächsten Phase implementiert.</div>
-    {onBack && <button className="btn" onClick={onBack}>← Zurück</button>}
-  </div>
-);
 
 export const App = () => {
   const [lang, setLang] = useState<Lang>('de');
