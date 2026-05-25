@@ -40,6 +40,8 @@ const NAV = [
     { id: 'finance', icon: 'finance', label: 'nav_finance' },
     { id: 'tradefinance', icon: 'finance', label: 'Trade Finance' },
     { id: 'cashflow', icon: 'finance', label: 'Cashflow' },
+    { id: 'insurance', icon: 'doc', label: 'Versicherung' },
+    { id: 'cold_chain', icon: 'ship', label: 'Cold Chain' },
     { id: 'market', icon: 'chart', label: 'Marktdaten' },
     { id: 'complaints', icon: 'bug', label: 'nav_complaints', count: () => MOCK.complaints.filter((c) => c.status !== 'geschlossen').length },
     { id: 'reports', icon: 'chart', label: 'nav_reports' },

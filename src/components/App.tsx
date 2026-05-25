@@ -35,6 +35,9 @@ import { MatchingView } from '@/components/views/Matching';
 import { HeatmapView } from '@/components/views/Heatmap';
 import { MarketView } from '@/components/views/Market';
 import { ImportView } from '@/components/views/Import';
+import { ColdChainView } from '@/components/views/ColdChain';
+import { InsuranceView } from '@/components/views/Insurance';
+import { EUDRView } from '@/components/views/EUDR';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -100,10 +103,11 @@ export const App = () => {
       settings: 'nav_settings',
     };
     const labelMap: Record<string, string> = {
-      eudr: 'EUDR', matching: 'Matching', market: 'Marktdaten', tradefinance: 'Trade Finance',
+      eudr: 'EUDR Compliance', matching: 'Matching', market: 'Marktdaten', tradefinance: 'Trade Finance',
       calendar: 'Kalender', samples: 'Muster', forwarders: 'Spediteure', heatmap: 'Heatmap',
       intelligence: 'Intelligence', cockpit: 'Operations Cockpit', cashflow: 'Cashflow',
       strategy: 'Strategie', compliance_roadmap: 'Compliance-Roadmap', capital: 'Capital', import: 'Daten-Import',
+      cold_chain: 'Cold Chain Monitor', insurance: 'Versicherungs-Tracker',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (labelMap[route.view]) return [...base, labelMap[route.view]];
@@ -179,7 +183,11 @@ export const App = () => {
       case 'import':
         return <ImportView lang={lang} />;
       case 'eudr':
-        return <ComingSoon view="EUDR Compliance" />;
+        return <EUDRView lang={lang} />;
+      case 'cold_chain':
+        return <ColdChainView lang={lang} />;
+      case 'insurance':
+        return <InsuranceView lang={lang} />;
       case 'matching':
         return <MatchingView lang={lang} onNav={navigate} />;
       case 'heatmap':
