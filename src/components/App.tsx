@@ -21,6 +21,9 @@ import { FinanceView } from '@/components/views/Finance';
 import { ReportsView } from '@/components/views/Reports';
 import { ComplianceView } from '@/components/views/Compliance';
 import { SettingsView } from '@/components/views/Settings';
+import { IntelligenceView } from '@/components/views/Intelligence';
+import { CockpitView } from '@/components/views/Cockpit';
+import { CashflowView } from '@/components/views/Cashflow';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -181,11 +184,11 @@ export const App = () => {
       case 'forwarders':
         return <ComingSoon view="Spediteure" />;
       case 'intelligence':
-        return <ComingSoon view="Intelligence Hub" />;
+        return <IntelligenceView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cockpit':
-        return <ComingSoon view="Operations Cockpit" />;
+        return <CockpitView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cashflow':
-        return <ComingSoon view="Cashflow Forecast" />;
+        return <CashflowView lang={lang} />;
       case 'strategy':
         return <ComingSoon view="Strategy Hub" />;
       case 'compliance_roadmap':
