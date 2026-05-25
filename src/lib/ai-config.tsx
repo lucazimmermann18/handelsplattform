@@ -29,23 +29,34 @@ export interface ProviderMeta {
   color: string;
   docsUrl: string;
   keyPrefix: string;
+  envVar: string;
 }
 
 export const PROVIDER_META: ProviderMeta[] = [
-  { id: 'anthropic', name: 'Anthropic',  logo: '◆', color: '#c084fc', docsUrl: 'https://console.anthropic.com/settings/keys',   keyPrefix: 'sk-ant-' },
-  { id: 'openai',    name: 'OpenAI',     logo: '⬡', color: '#34d399', docsUrl: 'https://platform.openai.com/api-keys',          keyPrefix: 'sk-' },
-  { id: 'deepseek',  name: 'DeepSeek',   logo: '⬢', color: '#60a5fa', docsUrl: 'https://platform.deepseek.com/api_keys',        keyPrefix: 'sk-' },
+  { id: 'anthropic', name: 'Anthropic', logo: '◆', color: '#c084fc', docsUrl: 'https://console.anthropic.com/settings/keys',  keyPrefix: 'sk-ant-', envVar: 'ANTHROPIC_API_KEY' },
+  { id: 'openai',    name: 'OpenAI',    logo: '⬡', color: '#34d399', docsUrl: 'https://platform.openai.com/api-keys',         keyPrefix: 'sk-',     envVar: 'OPENAI_API_KEY' },
+  { id: 'deepseek',  name: 'DeepSeek',  logo: '⬢', color: '#60a5fa', docsUrl: 'https://platform.deepseek.com/api_keys',       keyPrefix: 'sk-',     envVar: 'DEEPSEEK_API_KEY' },
 ];
 
 interface AiConfig {
+  // localStorage keys (user-level fallback)
   keys: Partial<Record<AiProvider, string>>;
-  activeModel: string;
   setKey: (provider: AiProvider, key: string) => void;
   clearKey: (provider: AiProvider) => void;
+
+  // server-side env status (true = key set in .env.local)
+  envProviders: Partial<Record<AiProvider, boolean>>;
+
+  // active model selection
+  activeModel: string;
   setActiveModel: (modelId: string) => void;
   activeModelObj: AiModel | undefined;
-  hasKey: (provider: AiProvider) => boolean;
-  isConfigured: boolean;
+
+  // derived helpers
+  hasKey: (provider: AiProvider) => boolean;         // env OR localStorage
+  isEnv: (provider: AiProvider) => boolean;          // env only
+  isConfigured: boolean;                             // activeModel has any key
+
   generate: (prompt: string, systemPrompt?: string) => Promise<string>;
 }
 
@@ -55,18 +66,26 @@ const LS_KEYS  = 'eaos_ai_keys';
 const LS_MODEL = 'eaos_ai_model';
 
 export const AiConfigProvider = ({ children }: { children: React.ReactNode }) => {
-  const [keys, setKeys] = useState<Partial<Record<AiProvider, string>>>({});
+  const [keys, setKeys]                   = useState<Partial<Record<AiProvider, string>>>({});
   const [activeModel, setActiveModelState] = useState<string>('claude-sonnet-4-6');
-  const [ready, setReady] = useState(false);
+  const [envProviders, setEnvProviders]   = useState<Partial<Record<AiProvider, boolean>>>({});
+  const [ready, setReady]                 = useState(false);
 
   useEffect(() => {
+    // Load localStorage settings
     try {
       const k = localStorage.getItem(LS_KEYS);
       if (k) setKeys(JSON.parse(k));
       const m = localStorage.getItem(LS_MODEL);
       if (m) setActiveModelState(m);
-    } catch { /* ignore parse errors */ }
-    setReady(true);
+    } catch { /* ignore */ }
+
+    // Fetch which providers have server-side env keys
+    fetch('/api/ai/providers')
+      .then(r => r.json())
+      .then((data: Partial<Record<AiProvider, boolean>>) => setEnvProviders(data))
+      .catch(() => { /* server unreachable — no env providers */ })
+      .finally(() => setReady(true));
   }, []);
 
   const setKey = useCallback((provider: AiProvider, key: string) => {
@@ -91,15 +110,18 @@ export const AiConfigProvider = ({ children }: { children: React.ReactNode }) =>
     localStorage.setItem(LS_MODEL, modelId);
   }, []);
 
-  const hasKey = useCallback((provider: AiProvider) => !!keys[provider]?.trim(), [keys]);
+  const isEnv  = useCallback((p: AiProvider) => !!envProviders[p], [envProviders]);
+  const hasKey = useCallback((p: AiProvider) => !!envProviders[p] || !!keys[p]?.trim(), [envProviders, keys]);
 
   const activeModelObj = AI_MODELS.find(m => m.id === activeModel);
   const isConfigured   = !!(activeModelObj && hasKey(activeModelObj.provider));
 
   const generate = useCallback(async (prompt: string, systemPrompt?: string): Promise<string> => {
     if (!activeModelObj) throw new Error('Kein Modell ausgewählt');
-    const key = keys[activeModelObj.provider];
-    if (!key?.trim()) throw new Error(`Kein API-Key für ${activeModelObj.provider} hinterlegt`);
+    if (!hasKey(activeModelObj.provider)) throw new Error(`Kein API-Key für ${activeModelObj.provider} konfiguriert`);
+
+    // Send localStorage key if available; route prefers env var automatically
+    const clientKey = keys[activeModelObj.provider]?.trim() ?? '';
 
     const res = await fetch('/api/ai/generate', {
       method: 'POST',
@@ -107,21 +129,27 @@ export const AiConfigProvider = ({ children }: { children: React.ReactNode }) =>
       body: JSON.stringify({
         prompt,
         systemPrompt,
-        model: activeModel,
+        model:    activeModel,
         provider: activeModelObj.provider,
-        apiKey: key.trim(),
+        apiKey:   clientKey,
       }),
     });
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return (data.text as string) ?? '';
-  }, [activeModel, activeModelObj, keys]);
+  }, [activeModel, activeModelObj, hasKey, keys]);
 
   if (!ready) return null;
 
   return (
-    <AiConfigContext.Provider value={{ keys, activeModel, setKey, clearKey, setActiveModel, activeModelObj, hasKey, isConfigured, generate }}>
+    <AiConfigContext.Provider value={{
+      keys, setKey, clearKey,
+      envProviders,
+      activeModel, setActiveModel, activeModelObj,
+      hasKey, isEnv, isConfigured,
+      generate,
+    }}>
       {children}
     </AiConfigContext.Provider>
   );

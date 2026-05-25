@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 
+function envKeyForProvider(provider: string): string | undefined {
+  if (provider === 'anthropic') return process.env.ANTHROPIC_API_KEY;
+  if (provider === 'openai')    return process.env.OPENAI_API_KEY;
+  if (provider === 'deepseek')  return process.env.DEEPSEEK_API_KEY;
+  return undefined;
+}
+
 export async function POST(req: Request) {
   let body: { prompt?: string; systemPrompt?: string; model?: string; provider?: string; apiKey?: string };
   try {
@@ -10,8 +17,18 @@ export async function POST(req: Request) {
 
   const { prompt, systemPrompt, model, provider, apiKey } = body;
 
-  if (!prompt || !model || !provider || !apiKey) {
-    return NextResponse.json({ error: 'Fehlende Parameter: prompt, model, provider, apiKey' }, { status: 400 });
+  if (!prompt || !model || !provider) {
+    return NextResponse.json({ error: 'Fehlende Parameter: prompt, model, provider' }, { status: 400 });
+  }
+
+  // Prefer server-side env key — fall back to client-provided key
+  const resolvedKey = (envKeyForProvider(provider) || apiKey || '').trim();
+
+  if (!resolvedKey) {
+    return NextResponse.json(
+      { error: `Kein API-Key für "${provider}" konfiguriert. Trage den Key in .env.local ein oder hinterlege ihn in den Einstellungen.` },
+      { status: 401 }
+    );
   }
 
   const sys = systemPrompt || 'Du bist ein präziser KI-Assistent für eine Handelsplattform (Ostafrika-Export). Antworte auf Deutsch, klar und professionell.';
@@ -22,7 +39,7 @@ export async function POST(req: Request) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
+          'x-api-key': resolvedKey,
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
@@ -40,8 +57,7 @@ export async function POST(req: Request) {
           { status: res.status }
         );
       }
-      const text: string = data.content?.[0]?.text ?? '';
-      return NextResponse.json({ text });
+      return NextResponse.json({ text: (data.content?.[0]?.text ?? '') as string });
     }
 
     // OpenAI-compatible: OpenAI and DeepSeek
@@ -50,7 +66,7 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${resolvedKey}`,
       },
       body: JSON.stringify({
         model,
@@ -69,8 +85,7 @@ export async function POST(req: Request) {
         { status: res.status }
       );
     }
-    const text: string = data.choices?.[0]?.message?.content ?? '';
-    return NextResponse.json({ text });
+    return NextResponse.json({ text: (data.choices?.[0]?.message?.content ?? '') as string });
 
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

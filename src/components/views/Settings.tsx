@@ -26,12 +26,16 @@ function initials(name: string) {
 // ── AI Provider Card ──────────────────────────────────────────────────────────
 
 function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
-  const { keys, setKey, clearKey, hasKey } = useAiConfig();
-  const [draft, setDraft]     = useState(keys[provider.id] ?? '');
-  const [visible, setVisible] = useState(false);
-  const [saving, setSaving]   = useState(false);
+  const { keys, setKey, clearKey, hasKey, isEnv } = useAiConfig();
+  const envConfigured    = isEnv(provider.id);
+  const localConfigured  = !!keys[provider.id]?.trim();
+  const configured       = hasKey(provider.id);
+
+  const [draft, setDraft]           = useState(keys[provider.id] ?? '');
+  const [visible, setVisible]       = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [showOverride, setShowOverride] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
-  const configured = hasKey(provider.id);
 
   const handleSave = () => {
     setSaving(true);
@@ -47,19 +51,18 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
   };
 
   const handleTest = async () => {
-    const key = draft.trim() || keys[provider.id] || '';
-    if (!key) return;
     setTestResult(null);
     const model = AI_MODELS.find(m => m.provider === provider.id);
     if (!model) return;
+    const clientKey = draft.trim() || keys[provider.id] || '';
     try {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: 'Antworte nur mit dem Wort: OK', model: model.id, provider: provider.id, apiKey: key }),
+        body: JSON.stringify({ prompt: 'Antworte nur mit dem Wort: OK', model: model.id, provider: provider.id, apiKey: clientKey }),
       });
       const data = await res.json();
-      if (res.ok) setTestResult({ ok: true,  msg: `Verbindung OK · Antwort: "${data.text?.trim().slice(0, 40)}"` });
+      if (res.ok) setTestResult({ ok: true,  msg: `Verbindung OK · "${data.text?.trim().slice(0, 40)}"` });
       else        setTestResult({ ok: false, msg: data.error || `HTTP ${res.status}` });
     } catch (e) {
       setTestResult({ ok: false, msg: (e as Error).message });
@@ -94,37 +97,73 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 7, height: 7, borderRadius: '50%', background: configured ? '#34d399' : '#5d667d', display: 'inline-block', boxShadow: configured ? '0 0 6px #34d399' : 'none' }} />
           <span style={{ fontSize: 11, color: configured ? '#34d399' : 'var(--text-muted)' }}>
-            {configured ? 'Konfiguriert' : 'Nicht konfiguriert'}
+            {envConfigured ? '.env.local' : localConfigured ? 'Browser-Key' : 'Nicht konfiguriert'}
           </span>
         </div>
       </div>
 
-      {/* Key input */}
-      <div>
-        <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>
-          API-Key
-        </label>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <input
-            type={visible ? 'text' : 'password'}
-            value={draft}
-            onChange={e => { setDraft(e.target.value); setTestResult(null); }}
-            placeholder={`${provider.keyPrefix}…`}
-            style={inp}
-            autoComplete="off"
-            spellCheck={false}
-          />
-          <button className="btn sm" onClick={() => setVisible(v => !v)} title={visible ? 'Verstecken' : 'Anzeigen'}>
-            <Ic name={visible ? 'eye' : 'eye'} size={12} />
-            {visible ? 'Hide' : 'Show'}
-          </button>
-          {configured && (
-            <button className="btn sm ghost" onClick={handleClear} style={{ color: '#f87171' }} title="Key löschen">
-              <Ic name="x" size={12} />
+      {/* Env-configured state */}
+      {envConfigured && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.18)' }}>
+          <Ic name="quality" size={13} color="#34d399" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#34d399' }}>Serverseitig konfiguriert</div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'var(--font-geist-mono)' }}>{provider.envVar} · .env.local</div>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button className="btn sm ghost" onClick={handleTest} style={{ fontSize: 10.5 }}>
+              <Ic name="activity" size={11} /> Testen
             </button>
-          )}
+            <button className="btn sm ghost" onClick={() => setShowOverride(v => !v)} style={{ fontSize: 10.5 }}>
+              {showOverride ? 'Schließen' : 'Override'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Key input — always shown if not env-configured, or if override is open */}
+      {(!envConfigured || showOverride) && (
+        <div>
+          <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>
+            {envConfigured ? 'Browser-Override (optional)' : 'API-Key'}
+          </label>
+          {envConfigured && (
+            <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6 }}>
+              Überschreibt den .env.local-Key nur in diesem Browser.
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              type={visible ? 'text' : 'password'}
+              value={draft}
+              onChange={e => { setDraft(e.target.value); setTestResult(null); }}
+              placeholder={`${provider.keyPrefix}…`}
+              style={inp}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className="btn sm" onClick={() => setVisible(v => !v)}>
+              <Ic name="eye" size={12} />
+              {visible ? 'Hide' : 'Show'}
+            </button>
+            {localConfigured && (
+              <button className="btn sm ghost" onClick={handleClear} style={{ color: '#f87171' }}>
+                <Ic name="x" size={12} />
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 8 }}>
+            {draft.trim() && (
+              <button className="btn sm ghost" onClick={handleTest}>
+                <Ic name="activity" size={11} /> Testen
+              </button>
+            )}
+            <button className="btn sm primary" onClick={handleSave} disabled={saving || !draft.trim()}>
+              {saving ? 'Gespeichert ✓' : 'Speichern'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Test result */}
       {testResult && (
@@ -137,18 +176,6 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
           {testResult.msg}
         </div>
       )}
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-        {draft.trim() && (
-          <button className="btn sm ghost" onClick={handleTest}>
-            <Ic name="activity" size={11} /> Testen
-          </button>
-        )}
-        <button className="btn sm primary" onClick={handleSave} disabled={saving || !draft.trim()}>
-          {saving ? 'Gespeichert ✓' : 'Speichern'}
-        </button>
-      </div>
     </div>
   );
 }
