@@ -38,6 +38,7 @@ import { ImportView } from '@/components/views/Import';
 import { ColdChainView } from '@/components/views/ColdChain';
 import { InsuranceView } from '@/components/views/Insurance';
 import { EUDRView } from '@/components/views/EUDR';
+import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -65,6 +66,7 @@ export const App = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [emailModal, setEmailModal] = useState<EmailModalData | null>(null);
 
   const navigate = (view: string, extra: Partial<Route> = {}) => setRoute({ view, ...extra });
   const openOrder = (order: Order) => setRoute({ view: 'order_detail', order });
@@ -78,13 +80,16 @@ export const App = () => {
     };
     const oc = () => setCopilotOpen(true);
     const ow = () => setWizardOpen(true);
+    const oe = (e: Event) => setEmailModal((e as CustomEvent<EmailModalData>).detail);
     window.addEventListener('keydown', h);
     window.addEventListener('open-copilot', oc);
     window.addEventListener('open-wizard', ow);
+    window.addEventListener('open-email', oe);
     return () => {
       window.removeEventListener('keydown', h);
       window.removeEventListener('open-copilot', oc);
       window.removeEventListener('open-wizard', ow);
+      window.removeEventListener('open-email', oe);
     };
   }, []);
 
@@ -320,6 +325,9 @@ export const App = () => {
           </div>
         </div>
       )}
+
+      {/* Email Compose Modal */}
+      {emailModal && <EmailModal initial={emailModal} onClose={() => setEmailModal(null)} />}
 
       {/* Order Wizard Modal */}
       {wizardOpen && (

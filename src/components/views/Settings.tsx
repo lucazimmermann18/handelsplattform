@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
@@ -44,15 +44,102 @@ function initials(name: string) {
 }
 
 export const SettingsView = ({ lang }: SettingsViewProps) => {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [inviteRole, setInviteRole] = useState('member');
+  const [inviting, setInviting] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviting(true);
+    setInviteResult(null);
+    try {
+      const res = await fetch('/api/users/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, name: inviteName, role: inviteRole }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setInviteResult({ ok: true, msg: `Einladung an ${inviteEmail} wurde gesendet.` });
+        setInviteEmail(''); setInviteName('');
+      } else {
+        setInviteResult({ ok: false, msg: json.error ?? 'Fehler beim Einladen.' });
+      }
+    } catch {
+      setInviteResult({ ok: false, msg: 'Netzwerkfehler.' });
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '8px 10px', boxSizing: 'border-box',
+    background: 'var(--bg)', border: '1px solid var(--border)',
+    borderRadius: 5, color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', outline: 'none',
+  };
+
   return (
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_settings')}</h1>
         <div className="sub">Team · Rollen · Integrationen · Audit</div>
         <div className="right">
-          <button className="btn primary"><Ic name="plus" size={13} /> Benutzer einladen</button>
+          <button className="btn primary" onClick={() => { setInviteOpen(true); setInviteResult(null); }}>
+            <Ic name="plus" size={13} /> Benutzer einladen
+          </button>
         </div>
       </div>
+
+      {/* Invite modal */}
+      {inviteOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => e.target === e.currentTarget && setInviteOpen(false)}>
+          <div className="card" style={{ width: 420, padding: 0 }}>
+            <div className="card-head" style={{ padding: '13px 18px', borderBottom: '1px solid var(--border)' }}>
+              <Ic name="buyer" size={14} />
+              <span className="title">Neuen Benutzer einladen</span>
+              <div className="spacer" />
+              <button className="iconbtn" onClick={() => setInviteOpen(false)}><Ic name="x" size={14} /></button>
+            </div>
+            <form onSubmit={handleInvite} style={{ padding: '18px 18px 20px' }}>
+              <div style={{ marginBottom: 12 }}>
+                <label className="tx3" style={{ fontSize: 10.5, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Name</label>
+                <input type="text" value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="Maryam Kassim" style={inp} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label className="tx3" style={{ fontSize: 10.5, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>E-Mail *</label>
+                <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="name@firma.de" required style={inp} />
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label className="tx3" style={{ fontSize: 10.5, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Rolle</label>
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} style={{ ...inp }}>
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                  <option value="viewer">Viewer (nur lesen)</option>
+                </select>
+              </div>
+              {inviteResult && (
+                <div style={{ marginBottom: 14, padding: '8px 10px', borderRadius: 5, fontSize: 12,
+                  background: inviteResult.ok ? 'rgba(52,211,153,0.07)' : 'rgba(239,68,68,0.07)',
+                  border: `1px solid ${inviteResult.ok ? 'rgba(52,211,153,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                  color: inviteResult.ok ? '#34d399' : '#f87171',
+                }}>
+                  {inviteResult.msg}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button type="button" className="btn" onClick={() => setInviteOpen(false)}>Abbrechen</button>
+                <button type="submit" className="btn primary" disabled={inviting}>
+                  {inviting ? 'Einladen…' : 'Einladung senden'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div style={{ padding: '0 16px 12px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>

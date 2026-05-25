@@ -76,8 +76,33 @@ export const OffersView = ({ lang }: OffersViewProps) => {
                         {STATUS_LABEL[o.status] ?? o.status}
                       </Badge>
                     </td>
-                    <td>
-                      <button className="btn sm ghost"><Ic name="eye" size={11} /></button>
+                    <td style={{ display: 'flex', gap: 4 }}>
+                      <button className="btn sm ghost" title="Angebot ansehen"><Ic name="eye" size={11} /></button>
+                      <button
+                        className="btn sm ghost"
+                        title="Per E-Mail senden"
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('open-email', {
+                            detail: {
+                              type: 'offer',
+                              to: b?.email ?? '',
+                              subject: `Angebot ${o.id} – ${p?.name ?? ''}`,
+                              data: {
+                                buyerName: b?.name ?? 'Käufer',
+                                buyerCompany: b?.name,
+                                offerRef: o.id,
+                                validUntil: o.valid,
+                                products: [{ name: p?.name ?? '', qty: String(o.qty), unit: p?.unit ?? 'MT', price: `${o.price.toFixed(2)} €`, total: `${o.value.toLocaleString('de-DE')} €` }],
+                                totalValue: o.value.toLocaleString('de-DE'),
+                                currency: 'EUR',
+                                senderName: 'EastAfrica Export OS',
+                              },
+                            },
+                          }));
+                        }}
+                      >
+                        <Ic name="upload" size={11} />
+                      </button>
                     </td>
                   </tr>
                 );
