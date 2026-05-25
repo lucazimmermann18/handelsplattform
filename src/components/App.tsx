@@ -9,6 +9,9 @@ import { OrdersList, OrderDetail } from '@/components/views/Orders';
 import { SuppliersList, SupplierDetail } from '@/components/views/Suppliers';
 import { ShipmentsView } from '@/components/views/Shipments';
 import { DealsView } from '@/components/views/Deals';
+import { BuyersList, BuyerDetail } from '@/components/views/Buyers';
+import { ProductsList, ProductDetail } from '@/components/views/Products';
+import { OffersView } from '@/components/views/Offers';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -109,21 +112,25 @@ export const App = () => {
       case 'deals':
         return <DealsView lang={lang} />;
       case 'offers':
-        return <ComingSoon view="Angebote" />;
+        return <OffersView lang={lang} />;
       case 'buyers':
-        return <ComingSoon view="Käufer" />;
+        return <BuyersList lang={lang} onOpen={(id) => navigate('buyer_detail', { id })} />;
       case 'suppliers':
         return <SuppliersList lang={lang} onOpen={(id) => navigate('supplier_detail', { id })} />;
       case 'products':
-        return <ComingSoon view="Produkte" />;
+        return <ProductsList lang={lang} onOpen={(id) => navigate('product_detail', { id })} />;
       case 'buyer_detail':
-        return <ComingSoon view={`Käufer ${route.id}`} onBack={() => navigate('buyers')} />;
+        return route.id
+          ? <BuyerDetail id={route.id} lang={lang} onBack={() => navigate('buyers')} />
+          : <BuyersList lang={lang} onOpen={(id) => navigate('buyer_detail', { id })} />;
       case 'supplier_detail':
         return route.id
           ? <SupplierDetail id={route.id} lang={lang} onBack={() => navigate('suppliers')} />
           : <SuppliersList lang={lang} onOpen={(id) => navigate('supplier_detail', { id })} />;
       case 'product_detail':
-        return <ComingSoon view={`Produkt ${route.id}`} onBack={() => navigate('products')} />;
+        return route.id
+          ? <ProductDetail id={route.id} lang={lang} onBack={() => navigate('products')} />
+          : <ProductsList lang={lang} onOpen={(id) => navigate('product_detail', { id })} />;
       case 'quality':
         return <ComingSoon view="Qualitätsprüfung" />;
       case 'inventory':
