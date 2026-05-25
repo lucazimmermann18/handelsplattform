@@ -12,6 +12,11 @@ import { DealsView } from '@/components/views/Deals';
 import { BuyersList, BuyerDetail } from '@/components/views/Buyers';
 import { ProductsList, ProductDetail } from '@/components/views/Products';
 import { OffersView } from '@/components/views/Offers';
+import { TasksView } from '@/components/views/Tasks';
+import { ComplaintsList, ComplaintDetail } from '@/components/views/Complaints';
+import { QualityView } from '@/components/views/Quality';
+import { InventoryView } from '@/components/views/Inventory';
+import { DocumentsView } from '@/components/views/Documents';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -132,21 +137,23 @@ export const App = () => {
           ? <ProductDetail id={route.id} lang={lang} onBack={() => navigate('products')} />
           : <ProductsList lang={lang} onOpen={(id) => navigate('product_detail', { id })} />;
       case 'quality':
-        return <ComingSoon view="Qualitätsprüfung" />;
+        return <QualityView lang={lang} />;
       case 'inventory':
-        return <ComingSoon view="Lagerbestand" />;
+        return <InventoryView lang={lang} />;
       case 'compliance':
         return <ComingSoon view="Export & Zoll" />;
       case 'documents':
-        return <ComingSoon view="Dokumente" />;
+        return <DocumentsView lang={lang} />;
       case 'finance':
         return <ComingSoon view="Finanzen" />;
       case 'tasks':
-        return <ComingSoon view="Aufgaben" />;
+        return <TasksView lang={lang} />;
       case 'complaints':
-        return <ComingSoon view="Reklamationen" />;
+        return <ComplaintsList lang={lang} onOpen={(id) => navigate('complaint_detail', { id })} />;
       case 'complaint_detail':
-        return <ComingSoon view={`Reklamation ${route.id}`} onBack={() => navigate('complaints')} />;
+        return route.id
+          ? <ComplaintDetail id={route.id} lang={lang} onBack={() => navigate('complaints')} />
+          : <ComplaintsList lang={lang} onOpen={(id) => navigate('complaint_detail', { id })} />;
       case 'reports':
         return <ComingSoon view="Reports" />;
       case 'settings':
