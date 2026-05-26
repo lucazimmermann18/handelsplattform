@@ -45,11 +45,21 @@ interface OrdersListProps {
 export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
   const { data: M } = useData();
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const filtered = statusFilter === 'all'
-    ? M.orders
-    : M.orders.filter((o) => o.status === statusFilter);
+  const filtered = (statusFilter === 'all' ? M.orders : M.orders.filter((o) => o.status === statusFilter))
+    .filter(o => {
+      if (!searchText.trim()) return true;
+      const q = searchText.toLowerCase();
+      const buyer = M.buyers.find(b => b.id === o.buyerId);
+      const supplier = M.suppliers.find(s => s.id === o.supplierId);
+      return o.id.toLowerCase().includes(q)
+        || o.productVariant.toLowerCase().includes(q)
+        || (buyer?.name ?? '').toLowerCase().includes(q)
+        || (supplier?.name ?? '').toLowerCase().includes(q);
+    });
 
   const handleExport = () => {
     const buyer = (id: string) => M.buyers.find(b => b.id === id);
@@ -97,7 +107,9 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
           {filtered.length} {t(lang, 'of')} {M.orders.length} · Umsatz {fmtCur(totalRev)} · Gewinn {fmtCur(totalProfit)}
         </div>
         <div className="right">
-          <button className="btn"><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
+          <button className="btn" onClick={() => { setSearchOpen(v => !v); if (searchOpen) setSearchText(''); }} style={{ background: searchOpen ? 'var(--accent)' : undefined, color: searchOpen ? '#fff' : undefined }}>
+            <Ic name="filter" size={13} color={searchOpen ? '#fff' : undefined} /> {t(lang, 'filter')}
+          </button>
           <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button
             className="btn primary"
@@ -123,6 +135,24 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
           Sortiert nach: <span className="tx2 fw500">ETD</span>
         </span>
       </div>
+
+      {searchOpen && (
+        <div style={{ padding: '0 0 10px', display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Ic name="filter" size={14} color="var(--text-3)" />
+          <input
+            autoFocus
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder="Suche nach Auftrag-ID, Produkt, Käufer, Lieferant…"
+            style={{ flex: 1, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', color: 'var(--text)', fontSize: 13 }}
+          />
+          {searchText && (
+            <button className="btn sm ghost" onClick={() => setSearchText('')}>
+              <Ic name="close" size={11} />
+            </button>
+          )}
+        </div>
+      )}
 
       <div style={{ overflowX: 'auto' }}>
         <table className="table" style={{ background: 'var(--surface)' }}>
@@ -222,6 +252,8 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [docRequested, setDocRequested] = useState<Set<string>>(new Set());
   const [docNote, setDocNote] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [checkedTasks, setCheckedTasks] = useState<Set<number>>(new Set());
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const handleSaveEdit = async () => {
@@ -285,7 +317,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
         <StatusBadge s={o.status} lang={lang} />
         <div className="sub">{o.productVariant} · {fmtNum(o.qty)} {o.unit} · {buyer?.name}</div>
         <div className="right">
-          <button className="btn"><Ic name="history" size={13} /> Historie</button>
+          <button className="btn" onClick={() => setHistoryOpen(true)}><Ic name="history" size={13} /> Historie</button>
           <button
             className="btn"
             onClick={() => window.dispatchEvent(new CustomEvent('open-email', { detail: {
@@ -578,7 +610,16 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
                           <div className="t">{task.t}</div>
                           <div className="m">{task.prio} · fällig {task.due}</div>
                         </div>
-                        <input type="checkbox" style={{ accentColor: '#3b82f6' }} />
+                        <input
+                          type="checkbox"
+                          checked={checkedTasks.has(i)}
+                          onChange={() => setCheckedTasks(prev => {
+                            const next = new Set(Array.from(prev));
+                            if (next.has(i)) next.delete(i); else next.add(i);
+                            return next;
+                          })}
+                          style={{ accentColor: '#3b82f6', cursor: 'pointer' }}
+                        />
                       </div>
                     ))}
                   </div>
@@ -667,6 +708,38 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
       </div>
     )}
     {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
+    {historyOpen && (
+      <div className="overlay" onClick={() => setHistoryOpen(false)}>
+        <div className="modal" style={{ maxWidth: 520, width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="card-head" style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <Ic name="history" size={14} />
+            <span className="title">Statushistorie — {o.id}</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setHistoryOpen(false)}>
+              <Ic name="close" size={11} />
+            </button>
+          </div>
+          <div style={{ padding: '14px 18px 18px', maxHeight: 420, overflowY: 'auto' }}>
+            {ORDER_STATUS_FLOW.slice(0, ORDER_STATUS_FLOW.findIndex(s => s.k === o.status) + 1).reverse().map((st, i, arr) => (
+              <div key={st.k} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: i < arr.length - 1 ? 16 : 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: i === 0 ? 'var(--accent)' : 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ic name={st.icon} size={13} color={i === 0 ? '#fff' : '#34d399'} />
+                  </div>
+                  {i < arr.length - 1 && <div style={{ width: 2, height: 20, background: 'var(--border)', margin: '3px 0' }} />}
+                </div>
+                <div style={{ paddingTop: 4 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? 'var(--text)' : 'var(--text-2)' }}>{st.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                    {i === 0 ? 'Aktueller Status' : `Abgeschlossen`}
+                    {i === 0 && o.eta ? ` · ETA ${fmtDate(o.eta)}` : ''}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 };

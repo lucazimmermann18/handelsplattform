@@ -42,6 +42,9 @@ export const ImportView = ({ lang: _lang, onNav }: ImportViewProps) => {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [csvText, setCsvText] = useState('');
+  const [mappings, setMappings] = useState<Record<string, string>>(
+    () => Object.fromEntries(fieldMapping.map(fm => [fm.source, fm.target]))
+  );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -221,11 +224,15 @@ Beispiel GmbH,Hamburg,DE,...`}
                   <tr key={i}>
                     <td><span className="mono">{fm.source}</span></td>
                     <td>
-                      <select style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 4, padding: '4px 8px', color: 'var(--text)', fontSize: 13 }}>
+                      <select
+                        value={mappings[fm.source] ?? fm.target}
+                        onChange={e => setMappings(prev => ({ ...prev, [fm.source]: e.target.value }))}
+                        style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 4, padding: '4px 8px', color: 'var(--text)', fontSize: 13 }}
+                      >
                         {selectedType.cols.map(c => (
-                          <option key={c} selected={c === fm.target}>{c}</option>
+                          <option key={c} value={c}>{c}</option>
                         ))}
-                        <option>— ignorieren</option>
+                        <option value="__ignore">— ignorieren</option>
                       </select>
                     </td>
                     <td>
