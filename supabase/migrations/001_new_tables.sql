@@ -50,3 +50,33 @@ create table if not exists samples (
 alter table samples enable row level security;
 drop policy if exists "allow all" on samples;
 create policy "allow all" on samples for all using (true);
+
+-- supplier_notes: Kommunikation & Notizen pro Lieferant
+create table if not exists supplier_notes (
+  id          uuid primary key default gen_random_uuid(),
+  supplier_id text not null,
+  author      text not null default 'Admin',
+  content     text not null,
+  type        text not null default 'note',
+  created_at  timestamptz not null default now()
+);
+create index if not exists supplier_notes_supplier_id_idx on supplier_notes(supplier_id);
+alter table supplier_notes enable row level security;
+drop policy if exists "allow all" on supplier_notes;
+create policy "allow all" on supplier_notes for all using (true);
+
+-- field_visits: Field Visits & Audits pro Lieferant
+create table if not exists field_visits (
+  id          uuid primary key default gen_random_uuid(),
+  supplier_id text not null,
+  type        text not null default 'Field Visit',
+  visit_date  date not null,
+  inspector   text not null default 'Admin',
+  notes       text,
+  result      text default 'ausstehend',
+  created_at  timestamptz not null default now()
+);
+create index if not exists field_visits_supplier_id_idx on field_visits(supplier_id);
+alter table field_visits enable row level security;
+drop policy if exists "allow all" on field_visits;
+create policy "allow all" on field_visits for all using (true);

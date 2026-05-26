@@ -39,6 +39,7 @@ interface OffersViewProps {
 export const OffersView = ({ lang }: OffersViewProps) => {
   const { data: M, refresh } = useData();
   const [newOffer, setNewOffer] = useState(false);
+  const [detailOfferId, setDetailOfferId] = useState<string | null>(null);
   const [form, setForm] = useState({ buyerId: '', productId: '', qty: '', price: '', validUntil: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -131,7 +132,7 @@ export const OffersView = ({ lang }: OffersViewProps) => {
                         </Badge>
                       </td>
                       <td style={{ display: 'flex', gap: 4 }}>
-                        <button className="btn sm ghost" title="Angebot ansehen"><Ic name="eye" size={11} /></button>
+                        <button className="btn sm ghost" title="Angebot ansehen" onClick={() => setDetailOfferId(o.id)}><Ic name="eye" size={11} /></button>
                         <button
                           className="btn sm ghost"
                           title="Per E-Mail senden"
@@ -166,6 +167,112 @@ export const OffersView = ({ lang }: OffersViewProps) => {
           </div>
         </div>
       </div>
+
+      {detailOfferId && (() => {
+        const o = M.offers.find(x => x.id === detailOfferId);
+        if (!o) return null;
+        const b = M.buyers.find(x => x.id === o.buyer);
+        const p = M.products.find(x => x.id === o.product);
+        const statusDays = o.valid
+          ? Math.ceil((new Date(o.valid).getTime() - Date.now()) / 86400000)
+          : null;
+        return (
+          <div className="overlay" onClick={() => setDetailOfferId(null)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 520, padding: 0 }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Ic name="doc" size={15} color="#a78bfa" />
+                <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>Angebot <span className="mono">{o.id}</span></span>
+                <Badge kind={STATUS_KIND[o.status] ?? 'neutral'} dot>{STATUS_LABEL[o.status] ?? o.status}</Badge>
+                <button className="btn sm ghost" onClick={() => setDetailOfferId(null)}><Ic name="x" size={12} /></button>
+              </div>
+
+              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Buyer + Product */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 4 }}>Käufer</div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{b?.name ?? '—'}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{b?.country}</div>
+                    {b?.email && (
+                      <a href={`mailto:${b.email}`} style={{ fontSize: 11, color: '#60a5fa', textDecoration: 'none', fontFamily: 'Geist Mono, monospace' }}>{b.email}</a>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 4 }}>Produkt</div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{p?.name ?? '—'}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{p?.cat}</div>
+                  </div>
+                </div>
+
+                {/* Numbers */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  {[
+                    { l: 'Menge', v: `${fmtNum(o.qty)} ${p?.unit ?? ''}` },
+                    { l: 'Preis / Einheit', v: `${o.price.toFixed(2)} €` },
+                    { l: 'Gesamtwert', v: fmtCur(o.value), highlight: true },
+                  ].map((f, i) => (
+                    <div key={i} style={{ background: 'var(--bg)', borderRadius: 6, padding: '10px 12px' }}>
+                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 4 }}>{f.l}</div>
+                      <div className="mono fw600" style={{ fontSize: 15, color: f.highlight ? '#a78bfa' : 'var(--text)' }}>{f.v}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Dates */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 3 }}>Erstellt</div>
+                    <div className="mono" style={{ fontSize: 12 }}>{fmtDate(o.id.replace('OFF-', ''))}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 3 }}>Gesendet</div>
+                    <div className="mono" style={{ fontSize: 12 }}>{fmtDate(o.sent) || '—'}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 3 }}>Gültig bis</div>
+                    <div className="mono" style={{ fontSize: 12, color: statusDays !== null && statusDays < 0 ? '#f87171' : statusDays !== null && statusDays <= 7 ? '#fbbf24' : 'var(--text)' }}>
+                      {fmtDate(o.valid) || '—'}
+                      {statusDays !== null && (
+                        <span style={{ marginLeft: 6, fontSize: 10, color: statusDays < 0 ? '#f87171' : '#fbbf24' }}>
+                          ({statusDays < 0 ? `${Math.abs(statusDays)}d abgelaufen` : `${statusDays}d`})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button
+                  className="btn ghost"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-email', {
+                      detail: {
+                        type: 'offer',
+                        to: b?.email ?? '',
+                        subject: `Angebot ${o.id} – ${p?.name ?? ''}`,
+                        data: {
+                          buyerName: b?.name ?? 'Käufer',
+                          buyerCompany: b?.name,
+                          offerRef: o.id,
+                          validUntil: o.valid,
+                          products: [{ name: p?.name ?? '', qty: String(o.qty), unit: p?.unit ?? 'MT', price: `${o.price.toFixed(2)} €`, total: `${o.value.toLocaleString('de-DE')} €` }],
+                          totalValue: o.value.toLocaleString('de-DE'),
+                          currency: 'EUR',
+                          senderName: 'EastAfrica Export OS',
+                        },
+                      },
+                    }));
+                  }}
+                >
+                  <Ic name="upload" size={11} /> Per E-Mail senden
+                </button>
+                <button className="btn primary" onClick={() => setDetailOfferId(null)}>Schließen</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {newOffer && (
         <div className="overlay" onClick={() => setNewOffer(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
