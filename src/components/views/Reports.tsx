@@ -25,6 +25,38 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const handleExportAll = () => {
+    const ts = new Date().toISOString().slice(0, 10);
+    // Comprehensive multi-section CSV export
+    const sections: string[] = [];
+
+    // Section 1: Revenue by Buyer
+    sections.push('## Umsatz nach Käufer');
+    const buyerHeaders = ['Käufer-ID','Name','Land','Umsatz (€)','Bewertung','Status'];
+    const buyerRows = [...M.buyers].filter(b => b.revenue > 0).sort((a, b) => b.revenue - a.revenue)
+      .map(b => [b.id, b.name, b.country, b.revenue, b.rating, b.status]);
+    sections.push([buyerHeaders, ...buyerRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    // Section 2: Supplier Performance
+    sections.push('\n## Lieferanten-Performance');
+    const supHeaders = ['Lieferant-ID','Name','Land','Tier','Score','Risiko','Status'];
+    const supRows = [...M.suppliers].sort((a, b) => b.score - a.score)
+      .map(s => [s.id, s.name, s.country, s.tier, s.score, s.risk, s.status]);
+    sections.push([supHeaders, ...supRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    // Section 3: Products
+    sections.push('\n## Produkte & Margen');
+    const prodHeaders = ['Produkt-ID','Name','Kategorie','Einkauf (€)','Verkauf (€)','Marge (%)','Exportbereit'];
+    const prodRows = [...M.products].sort((a, b) => b.margin - a.margin)
+      .map(p => [p.id, p.name, p.cat, p.buyPrice, p.sellPrice, p.margin, p.exportReady ? 'Ja' : 'Nein']);
+    sections.push([prodHeaders, ...prodRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    const csv = sections.join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `berichte-gesamt-${ts}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const sortedBuyers = [...M.buyers]
     .filter(b => b.revenue > 0)
     .sort((a, b) => b.revenue - a.revenue);
@@ -39,7 +71,7 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
         <h1>{t(lang, 'nav_reports')}</h1>
         <div className="sub">Einkauf · Sales · Export · Finanzen</div>
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> Alle PDFs</button>
+          <button className="btn" onClick={handleExportAll}><Ic name="download" size={13} /> Export (CSV)</button>
         </div>
       </div>
 

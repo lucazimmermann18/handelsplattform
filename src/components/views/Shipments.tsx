@@ -311,6 +311,21 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const handleExport = () => {
+    const headers = ['Auftrags-ID','Produkt','Variante','Käufer','Lieferant','Schiff','Ladehafen','Zielhafen','ETD','ETA','Menge','Einheit','Umsatz (€)','Incoterm','Status'];
+    const shipmentsToExport = M.orders.filter(o => ['in_export','shipped','in_transit','arrived','delivered','paid'].includes(o.status));
+    const rows = shipmentsToExport.map(o => {
+      const buyer = M.buyers.find(b => b.id === o.buyerId);
+      const sup = M.suppliers.find(s => s.id === o.supplierId);
+      const vessel = M.vessels[o.vesselIdx];
+      return [o.id, o.productVariant, o.productVariant, buyer?.name ?? '', sup?.name ?? '', vessel?.name ?? '', o.portLoad, o.portDest, o.etd, o.eta, o.qty, o.unit, o.revenue, o.incoterm, o.status];
+    });
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `verschiffungen-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const shippableOrders = M.orders.filter(o => ['confirmed', 'ready', 'in_export'].includes(o.status));
   const selectedOrder = shippableOrders.find(o => o.id === shipForm.orderId) ?? null;
 
@@ -377,7 +392,7 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
               </span>
             )}
           </button>
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button className="btn primary" onClick={() => setShipOpen(true)}><Ic name="plus" size={13} /> Shipment buchen</button>
         </div>
       </div>

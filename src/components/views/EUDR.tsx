@@ -59,6 +59,48 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
     return prod && EUDR_CATS.includes(prod.cat);
   });
 
+  const handleDDSReport = () => {
+    const ts = new Date().toISOString().slice(0, 10);
+    const sections: string[] = [];
+
+    // Section 1: DDS Status per Order
+    sections.push(`EUDR Due Diligence Statement Report — Stand ${ts}`);
+    sections.push('');
+    sections.push('## DDS-Status je Auftrag (EUDR-relevant)');
+    const orderHeaders = ['Auftrags-ID','Produkt','Kategorie','Lieferant','Käufer','ETD','ETA','Status','DDS-Status','Referenznummer'];
+    const orderRows = eudrOrders.map(o => {
+      const prod = M.products.find(p => p.id === o.productId);
+      const sup = M.suppliers.find(s => s.id === o.supplierId);
+      const buyer = M.buyers.find(b => b.id === o.buyerId);
+      const dds = ddsStatus(o.id);
+      const ref = dds === 'submitted' ? `DDS-${o.id}-2026` : '';
+      return [o.id, prod?.name ?? o.productVariant, prod?.cat ?? '', sup?.name ?? '', buyer?.name ?? '', o.etd, o.eta, o.status, dds, ref];
+    });
+    sections.push([orderHeaders, ...orderRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    // Section 2: GPS Status per Supplier
+    sections.push('');
+    sections.push('## GPS-Koordinaten-Status je Lieferant (EUDR-relevant)');
+    const supHeaders = ['Lieferant-ID','Name','Land','Region','Produkte','GPS-Status','Tier','Risiko'];
+    const supRows = eudrSuppliers.map(s => [
+      s.id, s.name, s.country, s.region, s.products.join('; '),
+      supplierGpsStatus(s.id), s.tier, s.risk,
+    ]);
+    sections.push([supHeaders, ...supRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    // Section 3: Regulation Readiness
+    sections.push('');
+    sections.push('## Compliance-Readiness nach Artikel');
+    const regHeaders = ['Artikel','Titel','Frist','Readiness (%)'];
+    const regRows = REGULATIONS.map(r => [r.code, r.title, r.deadline, r.readiness]);
+    sections.push([regHeaders, ...regRows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    const csv = sections.join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `eudr-dds-report-${ts}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const gpsComplete = eudrSuppliers.filter(s => supplierGpsStatus(s.id) === 'complete').length;
   const ddsSubmitted = eudrOrders.filter(o => ddsStatus(o.id) === 'submitted').length;
   const overallReadiness = Math.round((88 + 78 + 67 + 55 + 92) / REGULATIONS.length);
@@ -78,7 +120,7 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
         <div className="sub">EU Deforestation Regulation (EU) 2023/1115 · Sorgfaltspflicht · GPS · DDS via TRACES NT</div>
         <div className="right">
           <Badge kind={overallReadiness >= 80 ? 'success' : 'warning'} dot>{overallReadiness}% Readiness</Badge>
-          <button className="btn"><Ic name="download" size={13} /> DDS-Report</button>
+          <button className="btn" onClick={handleDDSReport}><Ic name="download" size={13} /> DDS-Report</button>
         </div>
       </div>
 

@@ -68,6 +68,21 @@ const DOCS = [
 ];
 
 export const ColdChainView = ({ lang: _lang }: ColdChainViewProps) => {
+  const handleSensorExport = () => {
+    const headers = ['Container-ID','Container-Nr.','Auftrag','Produkt','Schiff','Soll-Temp','Ist-Temp','Min-Temp','Max-Temp','Sensor','Readings','Status','Verletzungen','ETD','ETA','Ladehafen','Zielhafen','Details'];
+    const rows = REEFERS.map(r => [
+      r.id, r.container, r.order, r.product, r.vessel,
+      r.set, r.current, r.min, r.max,
+      r.sensor, r.readings, r.status, r.breaches,
+      r.etd, r.eta, r.portLoad, r.portDest,
+      r.breachDetails ?? '',
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `sensor-reports-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const activeReefers = REEFERS.filter(r => !r.order.includes('2025')).length;
   const okCount = REEFERS.filter(r => r.status === 'normal' && !r.order.includes('2025')).length;
   const breachHistory = REEFERS.filter(r => r.status === 'breach').length;
@@ -79,7 +94,7 @@ export const ColdChainView = ({ lang: _lang }: ColdChainViewProps) => {
         <h1>Cold Chain Monitor</h1>
         <div className="sub">Reefer-Container · Temperatur-Tracking · Kühlkettennachweis für EU-Import</div>
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> Sensor-Reports</button>
+          <button className="btn" onClick={handleSensorExport}><Ic name="download" size={13} /> Sensor-Reports</button>
         </div>
       </div>
 

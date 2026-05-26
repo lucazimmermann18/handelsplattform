@@ -44,6 +44,18 @@ export const QualityView = ({ lang }: QualityViewProps) => {
     lab: '', inspector: '', grade: '', notes: '', status: 'in_progress',
   });
 
+  const handleExport = () => {
+    const headers = ['QC-ID','Charge','Produkt','Lieferant','Datum','Feuchtigkeit','Reinheit','Fremdkörper','Öl','Cup-Score','Labor','Prüfer','Grade','Status','Notizen'];
+    const rows = M!.quality.map(q => {
+      const sup = M!.suppliers.find(x => x.id === q.supplier);
+      return [q.id, q.batch, q.product, sup?.name ?? q.supplier, q.date, q.moisture ?? '', q.purity ?? '', q.foreign ?? '', q.oil ?? '', q.cup ?? '', q.lab, q.inspector, q.grade, q.status, q.notes];
+    });
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `qualitaet-bericht-${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
   const handleSaveCheck = async () => {
     setSaving(true);
     setSaveError('');
@@ -99,7 +111,7 @@ export const QualityView = ({ lang }: QualityViewProps) => {
             {M.quality.length} Prüfungen · {M.quality.filter(q => q.status === 'released').length} freigegeben · {M.quality.filter(q => q.status === 'blocked').length} gesperrt
           </div>
           <div className="right">
-            <button className="btn"><Ic name="download" size={13} /> Bericht</button>
+            <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> Bericht</button>
             <button className="btn primary" onClick={() => setNewCheck(true)}><Ic name="plus" size={13} /> Neue Prüfung</button>
           </div>
         </div>
