@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
-import { StatusBar } from '@/components/layout/StatusBar';
 import { Dashboard } from '@/components/views/Dashboard';
 import { OrdersList, OrderDetail } from '@/components/views/Orders';
 import { SuppliersList, SupplierDetail } from '@/components/views/Suppliers';
@@ -279,7 +278,6 @@ export const App = () => {
 
         <main className="main">{view}</main>
 
-        <StatusBar />
       </div>
 
       {/* Command Palette */}
