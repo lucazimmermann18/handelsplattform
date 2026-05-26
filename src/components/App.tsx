@@ -42,6 +42,9 @@ import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { OrderWizard } from '@/components/ui/OrderWizard';
+import { SupplierWizard } from '@/components/ui/SupplierWizard';
+import { BuyerWizard } from '@/components/ui/BuyerWizard';
+import { ProductWizard } from '@/components/ui/ProductWizard';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
@@ -60,6 +63,9 @@ export const App = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [supplierWizardOpen, setSupplierWizardOpen] = useState(false);
+  const [buyerWizardOpen, setBuyerWizardOpen] = useState(false);
+  const [productWizardOpen, setProductWizardOpen] = useState(false);
   const [emailModal, setEmailModal] = useState<EmailModalData | null>(null);
 
   const navigate = (view: string, extra: Partial<Route> = {}) => setRoute({ view, ...extra });
@@ -74,15 +80,24 @@ export const App = () => {
     };
     const oc = () => setCopilotOpen(true);
     const ow = () => setWizardOpen(true);
+    const osw = () => setSupplierWizardOpen(true);
+    const obw = () => setBuyerWizardOpen(true);
+    const opw = () => setProductWizardOpen(true);
     const oe = (e: Event) => setEmailModal((e as CustomEvent<EmailModalData>).detail);
     window.addEventListener('keydown', h);
     window.addEventListener('open-copilot', oc);
     window.addEventListener('open-wizard', ow);
+    window.addEventListener('open-supplier-wizard', osw);
+    window.addEventListener('open-buyer-wizard', obw);
+    window.addEventListener('open-product-wizard', opw);
     window.addEventListener('open-email', oe);
     return () => {
       window.removeEventListener('keydown', h);
       window.removeEventListener('open-copilot', oc);
       window.removeEventListener('open-wizard', ow);
+      window.removeEventListener('open-supplier-wizard', osw);
+      window.removeEventListener('open-buyer-wizard', obw);
+      window.removeEventListener('open-product-wizard', opw);
       window.removeEventListener('open-email', oe);
     };
   }, []);
@@ -284,6 +299,27 @@ export const App = () => {
         open={wizardOpen}
         onClose={() => setWizardOpen(false)}
         onSuccess={() => navigate('orders')}
+      />
+
+      {/* Supplier Wizard */}
+      <SupplierWizard
+        open={supplierWizardOpen}
+        onClose={() => setSupplierWizardOpen(false)}
+        onSuccess={() => { setSupplierWizardOpen(false); navigate('suppliers'); }}
+      />
+
+      {/* Buyer Wizard */}
+      <BuyerWizard
+        open={buyerWizardOpen}
+        onClose={() => setBuyerWizardOpen(false)}
+        onSuccess={() => { setBuyerWizardOpen(false); navigate('buyers'); }}
+      />
+
+      {/* Product Wizard */}
+      <ProductWizard
+        open={productWizardOpen}
+        onClose={() => setProductWizardOpen(false)}
+        onSuccess={() => { setProductWizardOpen(false); navigate('products'); }}
       />
     </>
   );

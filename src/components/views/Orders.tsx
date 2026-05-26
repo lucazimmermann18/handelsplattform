@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { useData } from '@/lib/data-context';
+import { OrderComments } from '@/components/ui/OrderComments';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -262,7 +263,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
           >
             <Ic name="mail" size={13} /> Käufer mailen
           </button>
-          <button className="btn"><Ic name="download" size={13} /> Auftrag.pdf</button>
+          <button className="btn" onClick={() => window.print()}><Ic name="download" size={13} /> Auftrag.pdf</button>
           <button className="btn primary"><Ic name="edit" size={13} /> Bearbeiten</button>
         </div>
       </div>
@@ -459,12 +460,9 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
             <div className="card-head">
               <Ic name="mail" size={14} />
               <span className="title">{t(lang, 'communication')}</span>
-              <div style={{ marginLeft: 'auto' }}>
-                <button className="btn sm"><Ic name="plus" size={11} /> Notiz</button>
-              </div>
             </div>
-            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-              <div className="tx3" style={{ fontSize: 12 }}>Noch keine Kommunikation erfasst</div>
+            <div style={{ padding: '14px 16px' }}>
+              <OrderComments orderId={o.id} />
             </div>
           </div>
         </div>

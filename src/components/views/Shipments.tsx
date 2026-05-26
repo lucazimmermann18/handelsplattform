@@ -277,9 +277,10 @@ interface ShipmentsViewProps {
 }
 
 export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
   const inTransit = (M?.orders ?? []).filter(o => ['in_export','shipped','in_transit','arrived'].includes(o.status));
   const [selected, setSelected] = useState<Order | null>(null);
+  const [lastAisUpdate, setLastAisUpdate] = useState<Date | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const sel = selected ?? inTransit[1] ?? inTransit[0] ?? null;
@@ -312,7 +313,14 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
         <h1>{t(lang, 'nav_shipments')}</h1>
         <div className="sub">{inTransit.length} aktive Verschiffungen · 8 Container · 3 Reefer · 1 Bulk</div>
         <div className="right">
-          <button className="btn"><Ic name="refresh" size={13} /> AIS-Feed</button>
+          <button className="btn" onClick={() => { refresh(); setLastAisUpdate(new Date()); }}>
+            <Ic name="refresh" size={13} /> AIS-Feed
+            {lastAisUpdate && (
+              <span className="tx3 mono" style={{ marginLeft: 4, fontSize: 10 }}>
+                {Math.round((Date.now() - lastAisUpdate.getTime()) / 60000)}m
+              </span>
+            )}
+          </button>
           <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button className="btn primary"><Ic name="plus" size={13} /> Shipment buchen</button>
         </div>

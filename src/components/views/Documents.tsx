@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { UploadModal } from '@/components/ui/UploadModal';
 
 const TYPE_FILTERS = ['alle', 'Vertrag', 'Zertifikat', 'Transportdokument', 'Laborbericht'] as const;
 type TypeFilter = typeof TYPE_FILTERS[number];
@@ -30,6 +31,7 @@ interface DocumentsViewProps {
 export const DocumentsView = ({ lang }: DocumentsViewProps) => {
   const { data: M } = useData();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('alle');
+  const [uploadOpen, setUploadOpen] = useState(false);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
 
@@ -46,13 +48,14 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
   ];
 
   return (
+  <>
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_documents')}</h1>
         <div className="sub">{M.documents.length} Dokumente · Versionierung · Ablaufkontrolle</div>
         <div className="right">
           <button className="btn"><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
-          <button className="btn primary"><Ic name="upload" size={13} /> Hochladen</button>
+          <button className="btn primary" onClick={() => setUploadOpen(true)}><Ic name="upload" size={13} /> Hochladen</button>
         </div>
       </div>
 
@@ -147,5 +150,7 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
         </div>
       </div>
     </div>
+    {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
+  </>
   );
 };

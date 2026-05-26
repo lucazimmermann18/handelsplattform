@@ -28,7 +28,7 @@ export const ProductsList = ({ lang, onOpen }: ProductsListProps) => {
         <h1>{t(lang, 'nav_products')}</h1>
         <div className="sub">{M.products.length} Produkte · {totalVariants} Varianten</div>
         <div className="right">
-          <button className="btn primary"><Ic name="plus" size={13} /> Neues Produkt</button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-product-wizard'))}><Ic name="plus" size={13} /> Neues Produkt</button>
         </div>
       </div>
 

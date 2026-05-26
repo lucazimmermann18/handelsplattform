@@ -44,7 +44,7 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
         <div className="right">
           <button className="btn"><Ic name="map" size={13} /> Karte</button>
           <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
-          <button className="btn primary"><Ic name="plus" size={13} /> Neuer Lieferant</button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-supplier-wizard'))}><Ic name="plus" size={13} /> Neuer Lieferant</button>
         </div>
       </div>
 

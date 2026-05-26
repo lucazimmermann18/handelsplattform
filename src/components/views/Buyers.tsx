@@ -40,7 +40,7 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
         </div>
         <div className="right">
           <button className="btn" onClick={handleExport}><Ic name="download" size={13} /> Export</button>
-          <button className="btn primary"><Ic name="plus" size={13} /> Neuer Käufer</button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-buyer-wizard'))}><Ic name="plus" size={13} /> Neuer Käufer</button>
         </div>
       </div>
 
