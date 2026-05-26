@@ -17,7 +17,7 @@ const INTEGRATIONS = [
 
 const AUDIT_TRAIL: { ts: string; u: string; a: string; o: string }[] = [];
 
-interface SettingsViewProps { lang: Lang; }
+interface SettingsViewProps { lang: Lang; onNav?: (view: string) => void; }
 
 function initials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2);
@@ -239,7 +239,7 @@ function ModelPicker() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const SettingsView = ({ lang }: SettingsViewProps) => {
+export const SettingsView = ({ lang, onNav }: SettingsViewProps) => {
   const { isConnected, error: dbError, loading: dbLoading, lastSync, supabaseUrl, refresh } = useData();
   const { isConfigured, activeModelObj } = useAiConfig();
   const [userMenu, setUserMenu]         = useState<string | null>(null);
@@ -504,10 +504,15 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
                   ))}
                 </div>
               )}
-              <button className="btn sm" style={{ marginLeft: 'auto', flexShrink: 0 }} disabled={dbLoading} onClick={refresh}>
-                <Ic name="refresh" size={12} />
-                {dbLoading ? 'Teste…' : 'Verbindung testen'}
-              </button>
+              <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
+                <button className="btn sm" disabled={dbLoading} onClick={refresh}>
+                  <Ic name="refresh" size={12} />
+                  {dbLoading ? 'Teste…' : 'Verbindung testen'}
+                </button>
+                <button className="btn sm primary" onClick={() => onNav?.('db_health')}>
+                  <Ic name="activity" size={12} /> Tabellen-Diagnose
+                </button>
+              </div>
             </div>
             {dbError && !dbLoading && (
               <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 6, fontSize: 12, fontFamily: 'var(--font-mono)',

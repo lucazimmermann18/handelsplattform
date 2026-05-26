@@ -39,6 +39,7 @@ import { ImportView } from '@/components/views/Import';
 import { ColdChainView } from '@/components/views/ColdChain';
 import { InsuranceView } from '@/components/views/Insurance';
 import { EUDRView } from '@/components/views/EUDR';
+import { DbHealthView } from '@/components/views/DbHealth';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -133,6 +134,7 @@ export const App = () => {
       intelligence: 'Intelligence', cockpit: 'Operations Cockpit', cashflow: 'Cashflow',
       strategy: 'Strategie', compliance_roadmap: 'Compliance-Roadmap', capital: 'Capital', import: 'Daten-Import',
       cold_chain: 'Cold Chain Monitor', insurance: 'Versicherungs-Tracker',
+      db_health: 'Datenbank-Diagnose',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (labelMap[route.view]) return [...base, labelMap[route.view]];
@@ -204,7 +206,9 @@ export const App = () => {
       case 'reports':
         return <ReportsView lang={lang} />;
       case 'settings':
-        return <SettingsView lang={lang} />;
+        return <SettingsView lang={lang} onNav={navigate} />;
+      case 'db_health':
+        return <DbHealthView />;
       case 'import':
         return <ImportView lang={lang} onNav={navigate} />;
       case 'eudr':
