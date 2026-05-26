@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars } from '@/components/ui/primitives';
+import { useData } from '@/lib/data-context';
 
 interface CapitalViewProps {
   lang: Lang;
@@ -203,9 +204,23 @@ const INVESTORS: Investor[] = [
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState('forecast');
   const [scenario, setScenario] = useState<Scenario>('base');
   const [selectedUpdate, setSelectedUpdate] = useState('U-05');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
+
+  // Compute actual revenue & profit from real orders
+  const { actualRevK, actualEbitdaK } = useMemo(() => {
+    if (!M || M.orders.length === 0) return { actualRevK: 0, actualEbitdaK: 0 };
+    const totalRev  = M.orders.reduce((s, o) => s + o.revenue, 0);
+    const totalProfit = M.orders.reduce((s, o) => s + o.profit, 0);
+    return {
+      actualRevK:    Math.max(1, Math.round(totalRev / 1000)),
+      actualEbitdaK: Math.round(totalProfit / 1000),
+    };
+  }, [M]);
 
   const tabs = [
     { id: 'forecast',    label: 'Business Forecast',      icon: 'chart' },
@@ -213,7 +228,13 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
     { id: 'investor',    label: 'Investor Updates',        icon: 'mail' },
   ];
 
-  const sc = SCENARIOS[scenario];
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  // Inject real actuals into the selected scenario's base year
+  const sc = {
+    ...SCENARIOS[scenario],
+    y2025: { ...SCENARIOS[scenario].y2025, rev: actualRevK, ebitda: actualEbitdaK },
+  };
 
   // P&L rows helper
   const plRows = (yd: YearData) => {
@@ -604,22 +625,30 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
               </div>
               <div className="card-body" style={{ maxHeight: 600, overflowY: 'auto' }}>
                 {/* KPI Summary */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: '#a78bfa' }}>📊 KPI-Zusammenfassung Mai 2026</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-                    {[
-                      { l: 'Umsatz YTD', v: fmtCur(621000), delta: '+12% vs Plan' },
-                      { l: 'Pipeline', v: fmtCur(1.28e6), delta: '+8 neue Kontakte' },
-                      { l: 'EBITDA', v: fmtCur(48000), delta: '7.7% Marge' },
-                    ].map((kpi, i) => (
-                      <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10 }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 2 }}>{kpi.l}</div>
-                        <div className="mono fw600" style={{ fontSize: 16 }}>{kpi.v}</div>
-                        <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>{kpi.delta}</div>
+                {(() => {
+                  const ytdRev = M!.orders.reduce((s, o) => s + o.revenue, 0);
+                  const ytdProfit = M!.orders.reduce((s, o) => s + o.profit, 0);
+                  const ytdMarge = ytdRev > 0 ? ((ytdProfit / ytdRev) * 100).toFixed(1) : '—';
+                  const pipelineVal = M!.deals.reduce((s, d) => s + ((d as any).value ?? 0), 0);
+                  return (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: '#a78bfa' }}>📊 KPI-Zusammenfassung</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                        {[
+                          { l: 'Umsatz YTD',  v: fmtCur(ytdRev),    delta: `${M!.orders.length} Aufträge` },
+                          { l: 'Pipeline',    v: pipelineVal > 0 ? fmtCur(pipelineVal) : `${M!.deals.length} Deals`, delta: `${M!.deals.length} aktive Deals` },
+                          { l: 'EBITDA',      v: fmtCur(ytdProfit),  delta: `${ytdMarge}% Marge` },
+                        ].map((kpi, i) => (
+                          <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10 }}>
+                            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 2 }}>{kpi.l}</div>
+                            <div className="mono fw600" style={{ fontSize: 16 }}>{kpi.v}</div>
+                            <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>{kpi.delta}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Highlights */}
                 <div style={{ marginBottom: 16 }}>

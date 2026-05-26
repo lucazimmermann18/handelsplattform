@@ -12,18 +12,37 @@ interface ReportsViewProps {
   lang: Lang;
 }
 
-const ROUTES = [
-  { r: 'DAR → HAM', d: 30, sla: 32, late: false },
-  { r: 'DAR → RTM', d: 28, sla: 30, late: false },
-  { r: 'MOM → FXT', d: 23, sla: 25, late: false },
-  { r: 'DAR → GOA', d: 21, sla: 24, late: false },
-  { r: 'DAR → ANR', d: 31, sla: 30, late: true  },
-  { r: 'DAR → LEH', d: 27, sla: 29, late: false },
-];
-
 export const ReportsView = ({ lang }: ReportsViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  // Derive transit routes from real orders
+  const routeMap = new Map<string, number[]>();
+  M.orders.forEach(o => {
+    const load = (o as any).portLoad as string | undefined;
+    const dest = (o as any).portDest as string | undefined;
+    if (!load || !dest || !o.etd || !o.eta) return;
+    const key = `${load.slice(0, 3).toUpperCase()} → ${dest.slice(0, 3).toUpperCase()}`;
+    const days = Math.round((new Date(o.eta).getTime() - new Date(o.etd).getTime()) / 86400000);
+    if (days > 0 && days < 120) {
+      const arr = routeMap.get(key) ?? [];
+      arr.push(days);
+      routeMap.set(key, arr);
+    }
+  });
+  const routes = Array.from(routeMap.entries()).map(([r, days]) => ({
+    r,
+    d: Math.round(days.reduce((a, b) => a + b, 0) / days.length),
+  }));
+
+  // QC statistics from real quality checks
+  const qcTotal = M.quality.length;
+  const qcReleased = M.quality.filter(q => q.status === 'released').length;
+  const qcInProgress = M.quality.filter(q => q.status === 'in_progress').length;
+  const qcBlocked = M.quality.filter(q => q.status === 'blocked').length;
+  const qcRelPct = qcTotal > 0 ? Math.round((qcReleased / qcTotal) * 100) : 0;
+  const qcInPct = qcTotal > 0 ? Math.round((qcInProgress / qcTotal) * 100) : 0;
+  const qcBlkPct = qcTotal > 0 ? 100 - qcRelPct - qcInPct : 0;
 
   const handleExportAll = () => {
     const ts = new Date().toISOString().slice(0, 10);
@@ -158,25 +177,19 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
               <span className="title">Export · Lieferzeit pro Route</span>
             </div>
             <div className="card-body">
-              {ROUTES.map((row, i) => (
-                <div key={i} className="row" style={{ padding: '7px 0', fontSize: 12, borderBottom: '1px solid var(--border)' }}>
-                  <div style={{ flex: 1 }}>
-                    <span className="mono fw500">{row.r}</span>
-                    <span className="mono tx3" style={{ marginLeft: 8, fontSize: 10.5 }}>SLA {row.sla}d</span>
-                  </div>
-                  <div className="row" style={{ gap: 6 }}>
-                    {row.late && <Badge kind="danger">+{row.d - row.sla}d</Badge>}
-                    <span className="mono fw500" style={{ color: row.late ? '#f87171' : '#34d399' }}>
+              {routes.length === 0
+                ? <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>Keine Routendaten vorhanden</div>
+                : routes.map((row, i) => (
+                  <div key={i} className="row" style={{ padding: '7px 0', fontSize: 12, borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ flex: 1 }}>
+                      <span className="mono fw500">{row.r}</span>
+                    </div>
+                    <span className="mono fw500" style={{ color: '#34d399' }}>
                       {row.d} {t(lang, 'days') || 'Tage'}
                     </span>
                   </div>
-                </div>
-              ))}
-              <div className="sep" />
-              <div className="row tx3" style={{ fontSize: 11 }}>
-                <span>Pünktlichkeitsrate</span>
-                <span className="mono fw500" style={{ marginLeft: 'auto', color: '#34d399' }}>83%</span>
-              </div>
+                ))
+              }
             </div>
           </div>
 
@@ -187,31 +200,38 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
               <span className="title">Qualität · Freigabequote</span>
             </div>
             <div className="card-body" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20 }}>
-              <Donut
-                data={[
-                  { v: 86, color: '#34d399' },
-                  { v: 8,  color: '#fbbf24' },
-                  { v: 6,  color: '#f87171' },
-                ]}
-                size={130} thickness={18}
-              />
-              <div style={{ fontSize: 11.5 }}>
-                {[
-                  { l: 'Freigegeben', p: 86, c: '#34d399' },
-                  { l: 'Nachprüfung', p:  8, c: '#fbbf24' },
-                  { l: 'Gesperrt',    p:  6, c: '#f87171' },
-                ].map((r, i) => (
-                  <div key={i} className="row" style={{ marginBottom: 8, gap: 8 }}>
-                    <span className="dot" style={{ background: r.c }} />
-                    <span style={{ flex: 1 }}>{r.l}</span>
-                    <span className="mono fw500">{r.p}%</span>
+              {qcTotal > 0
+                ? <>
+                    <Donut
+                      data={[
+                        { v: qcRelPct,  color: '#34d399' },
+                        { v: qcInPct,   color: '#fbbf24' },
+                        { v: qcBlkPct,  color: '#f87171' },
+                      ]}
+                      size={130} thickness={18}
+                    />
+                    <div style={{ fontSize: 11.5 }}>
+                      {[
+                        { l: 'Freigegeben', p: qcRelPct, c: '#34d399' },
+                        { l: 'In Prüfung',  p: qcInPct,  c: '#fbbf24' },
+                        { l: 'Gesperrt',    p: qcBlkPct, c: '#f87171' },
+                      ].map((r, i) => (
+                        <div key={i} className="row" style={{ marginBottom: 8, gap: 8 }}>
+                          <span className="dot" style={{ background: r.c }} />
+                          <span style={{ flex: 1 }}>{r.l}</span>
+                          <span className="mono fw500">{r.p}%</span>
+                        </div>
+                      ))}
+                      <div className="sep" />
+                      <div className="tx3" style={{ fontSize: 10 }}>
+                        Basis: {qcTotal} Prüfungen YTD
+                      </div>
+                    </div>
+                  </>
+                : <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>
+                    Noch keine Qualitätsprüfungen vorhanden
                   </div>
-                ))}
-                <div className="sep" />
-                <div className="tx3" style={{ fontSize: 10 }}>
-                  Basis: {M.quality.length} Prüfungen YTD
-                </div>
-              </div>
+              }
             </div>
           </div>
 
