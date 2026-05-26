@@ -32,9 +32,19 @@ export const TasksView = ({ lang }: TasksViewProps) => {
   const [filter, setFilter] = useState<StatusFilter>('alle');
   const [newTask, setNewTask] = useState(false);
   const [form, setForm] = useState({ title: '', orderId: '', owner: '', prio: 'mittel' as 'hoch'|'mittel'|'niedrig', due: '' });
+  const [taskMenu, setTaskMenu] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const handleStatusChange = async (taskId: string, status: string) => {
+    setTaskMenu(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      await createClient().from('tasks').update({ status }).eq('id', taskId);
+      refresh();
+    } catch { /* silent */ }
+  };
 
   const handleSaveTask = async () => {
     if (!form.title || !form.due) return;
@@ -197,8 +207,23 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                         : tk.status === 'in_progress' ? <Badge kind="info" dot>In Arbeit</Badge>
                         : <Badge kind="warning" dot>Wartet</Badge>}
                     </td>
-                    <td>
-                      <button className="btn sm ghost"><Ic name="more" size={11} /></button>
+                    <td style={{ position: 'relative' }}>
+                      <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setTaskMenu(taskMenu === tk.id ? null : tk.id); }}>
+                        <Ic name="more" size={11} />
+                      </button>
+                      {taskMenu === tk.id && (
+                        <>
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setTaskMenu(null)} />
+                          <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                            {(['offen', 'in_progress', 'wartet'] as const).filter(s => s !== tk.status).map(s => (
+                              <button key={s} className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
+                                onClick={() => handleStatusChange(tk.id, s)}>
+                                → {STATUS_LABEL[s]}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </td>
                   </tr>
                 );

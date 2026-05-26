@@ -44,6 +44,7 @@ const CLAIM_TIMELINE = [
 export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState<'policies' | 'claims' | 'coverage'>('policies');
+  const [claimAkteOpen, setClaimAkteOpen] = useState(false);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const policies = M.orders
@@ -69,6 +70,19 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
   const totalPremium = policies.reduce((s, p) => s + p.premium, 0);
   const avgRate = totalInsured > 0 ? ((totalPremium / totalInsured) * 100).toFixed(2) : '0.00';
 
+  const exportCSV = () => {
+    const rows: string[][] = [
+      ['Police-Nr.', 'Auftrag', 'Underwriter', 'Deckungsart', 'Versichert (EUR)', 'Prämie (EUR)', 'Selbstbehalt', 'Gültig bis', 'Status'],
+      ...policies.map(p => [p.policy, p.order, p.underwriter, p.coverage, String(p.insured), String(p.premium), p.deductible, p.valid, p.hasClaim ? 'Claim' : 'aktiv']),
+    ];
+    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'versicherungen.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const tabs = [
     { id: 'policies' as const, label: 'Aktive Policen', icon: 'doc' },
     { id: 'claims'   as const, label: 'Claims',         icon: 'warn' },
@@ -76,13 +90,14 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
   ];
 
   return (
+    <>
     <div>
       <div className="section-head">
         <h1>Versicherungs-Tracker</h1>
         <div className="sub">Transportversicherung · Police-Verwaltung · Claim-Status · ICC A/B/C</div>
         <div className="right">
           <button className="btn primary"><Ic name="plus" size={13} /> Neue Police</button>
-          <button className="btn"><Ic name="download" size={13} /> Export</button>
+          <button className="btn" onClick={exportCSV}><Ic name="download" size={13} /> Export</button>
         </div>
       </div>
 
@@ -228,7 +243,7 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
                 ))}
               </div>
               <div className="card-body" style={{ paddingTop: 0 }}>
-                <button className="btn primary" style={{ marginTop: 8 }}>
+                <button className="btn primary" style={{ marginTop: 8 }} onClick={() => setClaimAkteOpen(true)}>
                   <Ic name="doc" size={12} /> Vollständige Claim-Akte öffnen
                 </button>
               </div>
@@ -321,5 +336,80 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
         )}
       </div>
     </div>
+
+    {claimAkteOpen && (
+      <div className="overlay" onClick={() => setClaimAkteOpen(false)} style={{ alignItems: 'flex-start', paddingTop: '5vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 600, padding: 0, overflow: 'hidden', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <Ic name="doc" size={14} color="#fbbf24" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Claim-Akte · {OPEN_CLAIM.id}</span>
+            <Badge kind="warning" dot>In Prüfung</Badge>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setClaimAkteOpen(false)}><Ic name="x" size={13} /></button>
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            <div style={{ padding: '16px 18px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 16 }}>
+                {[
+                  { l: 'Claim-Nr.', v: OPEN_CLAIM.id, mono: true },
+                  { l: 'Auftrag', v: OPEN_CLAIM.order, mono: true },
+                  { l: 'Underwriter', v: OPEN_CLAIM.underwriter, mono: false },
+                  { l: 'Art', v: OPEN_CLAIM.type, mono: false },
+                  { l: 'Eingereicht', v: OPEN_CLAIM.filed, mono: true },
+                  { l: 'Schadenshöhe', v: fmtCur(OPEN_CLAIM.amount), mono: true },
+                ].map((row, i) => (
+                  <div key={i} style={{ background: 'var(--surface-2)', borderRadius: 8, padding: '10px 12px' }}>
+                    <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', marginBottom: 4 }}>{row.l}</div>
+                    <div className={row.mono ? 'mono fw500' : 'fw500'} style={{ fontSize: i === 5 ? 16 : 12, color: i === 5 ? '#fbbf24' : undefined }}>
+                      {row.v}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: 'var(--surface-2)', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
+                <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', marginBottom: 6 }}>Schadensbeschreibung</div>
+                <div className="tx2" style={{ fontSize: 12, lineHeight: 1.6 }}>{OPEN_CLAIM.description}</div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Claim-Verlauf</div>
+                {CLAIM_TIMELINE.map((step, i) => (
+                  <div key={i} className="row" style={{ padding: '9px 0', borderBottom: i < CLAIM_TIMELINE.length - 1 ? '1px solid var(--border)' : 'none', gap: 12, alignItems: 'flex-start' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, marginTop: 1, background: step.done ? '#34d399' : 'var(--surface-3)', border: '2px solid ' + (step.done ? '#34d399' : 'var(--border)'), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {step.done && <Ic name="task" size={9} color="#07090f" />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div className="fw500" style={{ fontSize: 12 }}>{step.event}</div>
+                      <div className="tx3" style={{ fontSize: 11, marginTop: 2 }}>{step.detail}</div>
+                    </div>
+                    <div className="mono tx3" style={{ fontSize: 10.5, whiteSpace: 'nowrap' }}>{step.date}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: 'var(--surface-2)', borderRadius: 8, padding: '12px 14px' }}>
+                <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', marginBottom: 8 }}>Dokumente zur Akte</div>
+                {[
+                  { name: 'Sensor-Report Cold-Chain', type: 'PDF', status: 'Eingereicht' },
+                  { name: 'Surveyor-Gutachten McLarens', type: 'PDF', status: 'Ausstehend' },
+                  { name: 'Health Certificate Hamburg', type: 'PDF', status: 'Eingereicht' },
+                  { name: 'Fotos Ware (12 Dateien)', type: 'ZIP', status: 'Eingereicht' },
+                  { name: 'Bill of Lading ORD-2026-0118', type: 'PDF', status: 'Eingereicht' },
+                ].map((doc, i) => (
+                  <div key={i} className="row" style={{ padding: '7px 0', borderBottom: i < 4 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+                    <Ic name="doc" size={12} color="#5d667d" />
+                    <span style={{ flex: 1, fontSize: 12 }}>{doc.name}</span>
+                    <Badge kind="neutral">{doc.type}</Badge>
+                    <Badge kind={doc.status === 'Eingereicht' ? 'success' : 'warning'}>{doc.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end', flexShrink: 0 }}>
+            <button className="btn ghost" onClick={() => setClaimAkteOpen(false)}>Schließen</button>
+            <button className="btn primary" onClick={exportCSV}><Ic name="download" size={13} /> Akte exportieren</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };

@@ -20,6 +20,7 @@ interface DealsViewProps {
 
 export const DealsView = ({ lang }: DealsViewProps) => {
   const { data: M, refresh } = useData();
+  const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [newDeal, setNewDeal] = useState(false);
   const [form, setForm] = useState({ buyerId: '', productId: '', qty: '', ourPrice: '', targetPrice: '', stage: 'Qualifizierung', prob: '30', nextFollow: '' });
   const [saving, setSaving] = useState(false);
@@ -63,12 +64,73 @@ export const DealsView = ({ lang }: DealsViewProps) => {
           {M.deals.length} Deals · {fmtCur(totalPipeline)} Pipeline · {fmtCur(totalWeighted)} gewichtet
         </div>
         <div className="right">
-          <button className="btn"><Ic name="panel" size={13} /> Listen-Ansicht</button>
+          <button className="btn" onClick={() => setView(v => v === 'kanban' ? 'list' : 'kanban')}>
+            <Ic name="panel" size={13} /> {view === 'kanban' ? 'Listen-Ansicht' : 'Kanban-Ansicht'}
+          </button>
           <button className="btn primary" onClick={() => setNewDeal(true)}><Ic name="plus" size={13} /> Neuer Deal</button>
         </div>
       </div>
 
-      <div className="kanban">
+      {view === 'list' && (
+        <div className="card" style={{ margin: '0 16px 16px' }}>
+          <div className="card-head">
+            <Ic name="panel" size={14} />
+            <span className="title">Alle Deals</span>
+            <span className="meta">{M.deals.length} Deals · {fmtCur(totalPipeline)} Pipeline</span>
+          </div>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Käufer</th>
+                <th>Produkt</th>
+                <th className="num">Menge</th>
+                <th className="num">Preis</th>
+                <th className="num">Wert</th>
+                <th>Stage</th>
+                <th>Prob.</th>
+                <th>Follow-up</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...M.deals].sort((a, b) => b.value - a.value).map(d => {
+                const b = M.buyers.find(x => x.id === d.buyerId);
+                const p = M.products.find(x => x.id === d.productId);
+                return (
+                  <tr key={d.id}>
+                    <td className="mono tx3" style={{ fontSize: 11 }}>{d.id}</td>
+                    <td>
+                      <div className="fw500" style={{ fontSize: 12 }}>{b?.name}</div>
+                      <div className="tx3" style={{ fontSize: 10 }}>{b?.country}</div>
+                    </td>
+                    <td style={{ fontSize: 12 }}>{p?.name}</td>
+                    <td className="num mono tx2" style={{ fontSize: 11 }}>{fmtNum(d.qty)} {p?.unit}</td>
+                    <td className="num mono tx2" style={{ fontSize: 11 }}>{d.ourPrice.toFixed(2)} €</td>
+                    <td className="num fw500">{fmtCur(d.value)}</td>
+                    <td>
+                      <Badge kind={d.stage === 'Abschluss' ? 'success' : d.stage === 'Angebot' ? 'info' : 'neutral'}>{d.stage}</Badge>
+                    </td>
+                    <td>
+                      <div className="row" style={{ gap: 6 }}>
+                        <div className="progress" style={{ width: 48 }}>
+                          <div style={{ width: `${d.prob}%`, background: d.prob >= 70 ? '#34d399' : d.prob >= 40 ? '#60a5fa' : '#a78bfa' }} />
+                        </div>
+                        <span className="mono tx2" style={{ fontSize: 10 }}>{d.prob}%</span>
+                      </div>
+                    </td>
+                    <td className="mono tx3" style={{ fontSize: 11 }}>{fmtDate(d.nextFollow)}</td>
+                  </tr>
+                );
+              })}
+              {M.deals.length === 0 && (
+                <tr><td colSpan={9} className="empty">Keine Deals</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="kanban" style={{ display: view === 'kanban' ? undefined : 'none' }}>
         {stages.map(st => {
           const stDeals = M.deals.filter(d => d.stage === st);
           const colTotal = stDeals.reduce((s, d) => s + d.value, 0);

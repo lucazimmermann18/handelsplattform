@@ -30,8 +30,6 @@ interface Cert {
   blocker?: string;
 }
 
-// loaded from Supabase — see useEffect in component
-
 const CERT_STATUS_KIND: Record<CertStatus, string> = {
   held: 'success', in_progress: 'warning', planned: 'info', blocked: 'danger',
 };
@@ -56,8 +54,6 @@ interface Regulation {
   action: string;
   cost: string;
 }
-
-const regulations: Regulation[] = [];
 
 const IMPACT_KIND: Record<RegImpact, string> = {
   critical: 'danger', high: 'warning', medium: 'info', low: 'neutral',

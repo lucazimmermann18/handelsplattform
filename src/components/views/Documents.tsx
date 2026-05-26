@@ -31,13 +31,23 @@ interface DocumentsViewProps {
 export const DocumentsView = ({ lang }: DocumentsViewProps) => {
   const { data: M } = useData();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('alle');
+  const [statusFilter, setStatusFilter] = useState<string>('alle');
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [docMenu, setDocMenu] = useState<string | null>(null);
+  const [dlNote, setDlNote] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const handleDownload = (name: string) => {
+    setDlNote(`"${name}" — kein Datei-Storage hinterlegt`);
+    setTimeout(() => setDlNote(null), 2500);
+  };
 
-  const filtered = typeFilter === 'alle'
-    ? M.documents
-    : M.documents.filter(d => d.type === typeFilter);
+  const filtered = M.documents.filter(d => {
+    if (typeFilter !== 'alle' && d.type !== typeFilter) return false;
+    if (statusFilter !== 'alle' && d.status !== statusFilter) return false;
+    return true;
+  });
 
   const kpis = [
     { l: 'Gültig',    v: M.documents.filter(d => d.status === 'gültig').length,     c: '#34d399' },
@@ -54,7 +64,7 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
         <h1>{t(lang, 'nav_documents')}</h1>
         <div className="sub">{M.documents.length} Dokumente · Versionierung · Ablaufkontrolle</div>
         <div className="right">
-          <button className="btn"><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
+          <button className={`btn${showStatusFilter ? ' primary' : ''}`} onClick={() => setShowStatusFilter(s => !s)}><Ic name="filter" size={13} /> {t(lang, 'filter')}</button>
           <button className="btn primary" onClick={() => setUploadOpen(true)}><Ic name="upload" size={13} /> Hochladen</button>
         </div>
       </div>
@@ -71,7 +81,7 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
         </div>
 
         {/* Type filter chips */}
-        <div className="row" style={{ gap: 6, marginBottom: 12 }}>
+        <div className="row" style={{ gap: 6, marginBottom: 6 }}>
           {TYPE_FILTERS.map(f => (
             <button key={f} className={`btn sm${typeFilter === f ? ' primary' : ' ghost'}`} onClick={() => setTypeFilter(f)}>
               {f === 'alle' ? 'Alle Typen' : f}
@@ -83,6 +93,27 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
             </button>
           ))}
         </div>
+
+        {showStatusFilter && (
+          <div className="row" style={{ gap: 6, marginBottom: 10, paddingTop: 4 }}>
+            {['alle', 'gültig', 'läuft ab', 'fehlt', 'Entwurf'].map(f => (
+              <button key={f} className={`btn sm${statusFilter === f ? ' primary' : ' ghost'}`} onClick={() => setStatusFilter(f)}>
+                {f === 'alle' ? 'Alle Status' : f}
+                {f !== 'alle' && (
+                  <span className="mono" style={{ opacity: 0.7, marginLeft: 3 }}>
+                    {M.documents.filter(d => d.status === f).length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {dlNote && (
+          <div style={{ padding: '8px 12px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 8, marginBottom: 10, fontSize: 12, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Ic name="info" size={12} color="#fbbf24" /> {dlNote}
+          </div>
+        )}
 
         <div className="card">
           <table className="table">
@@ -135,8 +166,31 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
                     </td>
                     <td>
                       <div className="row" style={{ gap: 4 }}>
-                        {!missing && <button className="btn sm ghost"><Ic name="download" size={11} /></button>}
-                        <button className="btn sm ghost"><Ic name="more" size={11} /></button>
+                        {!missing && (
+                          <button className="btn sm ghost" onClick={() => handleDownload(d.name)}>
+                            <Ic name="download" size={11} />
+                          </button>
+                        )}
+                        <div style={{ position: 'relative' }}>
+                          <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setDocMenu(docMenu === d.id ? null : d.id); }}>
+                            <Ic name="more" size={11} />
+                          </button>
+                          {docMenu === d.id && (
+                            <>
+                              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setDocMenu(null)} />
+                              <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 160, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                                <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
+                                  onClick={() => { void navigator.clipboard.writeText(d.id); setDocMenu(null); }}>
+                                  <Ic name="doc" size={11} /> ID kopieren
+                                </button>
+                                <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
+                                  onClick={() => { handleDownload(d.name); setDocMenu(null); }}>
+                                  <Ic name="info" size={11} /> Details
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>

@@ -136,6 +136,20 @@ export const CashflowView = ({ lang }: CashflowViewProps) => {
 
   const series = buildSeries(START_BALANCE, INFLOWS, OUTFLOWS);
 
+  const exportCSV = () => {
+    const rows: string[][] = [
+      ['Typ', 'Datum', 'Beschreibung', 'Kategorie', 'Betrag (EUR)'],
+      ...INFLOWS.map(e => ['Cash-In', e.date, e.label, e.category, String(e.amount)]),
+      ...OUTFLOWS.map(e => ['Cash-Out', e.date, e.label, e.category, String(-e.amount)]),
+    ];
+    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'cashflow-forecast.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const totalIn = INFLOWS.reduce((s, e) => s + e.amount, 0);
   const totalOut = OUTFLOWS.reduce((s, e) => s + e.amount, 0);
   const netto = totalIn - totalOut;
@@ -170,7 +184,7 @@ export const CashflowView = ({ lang }: CashflowViewProps) => {
         <h1>Cashflow Forecast</h1>
         <div className="sub">30-Tage-Liquiditätsplanung · Cash-In · Cash-Out · KI-Warnung</div>
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={exportCSV}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
         </div>
       </div>
 
