@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useAuth } from '@/lib/auth-context';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { StatusBar } from '@/components/layout/StatusBar';
@@ -57,6 +58,7 @@ interface Route {
 
 
 export const App = () => {
+  const { user, loading: authLoading, isConfigured } = useAuth();
   const [lang, setLang] = useState<Lang>('de');
   const [route, setRoute] = useState<Route>({ view: 'dashboard' });
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -67,6 +69,15 @@ export const App = () => {
   const [buyerWizardOpen, setBuyerWizardOpen] = useState(false);
   const [productWizardOpen, setProductWizardOpen] = useState(false);
   const [emailModal, setEmailModal] = useState<EmailModalData | null>(null);
+
+  // Auth guard: redirect to login when Supabase is configured but no user
+  const redirectedRef = useRef(false);
+  useEffect(() => {
+    if (!authLoading && isConfigured && !user && !redirectedRef.current) {
+      redirectedRef.current = true;
+      window.location.href = '/login';
+    }
+  }, [authLoading, isConfigured, user]);
 
   const navigate = (view: string, extra: Partial<Route> = {}) => setRoute({ view, ...extra });
   const openOrder = (order: Order) => setRoute({ view: 'order_detail', order });
@@ -233,6 +244,11 @@ export const App = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route, lang]);
+
+  // Show blank while checking auth / redirecting to login
+  if (isConfigured && (authLoading || !user)) {
+    return <div style={{ minHeight: '100vh', background: 'var(--bg, #0d0f1a)' }} />;
+  }
 
   return (
     <>

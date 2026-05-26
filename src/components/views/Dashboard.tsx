@@ -24,7 +24,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
   const inQual = M.orders.filter((o) => o.status === 'quality').length;
   const expRev = M.orders.filter((o) => !['paid', 'done', 'delivered'].includes(o.status)).reduce((s, o) => s + o.revenue, 0);
   const realRev = M.orders.filter((o) => ['paid', 'delivered', 'done'].includes(o.status)).reduce((s, o) => s + o.revenue, 0);
-  const avgMargin = Math.round(M.orders.reduce((s, o) => s + ((o.profit / o.revenue) * 100), 0) / M.orders.length);
+  const avgMargin = M.orders.length > 0 ? Math.round(M.orders.reduce((s, o) => s + ((o.profit / Math.max(o.revenue, 1)) * 100), 0) / M.orders.length) : 0;
   const invValue = M.inventory.reduce((s, i) => {
     const p = M.products.find((p) => i.product.includes(p.name.split(' ')[0]));
     return s + (p ? p.buyPrice * i.qty : 0);
