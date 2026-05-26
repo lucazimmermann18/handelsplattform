@@ -91,6 +91,13 @@ export const QualityView = ({ lang }: QualityViewProps) => {
   };
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (M.quality.length === 0) return (
+    <div className="card" style={{ margin: 16, padding: 48, textAlign: 'center' }}>
+      <Ic name="quality" size={32} color="var(--text-3)" />
+      <div style={{ marginTop: 12, fontWeight: 600, fontSize: 14 }}>Keine Qualitätsprüfungen vorhanden</div>
+      <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-3)' }}>Lege die erste Prüfung an um zu starten.</div>
+    </div>
+  );
   const sel = selected ?? M.quality[0];
 
   const kpis = [

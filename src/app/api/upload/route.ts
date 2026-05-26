@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     order_id: orderId || null,
     status: 'Entwurf',
     file_size: fileSize,
-    storage_path: storageOk ? path : null,
+    file_url: storageOk ? path : null,
     created_at: new Date().toISOString(),
   });
 

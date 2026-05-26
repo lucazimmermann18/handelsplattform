@@ -110,6 +110,13 @@ export const OffersView = ({ lang }: OffersViewProps) => {
                 </tr>
               </thead>
               <tbody>
+                {M.offers.length === 0 && (
+                  <tr>
+                    <td colSpan={10} style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
+                      Noch keine Angebote vorhanden
+                    </td>
+                  </tr>
+                )}
                 {M.offers.map(o => {
                   const b = M.buyers.find(x => x.id === o.buyer);
                   const p = M.products.find(x => x.id === o.product);

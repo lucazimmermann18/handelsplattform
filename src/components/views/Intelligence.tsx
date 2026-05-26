@@ -56,7 +56,7 @@ interface RiskFactor { k: string; v: number; w: number; note: string; }
 interface RiskResult { score: number; factors: RiskFactor[]; }
 
 function computeRiskScore(order: Order, suppliers: Supplier[], documents: Doc[], quality: QualityCheck[]): RiskResult {
-  const ref = new Date('2026-05-25');
+  const ref = new Date();
   const etd = new Date(order.etd);
   const daysToETD = Math.round((etd.getTime() - ref.getTime()) / 86400000);
   const supplier = suppliers.find(s => s.id === order.supplierId);
