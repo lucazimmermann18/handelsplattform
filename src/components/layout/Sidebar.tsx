@@ -32,6 +32,8 @@ const NAV = [
     { id: 'quality',    icon: 'quality',  label: 'nav_quality' },
     { id: 'inventory',  icon: 'inv',      label: 'nav_inventory' },
     { id: 'tasks',      icon: 'task',     label: 'nav_tasks',     countKey: 'tasks' },
+    { id: 'lots',           icon: 'layers',   label: 'Lots & Chargen' },
+    { id: 'vessel_tracking', icon: 'ship',    label: 'Vessel Tracking' },
   ]},
   { group: 'group_finance', items: [
     { id: 'compliance',  icon: 'customs', label: 'nav_compliance' },
@@ -39,6 +41,8 @@ const NAV = [
     { id: 'documents',   icon: 'doc',     label: 'nav_documents',   countKey: 'documents' },
     { id: 'finance',     icon: 'finance', label: 'nav_finance' },
     { id: 'tradefinance',icon: 'finance', label: 'Trade Finance' },
+    { id: 'payables',    icon: 'finance', label: 'AR / AP' },
+    { id: 'cbam',        icon: 'leaf',    label: 'CBAM / CO₂' },
     { id: 'cashflow',    icon: 'finance', label: 'Cashflow' },
     { id: 'insurance',   icon: 'doc',     label: 'Versicherung' },
     { id: 'cold_chain',  icon: 'ship',    label: 'Cold Chain' },
