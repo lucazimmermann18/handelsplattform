@@ -9,6 +9,7 @@ create table if not exists order_comments (
 );
 create index if not exists order_comments_order_id_idx on order_comments(order_id);
 alter table order_comments enable row level security;
+drop policy if exists "allow all" on order_comments;
 create policy "allow all" on order_comments for all using (true);
 
 -- forwarders: freight forwarder management
@@ -29,6 +30,7 @@ create table if not exists forwarders (
   created_at  timestamptz not null default now()
 );
 alter table forwarders enable row level security;
+drop policy if exists "allow all" on forwarders;
 create policy "allow all" on forwarders for all using (true);
 
 -- samples: Musterverwaltung
@@ -46,4 +48,5 @@ create table if not exists samples (
   created_at  timestamptz not null default now()
 );
 alter table samples enable row level security;
+drop policy if exists "allow all" on samples;
 create policy "allow all" on samples for all using (true);
