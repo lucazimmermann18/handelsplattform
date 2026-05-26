@@ -206,7 +206,7 @@ export const App = () => {
       case 'settings':
         return <SettingsView lang={lang} />;
       case 'import':
-        return <ImportView lang={lang} />;
+        return <ImportView lang={lang} onNav={navigate} />;
       case 'eudr':
         return <EUDRView lang={lang} />;
       case 'cold_chain':

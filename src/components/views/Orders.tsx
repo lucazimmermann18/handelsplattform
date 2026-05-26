@@ -5,6 +5,7 @@ import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { useData } from '@/lib/data-context';
 import { OrderComments } from '@/components/ui/OrderComments';
+import { UploadModal } from '@/components/ui/UploadModal';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -206,9 +207,37 @@ interface OrderDetailProps {
   onBack: () => void;
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
+  padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
+};
+
 export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ status: o.status, responsible: o.responsible ?? '', eta: o.eta ?? '', etd: o.etd ?? '', paid: String(o.paid) });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [docRequested, setDocRequested] = useState<Set<string>>(new Set());
+  const [docNote, setDocNote] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const handleSaveEdit = async () => {
+    setEditSaving(true); setEditError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('orders').update({
+        status: editForm.status, responsible: editForm.responsible,
+        eta: editForm.eta || null, etd: editForm.etd || null,
+        paid: Math.max(0, Math.min(100, parseInt(editForm.paid) || 0)),
+      }).eq('id', o.id);
+      if (error) throw new Error(error.message);
+      setEditOpen(false); refresh();
+    } catch (e) { setEditError((e as Error).message); }
+    finally { setEditSaving(false); }
+  };
   const buyer    = M.buyers.find((x) => x.id === o.buyerId);
   const supplier = M.suppliers.find((x) => x.id === o.supplierId);
   const product  = M.products.find((x) => x.id === o.productId);
@@ -240,6 +269,12 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
   const portDest = M.ports[o.portDest];
 
   return (
+    <>
+    {docNote && (
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 200, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 16px', fontSize: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Ic name="doc" size={13} color="#60a5fa" /> {docNote}
+      </div>
+    )}
     <div>
       {/* Header */}
       <div className="section-head">
@@ -264,7 +299,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
             <Ic name="mail" size={13} /> Käufer mailen
           </button>
           <button className="btn" onClick={() => window.print()}><Ic name="download" size={13} /> Auftrag.pdf</button>
-          <button className="btn primary"><Ic name="edit" size={13} /> Bearbeiten</button>
+          <button className="btn primary" onClick={() => setEditOpen(true)}><Ic name="edit" size={13} /> Bearbeiten</button>
         </div>
       </div>
 
@@ -412,7 +447,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
                 {docs.filter((d) => d.status === 'gültig').length} / {docs.filter((d) => d.req).length} Pflicht
               </span>
               <div style={{ marginLeft: 'auto' }}>
-                <button className="btn sm"><Ic name="upload" size={11} /> Hochladen</button>
+                <button className="btn sm" onClick={() => setUploadOpen(true)}><Ic name="upload" size={11} /> Hochladen</button>
               </div>
             </div>
             <table className="table">
@@ -443,11 +478,16 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
                     </td>
                     <td style={{ width: 90 }}>
                       {d.status === 'gültig' && (
-                        <button className="btn sm ghost"><Ic name="eye" size={11} /></button>
+                        <button className="btn sm ghost" onClick={() => { setDocNote(`${d.name} — liegt vor`); setTimeout(() => setDocNote(null), 2500); }}>
+                          <Ic name="eye" size={11} />
+                        </button>
                       )}
-                      {d.status === 'fehlt' && (
-                        <button className="btn sm primary">Beantragen</button>
+                      {(d.status === 'fehlt' && !docRequested.has(d.name)) && (
+                        <button className="btn sm primary" onClick={() => setDocRequested(prev => new Set(Array.from(prev).concat(d.name)))}>
+                          Beantragen
+                        </button>
                       )}
+                      {docRequested.has(d.name) && <Badge kind="warning">Beantragt</Badge>}
                     </td>
                   </tr>
                 ))}
@@ -577,5 +617,56 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
         </div>
       </div>
     </div>
+
+    {/* Edit Order Modal */}
+    {editOpen && (
+      <div className="overlay" onClick={() => setEditOpen(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 480, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ic name="edit" size={14} color="#60a5fa" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Auftrag bearbeiten · {o.id}</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setEditOpen(false)}><Ic name="x" size={13} /></button>
+          </div>
+          <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Status</div>
+              <select value={editForm.status} onChange={e => setEditForm(p => ({ ...p, status: e.target.value }))} style={inputStyle}>
+                {ORDER_STATUS_FLOW.map(s => <option key={s.k} value={s.k}>{s.label}</option>)}
+                <option value="problem">Problem</option>
+              </select>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>ETD</div>
+                <input type="date" value={editForm.etd} onChange={e => setEditForm(p => ({ ...p, etd: e.target.value }))} style={inputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>ETA</div>
+                <input type="date" value={editForm.eta} onChange={e => setEditForm(p => ({ ...p, eta: e.target.value }))} style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Zahlung (%)</div>
+                <input type="number" min={0} max={100} value={editForm.paid} onChange={e => setEditForm(p => ({ ...p, paid: e.target.value }))} style={inputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Verantwortlich</div>
+                <input value={editForm.responsible} onChange={e => setEditForm(p => ({ ...p, responsible: e.target.value }))} style={inputStyle} />
+              </div>
+            </div>
+            {editError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6 }}>{editError}</div>}
+          </div>
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="btn ghost" onClick={() => setEditOpen(false)}>Abbrechen</button>
+            <button className="btn primary" onClick={handleSaveEdit} disabled={editSaving}>
+              {editSaving ? 'Speichern…' : <><Ic name="task" size={13} /> Änderungen speichern</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
+    </>
   );
 };

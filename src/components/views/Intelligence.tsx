@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
@@ -667,6 +667,8 @@ const LANG_NAMES: Record<string, string> = {
 
 const ContentDocTab = ({ onNav }: { onNav: (v: string) => void }) => {
   const { isConfigured, generate, activeModelObj } = useAiConfig();
+  const inspectorFileRef = useRef<HTMLInputElement>(null);
+  const [inspectorFile, setInspectorFile] = useState<string | null>(null);
   const [subTab, setSubTab]           = useState<'studio' | 'inspector'>('studio');
   const [template, setTemplate]       = useState('offer_letter');
   const [audience, setAudience]       = useState('B2B Importeur');
@@ -825,14 +827,33 @@ Gib den fertigen Text direkt aus, ohne Erklärungen oder Kommentare. Nutze eine 
 
       {subTab === 'inspector' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+          <div
+            className="card"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300, cursor: 'pointer' }}
+            onClick={() => inspectorFileRef.current?.click()}
+          >
+            <input
+              type="file"
+              ref={inspectorFileRef}
+              accept=".pdf,.xlsx,.xls,.docx,.doc,.csv"
+              style={{ display: 'none' }}
+              onChange={e => {
+                const f = e.target.files?.[0];
+                if (f) setInspectorFile(f.name);
+                e.target.value = '';
+              }}
+            />
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                 <Ic name="upload" size={24} color="#6366f1" />
               </div>
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>Dokument hochladen</div>
+              <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                {inspectorFile ?? 'Dokument hochladen'}
+              </div>
               <div className="tx2" style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 14 }}>PDF, Excel, Word · max 20 MB<br />Drag & Drop oder klicken</div>
-              <button className="btn primary"><Ic name="upload" size={13} /> Datei wählen</button>
+              <button className="btn primary" onClick={e => { e.stopPropagation(); inspectorFileRef.current?.click(); }}>
+                <Ic name="upload" size={13} /> {inspectorFile ? 'Andere Datei' : 'Datei wählen'}
+              </button>
             </div>
           </div>
           <div className="card">

@@ -5,7 +5,7 @@ import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 
-interface ImportViewProps { lang: Lang; }
+interface ImportViewProps { lang: Lang; onNav?: (view: string) => void; }
 
 const steps = ['Datentyp wählen', 'Datei hochladen', 'Felder zuordnen', 'Validierung', 'Import abschließen'];
 
@@ -33,7 +33,9 @@ const fieldMapping = [
   { source: 'Products', target: 'Produkte', confidence: 74 },
 ];
 
-export const ImportView = ({ lang: _lang }: ImportViewProps) => {
+const NAV_FOR_TYPE: Record<string, string> = { suppliers: 'suppliers', buyers: 'buyers', products: 'products', prices: 'finance', orders: 'orders' };
+
+export const ImportView = ({ lang: _lang, onNav }: ImportViewProps) => {
   const [step, setStep] = useState(0);
   const [type, setType] = useState('suppliers');
   const [importing, setImporting] = useState(false);
@@ -41,6 +43,16 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
   const [done, setDone] = useState(false);
   const [csvText, setCsvText] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => setCsvText(String(ev.target?.result ?? ''));
+    reader.readAsText(f, 'utf-8');
+    e.target.value = '';
+  };
 
   useEffect(() => {
     return () => { if (intervalRef.current !== null) clearInterval(intervalRef.current); };
@@ -150,19 +162,23 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
         {step === 1 && (
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Datei hochladen — {selectedType.label}</h2>
-            <div style={{
-              border: '2px dashed var(--border)',
-              borderRadius: 12,
-              padding: '48px 24px',
-              textAlign: 'center',
-              marginBottom: 16,
-              cursor: 'pointer',
-              background: 'var(--surface-2)',
-            }}>
+            <input type="file" ref={fileRef} accept=".csv,.xlsx,.xls,.txt" style={{ display: 'none' }} onChange={handleFile} />
+            <div
+              style={{
+                border: '2px dashed var(--border)',
+                borderRadius: 12,
+                padding: '48px 24px',
+                textAlign: 'center',
+                marginBottom: 16,
+                cursor: 'pointer',
+                background: 'var(--surface-2)',
+              }}
+              onClick={() => fileRef.current?.click()}
+            >
               <Ic name="upload" size={32} color="var(--text-3)" />
               <div style={{ marginTop: 12, fontSize: 14, fontWeight: 600 }}>CSV oder Excel-Datei hierher ziehen</div>
               <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>oder klicken zum Auswählen</div>
-              <button className="btn ghost" style={{ marginTop: 12 }}>Datei auswählen</button>
+              <button className="btn ghost" style={{ marginTop: 12 }} onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}>Datei auswählen</button>
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Oder CSV direkt einfügen:</div>
@@ -301,7 +317,7 @@ Beispiel GmbH,Hamburg,DE,...`}
                   <button className="btn ghost" onClick={() => { setStep(0); setDone(false); setProgress(0); }}>
                     Weiteren Import starten
                   </button>
-                  <button className="btn primary">
+                  <button className="btn primary" onClick={() => onNav?.(NAV_FOR_TYPE[type] ?? 'orders')}>
                     Daten anzeigen
                   </button>
                 </div>
