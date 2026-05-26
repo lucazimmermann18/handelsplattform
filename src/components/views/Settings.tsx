@@ -90,13 +90,13 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{provider.name}</div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 10.5, color: 'var(--text-3)' }}>
             {AI_MODELS.filter(m => m.provider === provider.id).map(m => m.name).join(' · ')}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 7, height: 7, borderRadius: '50%', background: configured ? '#34d399' : '#5d667d', display: 'inline-block', boxShadow: configured ? '0 0 6px #34d399' : 'none' }} />
-          <span style={{ fontSize: 11, color: configured ? '#34d399' : 'var(--text-muted)' }}>
+          <span style={{ fontSize: 11, color: configured ? '#34d399' : 'var(--text-3)' }}>
             {envConfigured ? '.env.local' : localConfigured ? 'Browser-Key' : 'Nicht konfiguriert'}
           </span>
         </div>
@@ -108,7 +108,7 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
           <Ic name="quality" size={13} color="#34d399" />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, fontWeight: 500, color: '#34d399' }}>Serverseitig konfiguriert</div>
-            <div style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'var(--font-geist-mono)' }}>{provider.envVar} · .env.local</div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontFamily: 'var(--font-geist-mono)' }}>{provider.envVar} · .env.local</div>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <button className="btn sm ghost" onClick={handleTest} style={{ fontSize: 10.5 }}>
@@ -124,11 +124,11 @@ function ProviderCard({ provider }: { provider: typeof PROVIDER_META[0] }) {
       {/* Key input — always shown if not env-configured, or if override is open */}
       {(!envConfigured || showOverride) && (
         <div>
-          <label style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>
+          <label style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>
             {envConfigured ? 'Browser-Override (optional)' : 'API-Key'}
           </label>
           {envConfigured && (
-            <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6 }}>
+            <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginBottom: 6 }}>
               Überschreibt den .env.local-Key nur in diesem Browser.
             </div>
           )}
@@ -187,7 +187,7 @@ function ModelPicker() {
 
   return (
     <div className="card" style={{ padding: 16 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 14 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 14 }}>
         Aktives Modell
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -198,7 +198,7 @@ function ModelPicker() {
             <div key={p.id}>
               <div style={{ fontSize: 10.5, color: p.color, fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>{p.logo}</span> {p.name}
-                {!providerHasKey && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 10 }}>(kein Key hinterlegt)</span>}
+                {!providerHasKey && <span style={{ color: 'var(--text-3)', fontWeight: 400, fontSize: 10 }}>(kein Key hinterlegt)</span>}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {models.map(m => {
@@ -214,7 +214,7 @@ function ModelPicker() {
                         borderRadius: 6,
                         border: `1px solid ${active ? p.color : 'var(--border)'}`,
                         background: active ? `${p.color}18` : 'var(--surface-2)',
-                        color: active ? p.color : disabled ? 'var(--text-muted)' : 'var(--text)',
+                        color: active ? p.color : disabled ? 'var(--text-3)' : 'var(--text)',
                         fontSize: 12,
                         fontWeight: active ? 600 : 400,
                         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -350,7 +350,7 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
             </div>
             <div>
               <div style={{ fontWeight: 600, fontSize: 14 }}>KI-Konfiguration</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
                 {isConfigured
                   ? `Aktiv · ${activeModelObj?.name} (${activeModelObj?.provider})`
                   : 'Kein Modell konfiguriert — API-Key hinterlegen um KI-Funktionen zu aktivieren'}

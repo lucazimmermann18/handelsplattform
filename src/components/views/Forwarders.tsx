@@ -156,7 +156,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
                         key={h}
                         style={{
                           padding: '9px 12px', textAlign: 'left', fontSize: 10.5,
-                          color: 'var(--text-muted)', fontWeight: 600,
+                          color: 'var(--text-3)', fontWeight: 600,
                           textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap',
                         }}
                       >
@@ -174,17 +174,17 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
                       {/* Name */}
                       <td style={{ padding: '10px 12px' }}>
                         <div style={{ fontWeight: 600, fontSize: 13 }}>{f.name}</div>
-                        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 1 }}>{f.id}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', marginTop: 1 }}>{f.id}</div>
                       </td>
 
                       {/* Stadt / Land */}
-                      <td style={{ padding: '10px 12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
                         {f.city || '—'}
                         {f.country ? `, ${f.country}` : ''}
                       </td>
 
                       {/* Routen */}
-                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--text-3)' }}>
                         {f.routes.length === 0
                           ? '—'
                           : f.routes.slice(0, 3).join(', ') + (f.routes.length > 3 ? ' …' : '')
@@ -195,7 +195,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
                       <td style={{ padding: '10px 12px' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                           {f.services.length === 0
-                            ? <span style={{ color: 'var(--text-muted)' }}>—</span>
+                            ? <span style={{ color: 'var(--text-3)' }}>—</span>
                             : f.services.map(s => <Badge key={s}>{s}</Badge>)
                           }
                         </div>

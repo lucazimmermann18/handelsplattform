@@ -218,14 +218,14 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                   background: sel ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Ic name="buyer" size={15} color={sel ? '#a78bfa' : 'var(--text-muted)'} />
+                  <Ic name="buyer" size={15} color={sel ? '#a78bfa' : 'var(--text-3)'} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 13, color: sel ? '#e2d9f3' : 'var(--text)' }}>{b.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{b.city} · {b.country} · {b.industry}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>{b.city} · {b.country} · {b.industry}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
-                  <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{b.incoterm}</span>
+                  <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--text-3)' }}>{b.incoterm}</span>
                   <div style={{ display: 'flex', gap: 1 }}>
                     {[1,2,3,4,5].map(s => (
                       <div key={s} style={{ width: 6, height: 6, borderRadius: '50%', background: s <= b.rating ? '#f59e0b' : 'rgba(255,255,255,0.1)' }} />
@@ -237,7 +237,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
             );
           })}
           {filtered.length === 0 && (
-            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>
               Keine Käufer gefunden
             </div>
           )}
@@ -305,13 +305,13 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Ic name="product" size={13} color={sel ? '#a78bfa' : 'var(--text-muted)'} />
+                  <Ic name="product" size={13} color={sel ? '#a78bfa' : 'var(--text-3)'} />
                   <span style={{ fontWeight: 600, fontSize: 12.5, color: sel ? '#e2d9f3' : 'var(--text)', flex: 1 }}>{p.name}</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>{p.cat} · {p.origin}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginBottom: 4 }}>{p.cat} · {p.origin}</div>
                 <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Buy: <span style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{p.buyPrice.toFixed(2)} €/{p.unit}</span></span>
-                  <span style={{ color: 'var(--text-muted)' }}>Sell: <span style={{ color: '#34d399', fontFamily: 'var(--font-mono)' }}>{p.sellPrice.toFixed(2)} €/{p.unit}</span></span>
+                  <span style={{ color: 'var(--text-3)' }}>Buy: <span style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{p.buyPrice.toFixed(2)} €/{p.unit}</span></span>
+                  <span style={{ color: 'var(--text-3)' }}>Sell: <span style={{ color: '#34d399', fontFamily: 'var(--font-mono)' }}>{p.sellPrice.toFixed(2)} €/{p.unit}</span></span>
                 </div>
                 {!p.exportReady && (
                   <div style={{ marginTop: 6, fontSize: 10, color: '#f59e0b' }}>⚠ Noch nicht exportbereit</div>
@@ -340,7 +340,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Qty */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Menge ({state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Menge ({state.unit})</div>
             <input
               type="number" min={0} value={state.qty || ''}
               onChange={e => update('qty', parseFloat(e.target.value) || 0)}
@@ -350,7 +350,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Buy price */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€ / {state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€ / {state.unit})</div>
             <input
               type="number" min={0} step={0.01} value={state.buyPrice || ''}
               onChange={e => update('buyPrice', parseFloat(e.target.value) || 0)}
@@ -359,7 +359,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Sell price */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€ / {state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€ / {state.unit})</div>
             <input
               type="number" min={0} step={0.01} value={state.sellPrice || ''}
               onChange={e => update('sellPrice', parseFloat(e.target.value) || 0)}
@@ -368,7 +368,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Supplier */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Lieferant</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Lieferant</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
               {displaySuppliers.map(s => {
                 const sel = s.id === state.supplierId;
@@ -386,10 +386,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                       background: sel ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)',
                     }}
                   >
-                    <Ic name="supplier" size={12} color={sel ? '#34d399' : 'var(--text-muted)'} />
+                    <Ic name="supplier" size={12} color={sel ? '#34d399' : 'var(--text-3)'} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: sel ? 600 : 400, color: sel ? 'var(--text)' : 'var(--text)' }}>{s.name}</div>
-                      <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{s.region} · Score {s.score}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--text-3)' }}>{s.region} · Score {s.score}</div>
                     </div>
                     <span style={{
                       fontSize: 10, padding: '2px 5px', borderRadius: 4, flexShrink: 0,
@@ -407,7 +407,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         {/* Right: live P&L */}
         <div style={{ width: 200, flexShrink: 0 }}>
           <div style={{ padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', position: 'sticky', top: 0 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10, fontWeight: 600 }}>Live P&L</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10, fontWeight: 600 }}>Live P&L</div>
             {[
               { l: 'Umsatz', v: revenue, pos: true },
               { l: 'Einkauf', v: -costGoods },
@@ -415,8 +415,8 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
               { l: 'Dokumente*', v: -state.costDocs },
             ].map((r, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>{r.l}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', color: r.pos ? 'var(--text)' : 'var(--text-muted)' }}>
+                <span style={{ color: 'var(--text-3)' }}>{r.l}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', color: r.pos ? 'var(--text)' : 'var(--text-3)' }}>
                   {r.v >= 0 ? '+' : ''}{fmtCur(r.v)}
                 </span>
               </div>
@@ -426,10 +426,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: profit > 0 ? '#34d399' : '#f87171' }}>{fmtCur(profit)}</span>
             </div>
             <div style={{ marginTop: 4, display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
-              <span style={{ color: 'var(--text-muted)' }}>Marge</span>
+              <span style={{ color: 'var(--text-3)' }}>Marge</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: marginPct >= 20 ? '#34d399' : marginPct >= 10 ? '#fbbf24' : '#f87171' }}>{marginPct}%</span>
             </div>
-            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-muted)', opacity: 0.7 }}>*Schätzwerte anpassbar</div>
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-3)', opacity: 0.7 }}>*Schätzwerte anpassbar</div>
           </div>
         </div>
       </div>
@@ -442,7 +442,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Incoterm */}
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Incoterm</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Incoterm</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {INCOTERMS.map(inc => (
             <span
@@ -460,7 +460,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Ports */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Ladehafen</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Ladehafen</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {LOAD_PORTS.map(p => {
               const sel = state.portLoad === p.key;
@@ -475,10 +475,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                     background: sel ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <Ic name="pin" size={12} color={sel ? '#a78bfa' : 'var(--text-muted)'} />
+                  <Ic name="pin" size={12} color={sel ? '#a78bfa' : 'var(--text-3)'} />
                   <div>
                     <div style={{ fontSize: 12, fontWeight: sel ? 600 : 400 }}>{p.label}</div>
-                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{p.sub}</div>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-3)' }}>{p.sub}</div>
                   </div>
                   {sel && <div style={{ marginLeft: 'auto' }}><Ic name="check" size={12} color="#a78bfa" /></div>}
                 </div>
@@ -488,7 +488,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Zielhafen</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Zielhafen</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {DEST_PORTS.map(p => {
               const sel = state.portDest === p.key;
@@ -503,10 +503,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                     background: sel ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <Ic name="flag" size={12} color={sel ? '#a78bfa' : 'var(--text-muted)'} />
+                  <Ic name="flag" size={12} color={sel ? '#a78bfa' : 'var(--text-3)'} />
                   <div>
                     <div style={{ fontSize: 12, fontWeight: sel ? 600 : 400 }}>{p.label}</div>
-                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{p.sub}</div>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-3)' }}>{p.sub}</div>
                   </div>
                   {sel && <div style={{ marginLeft: 'auto' }}><Ic name="check" size={12} color="#a78bfa" /></div>}
                 </div>
@@ -519,11 +519,11 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Dates */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>ETD (geplant)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>ETD (geplant)</div>
           <input type="date" value={state.etd} onChange={e => update('etd', e.target.value)} style={inputStyle} />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>ETA (geplant)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>ETA (geplant)</div>
           <input type="date" value={state.eta} onChange={e => update('eta', e.target.value)} style={inputStyle} />
         </div>
       </div>
@@ -531,7 +531,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Costs + responsible */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Logistikkosten (€)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Logistikkosten (€)</div>
           <input
             type="number" min={0} value={state.costLogistics}
             onChange={e => update('costLogistics', parseFloat(e.target.value) || 0)}
@@ -539,7 +539,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Dokumentenkosten (€)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Dokumentenkosten (€)</div>
           <input
             type="number" min={0} value={state.costDocs}
             onChange={e => update('costDocs', parseFloat(e.target.value) || 0)}
@@ -547,7 +547,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Verantwortlich</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verantwortlich</div>
           <input
             type="text" value={state.responsible}
             onChange={e => update('responsible', e.target.value)}
@@ -578,7 +578,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Auftrag angelegt!</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newOrderId}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
               {product?.name} · {state.qty.toLocaleString('de-DE')} {state.unit} → {buyer?.name}
             </div>
           </div>
@@ -608,13 +608,13 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
     return (
       <div style={{ display: 'flex', gap: 16 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Auftragsübersicht</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Auftragsübersicht</div>
           {rows.map((r, i) => (
             <div key={i} style={{ display: 'flex', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-              <span style={{ color: 'var(--text-muted)', width: 110, flexShrink: 0 }}>{r.l}</span>
+              <span style={{ color: 'var(--text-3)', width: 110, flexShrink: 0 }}>{r.l}</span>
               <div>
                 <div style={{ fontWeight: 500 }}>{r.v ?? '—'}</div>
-                {r.sub && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.sub}</div>}
+                {r.sub && <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{r.sub}</div>}
               </div>
             </div>
           ))}
@@ -631,8 +631,8 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
               { l: 'Dokumente',  v: -state.costDocs },
             ].map((r, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>{r.l}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', color: r.pos ? 'var(--text)' : 'var(--text-muted)' }}>
+                <span style={{ color: 'var(--text-3)' }}>{r.l}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', color: r.pos ? 'var(--text)' : 'var(--text-3)' }}>
                   {r.v >= 0 ? '+' : ''}{fmtCur(r.v)}
                 </span>
               </div>
@@ -643,7 +643,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                 <span style={{ fontFamily: 'var(--font-mono)', color: profit > 0 ? '#34d399' : '#f87171' }}>{fmtCur(profit)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
-                <span style={{ color: 'var(--text-muted)' }}>Marge</span>
+                <span style={{ color: 'var(--text-3)' }}>Marge</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: marginPct >= 20 ? '#34d399' : '#fbbf24' }}>{marginPct}%</span>
               </div>
             </div>
@@ -699,12 +699,12 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
                         background: done ? '#34d399' : current ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)',
                         border: `1.5px solid ${done ? '#34d399' : current ? '#818cf8' : 'rgba(255,255,255,0.1)'}`,
-                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-muted)',
+                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-3)',
                         fontWeight: 600, boxShadow: current ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
                       }}>
                         {done ? '✓' : i + 1}
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
                         {s.label}
                       </span>
                     </div>

@@ -170,7 +170,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div style={{ gridColumn: '1 / -1' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
           <input
             autoFocus
             type="text"
@@ -181,7 +181,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Kategorie</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kategorie</div>
           <input
             type="text"
             value={state.basic.cat}
@@ -191,7 +191,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Herkunft</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Herkunft</div>
           <input
             type="text"
             value={state.basic.origin}
@@ -201,7 +201,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>HS-Code</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>HS-Code</div>
           <input
             type="text"
             value={state.basic.hs}
@@ -211,7 +211,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Einheit</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Einheit</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {UNITS.map(u => (
               <span
@@ -226,7 +226,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Verpackung</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verpackung</div>
           <input
             type="text"
             value={state.basic.packaging}
@@ -236,7 +236,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>MOQ</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>MOQ</div>
           <input
             type="text"
             value={state.basic.moq}
@@ -255,7 +255,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€/Einh.)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€/Einh.)</div>
           <input
             type="number"
             min={0}
@@ -267,7 +267,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€/Einh.)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€/Einh.)</div>
           <input
             type="number"
             min={0}
@@ -282,14 +282,14 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
 
       {/* Live margin */}
       <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 12.5 }}>
-        <span style={{ color: 'var(--text-muted)' }}>Marge: </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-muted)' }}>
+        <span style={{ color: 'var(--text-3)' }}>Marge: </span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-3)' }}>
           {`Marge: ${margin}%`}
         </span>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
         <input
           type="text"
           value={state.pricing.certs}
@@ -297,11 +297,11 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           placeholder="z.B. Fairtrade, Organic"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Exportstatus</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Exportstatus</div>
         <div style={{ display: 'flex', gap: 6 }}>
           <span
             className={`chip${state.pricing.exportReady ? ' on' : ''}`}
@@ -315,9 +315,9 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
 
       {/* Variants table */}
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Varianten</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Varianten</div>
         <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', gap: 0, background: 'rgba(255,255,255,0.04)', padding: '6px 10px', fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', gap: 0, background: 'rgba(255,255,255,0.04)', padding: '6px 10px', fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             <span>Variante</span>
             <span>Grad</span>
             <span>Bestand (kg)</span>
@@ -372,7 +372,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Produkt angelegt!</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newId}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{state.basic.name} · {state.basic.cat}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{state.basic.name} · {state.basic.cat}</div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn ghost" onClick={handleClose}>Schließen</button>
@@ -403,10 +403,10 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
         {rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-            <span style={{ color: 'var(--text-muted)', width: 110, flexShrink: 0 }}>{r.l}</span>
+            <span style={{ color: 'var(--text-3)', width: 110, flexShrink: 0 }}>{r.l}</span>
             <span style={{ fontWeight: 500 }}>{r.v}</span>
           </div>
         ))}
@@ -458,12 +458,12 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
                         background: done ? '#34d399' : current ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)',
                         border: `1.5px solid ${done ? '#34d399' : current ? '#818cf8' : 'rgba(255,255,255,0.1)'}`,
-                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-muted)',
+                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-3)',
                         fontWeight: 600, boxShadow: current ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
                       }}>
                         {done ? '✓' : i + 1}
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
                         {s.label}
                       </span>
                     </div>

@@ -150,7 +150,7 @@ Erstelle ein kompaktes Tages-Briefing mit den wichtigsten Handlungspunkten für 
                 AI · Morgen-Briefing
               </span>
               {activeModelObj && (
-                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{activeModelObj.name}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{activeModelObj.name}</span>
               )}
               <button
                 className="btn sm primary"
@@ -164,7 +164,7 @@ Erstelle ein kompaktes Tages-Briefing mit den wichtigsten Handlungspunkten für 
             </div>
 
             {loading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-3)', fontSize: 12 }}>
                 <Ic name="refresh" size={13} color="#a78bfa" />
                 Analysiere Daten…
               </div>

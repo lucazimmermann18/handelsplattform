@@ -116,53 +116,56 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
 
   return (
     <>
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Musterverwaltung</h1>
-          <p className="view-sub">Versendete Warenproben · Status · Feedback</p>
+    <div>
+      <div className="section-head">
+        <h1>Musterverwaltung</h1>
+        <div className="sub">Versendete Warenproben · Status · Feedback</div>
+        <div className="right">
+          <button className="btn primary" onClick={() => setNewSample(true)}><Ic name="plus" size={14} /> Muster erfassen</button>
         </div>
-        <button className="btn-primary" onClick={() => setNewSample(true)}><Ic name="plus" size={14} /> Muster erfassen</button>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
+
       {/* KPI Tiles */}
-      <div className="kpi-row">
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="box" size={18} /></div>
-          <div className="kpi-val">{total}</div>
-          <div className="kpi-lbl">Gesendet</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: 'var(--text-3)', marginBottom: 6 }}><Ic name="box" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22 }}>{total}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Gesendet</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="ship" size={18} /></div>
-          <div className="kpi-val">{inTransit}</div>
-          <div className="kpi-lbl">Auf dem Weg</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: 'var(--text-3)', marginBottom: 6 }}><Ic name="ship" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#60a5fa' }}>{inTransit}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Auf dem Weg</div>
         </div>
-        <div className="kpi-tile warn">
-          <div className="kpi-icon"><Ic name="clock" size={18} /></div>
-          <div className="kpi-val">{feedbackPending}</div>
-          <div className="kpi-lbl">Feedback offen</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: '#fbbf24', marginBottom: 6 }}><Ic name="clock" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#fbbf24' }}>{feedbackPending}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Feedback offen</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="quality" size={18} /></div>
-          <div className="kpi-val">{accepted}</div>
-          <div className="kpi-lbl">Akzeptiert</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: '#34d399', marginBottom: 6 }}><Ic name="quality" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#34d399' }}>{accepted}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Akzeptiert</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="danger" size={18} /></div>
-          <div className="kpi-val">{rejected}</div>
-          <div className="kpi-lbl">Abgelehnt</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: '#f87171', marginBottom: 6 }}><Ic name="danger" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#f87171' }}>{rejected}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Abgelehnt</div>
         </div>
       </div>
 
       {/* Samples Table */}
       <div className="card">
-        <div className="card-header">
-          <span className="card-title"><Ic name="pkg" size={14} /> Alle Muster</span>
+        <div className="card-head">
+          <Ic name="pkg" size={14} />
+          <span className="title">Alle Muster</span>
         </div>
         {loadingDb ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Lädt…</div>
         ) : (
-          <table className="data-table">
+          <table className="table">
             <thead>
               <tr>
                 <th>Sample-ID</th>
@@ -199,7 +202,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                     <span style={{
                       fontSize: 12,
                       color: s.feedback.toLowerCase().includes('akzeptiert') ? 'var(--success)'
-                        : s.feedback === '—' ? 'var(--text-muted)'
+                        : s.feedback === '—' ? 'var(--text-3)'
                         : s.status === 'rejected' ? 'var(--danger)'
                         : 'var(--text)',
                     }}>
@@ -211,6 +214,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
             </tbody>
           </table>
         )}
+      </div>
       </div>
     </div>
 
@@ -228,7 +232,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
           <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* Produkt */}
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Produkt</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Produkt</div>
               <input
                 list="sample-products"
                 value={form.product}
@@ -242,7 +246,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
             </div>
             {/* Käufer */}
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Käufer *</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Käufer *</div>
               <select value={form.buyerId} onChange={e => fld('buyerId', e.target.value)} style={inputStyle}>
                 <option value="">— wählen —</option>
                 {M.buyers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -251,7 +255,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
             {/* Menge + Lieferant */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Menge</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Menge</div>
                 <input
                   type="text"
                   value={form.qty}
@@ -261,7 +265,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Lieferant</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Lieferant</div>
                 <select value={form.supplierId} onChange={e => fld('supplierId', e.target.value)} style={inputStyle}>
                   <option value="">— wählen —</option>
                   {M.suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -271,7 +275,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
             {/* Kurier + Tracking */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Kurier</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Kurier</div>
                 <input
                   type="text"
                   value={form.courier}
@@ -281,7 +285,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Tracking</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Tracking</div>
                 <input
                   type="text"
                   value={form.tracking}
@@ -293,7 +297,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
             </div>
             {/* Sendedatum */}
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Sendedatum</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Sendedatum</div>
               <input
                 type="date"
                 value={form.sentAt}

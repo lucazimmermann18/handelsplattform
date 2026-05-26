@@ -53,14 +53,13 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
   const matrixProducts = products.slice(0, 10);
 
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">KI-Matching</h1>
-          <p className="view-sub">Käufer × Produkte · Kompatibilitätsmatrix</p>
-        </div>
+    <div>
+      <div className="section-head">
+        <h1>KI-Matching</h1>
+        <div className="sub">Käufer × Produkte · Kompatibilitätsmatrix</div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
       {/* Top Matches */}
       <div style={{ marginBottom: 16 }}>
         <h2 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
@@ -79,16 +78,16 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{m.buyer.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.buyer.country} · {m.buyer.city}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{m.buyer.country} · {m.buyer.city}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Ic name="arrow_r" size={12} color="var(--text-muted)" />
+                  <Ic name="arrow_r" size={12} color="var(--text-3)" />
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500 }}>{m.product.name}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Marge: {margin}%</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Marge: {margin}%</div>
                   </div>
                 </div>
-                <button className="btn-ghost" style={{ fontSize: 12, marginTop: 4 }} onClick={() => onNav('offers')}>
+                <button className="btn ghost" style={{ fontSize: 12, marginTop: 4 }} onClick={() => onNav('offers')}>
                   Angebot erstellen
                 </button>
               </div>
@@ -99,8 +98,9 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
 
       {/* Match Matrix */}
       <div className="card">
-        <div className="card-header">
-          <span className="card-title"><Ic name="layers" size={14} /> Match-Matrix · Käufer × Produkte</span>
+        <div className="card-head">
+          <Ic name="layers" size={14} />
+          <span className="title">Match-Matrix · Käufer × Produkte</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{
@@ -111,7 +111,7 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
             minWidth: 'max-content',
           }}>
             {/* Header row */}
-            <div style={{ background: 'var(--surface)', padding: '8px 10px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ background: 'var(--surface)', padding: '8px 10px', fontSize: 11, fontWeight: 600, color: 'var(--text-3)', display: 'flex', alignItems: 'flex-end' }}>
               Käufer \ Produkt
             </div>
             {matrixProducts.map(p => (
@@ -127,7 +127,7 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
                   writingMode: 'vertical-rl',
                   transform: 'rotate(180deg)',
                   fontSize: 10,
-                  color: 'var(--text-muted)',
+                  color: 'var(--text-3)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   maxHeight: 90,
@@ -137,7 +137,7 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
               </div>
             ))}
             <div style={{ background: 'var(--surface)', height: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 4 }}>
-              <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)' }}>Total</span>
+              <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: 10, fontWeight: 600, color: 'var(--text-3)' }}>Total</span>
             </div>
 
             {/* Data rows */}
@@ -148,12 +148,11 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
                 <React.Fragment key={b.id}>
                   <div style={{ background: 'var(--surface)', padding: '0 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 40 }}>
                     <div style={{ fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{b.id}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.id}</div>
                   </div>
                   {rowScores.map((sc, pi) => (
                     <div key={pi} style={{ background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <div
-                        className="mx-cell"
                         style={{ width: 24, height: 24, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, background: cellColor(sc), color: sc >= 70 ? 'rgba(16,185,129,0.9)' : sc >= 40 ? 'rgba(59,130,246,0.9)' : sc >= 20 ? 'rgba(245,158,11,0.9)' : sc > 0 ? 'rgba(239,68,68,0.9)' : 'transparent' }}
                       >
                         {sc > 0 ? sc : ''}
@@ -170,7 +169,7 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: 16, padding: '12px 0 0', fontSize: 11, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 16, padding: '12px 0 0', fontSize: 11, color: 'var(--text-3)', flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 12, height: 12, borderRadius: 2, background: 'rgba(16,185,129,0.35)', display: 'inline-block' }} /> ≥70 Starke Übereinstimmung
           </span>
@@ -184,6 +183,7 @@ export const MatchingView = ({ lang: _lang, onNav }: MatchingViewProps) => {
             <span style={{ width: 12, height: 12, borderRadius: 2, background: 'rgba(239,68,68,0.10)', display: 'inline-block' }} /> 1-19 Gering
           </span>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -47,49 +47,50 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
   const hedgedPct = Math.round((fxHedged / fxExposure) * 100);
 
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Trade Finance</h1>
-          <p className="view-sub">Akkreditive · Zahlungsplan · FX-Hedging</p>
-        </div>
+    <div>
+      <div className="section-head">
+        <h1>Trade Finance</h1>
+        <div className="sub">Akkreditive · Zahlungsplan · FX-Hedging</div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
+
       {/* KPI Tiles */}
-      <div className="kpi-row">
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="finance" size={18} /></div>
-          <div className="kpi-val">{lcs.filter(l => l.status !== 'settled').length}</div>
-          <div className="kpi-lbl">Aktive LCs</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: 'var(--text-3)', marginBottom: 6 }}><Ic name="finance" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#60a5fa' }}>{lcs.filter(l => l.status !== 'settled').length}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Aktive LCs</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="pkg" size={18} /></div>
-          <div className="kpi-val">{fmtCur(totalLCAmount)}</div>
-          <div className="kpi-lbl">Gebundene Liquidität</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: 'var(--text-3)', marginBottom: 6 }}><Ic name="pkg" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22 }}>{fmtCur(totalLCAmount)}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Gebundene Liquidität</div>
         </div>
-        <div className="kpi-tile warn">
-          <div className="kpi-icon"><Ic name="activity" size={18} /></div>
-          <div className="kpi-val">€ 852k</div>
-          <div className="kpi-lbl">FX-Exposure</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: '#fbbf24', marginBottom: 6 }}><Ic name="activity" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#fbbf24' }}>€ 852k</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>FX-Exposure</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="quality" size={18} /></div>
-          <div className="kpi-val">{hedgedPct}%</div>
-          <div className="kpi-lbl">Gehedgt</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: '#34d399', marginBottom: 6 }}><Ic name="quality" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22, color: '#34d399' }}>{hedgedPct}%</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Gehedgt</div>
         </div>
-        <div className="kpi-tile">
-          <div className="kpi-icon"><Ic name="chart" size={18} /></div>
-          <div className="kpi-val">{fmtCur(112000)}</div>
-          <div className="kpi-lbl">Factoring</div>
+        <div className="card" style={{ padding: 14 }}>
+          <div style={{ color: 'var(--text-3)', marginBottom: 6 }}><Ic name="chart" size={16} /></div>
+          <div className="mono fw600" style={{ fontSize: 22 }}>{fmtCur(112000)}</div>
+          <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Factoring</div>
         </div>
       </div>
 
       {/* Letters of Credit Table */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-header">
-          <span className="card-title"><Ic name="doc" size={14} /> Akkreditive (LC)</span>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card-head">
+          <Ic name="doc" size={14} />
+          <span className="title">Akkreditive (LC)</span>
         </div>
-        <table className="data-table">
+        <table className="table">
           <thead>
             <tr>
               <th>LC-ID</th>
@@ -130,8 +131,9 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Payment Plan */}
         <div className="card">
-          <div className="card-header">
-            <span className="card-title"><Ic name="task" size={14} /> Zahlungsplan · ORD-2026-0144</span>
+          <div className="card-head">
+            <Ic name="task" size={14} />
+            <span className="title">Zahlungsplan · ORD-2026-0144</span>
           </div>
           <div style={{ padding: '8px 0' }}>
             {paymentSteps.map((step, i) => (
@@ -154,7 +156,7 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
                 </div>
                 {step.status === 'done' && <Ic name="quality" size={16} color="var(--success)" />}
                 {step.status === 'pending' && <Ic name="clock" size={16} color="var(--warning)" />}
-                {step.status === 'upcoming' && <Ic name="clock" size={16} color="var(--text-muted)" />}
+                {step.status === 'upcoming' && <Ic name="clock" size={16} color="var(--text-3)" />}
               </div>
             ))}
           </div>
@@ -162,10 +164,11 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
 
         {/* FX Hedging */}
         <div className="card">
-          <div className="card-header">
-            <span className="card-title"><Ic name="activity" size={14} /> FX-Hedging</span>
+          <div className="card-head">
+            <Ic name="activity" size={14} />
+            <span className="title">FX-Hedging</span>
           </div>
-          <table className="data-table">
+          <table className="table">
             <thead>
               <tr>
                 <th>Paar</th>
@@ -197,6 +200,7 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

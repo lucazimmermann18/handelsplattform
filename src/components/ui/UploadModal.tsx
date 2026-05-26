@@ -111,12 +111,12 @@ export const UploadModal = ({ onClose }: UploadModalProps) => {
               </div>
 
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Name</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Name</div>
                 <input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Dokumentenname" style={inputStyle} />
               </div>
 
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Typ</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Typ</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {DOC_TYPES.map(tp => (
                     <span key={tp} className={`chip${docType === tp ? ' on' : ''}`} onClick={() => setDocType(tp)} style={{ cursor: 'pointer', fontSize: 11 }}>{tp}</span>
@@ -126,7 +126,7 @@ export const UploadModal = ({ onClose }: UploadModalProps) => {
 
               {M && (
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Auftrag (optional)</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Auftrag (optional)</div>
                   <select value={orderId} onChange={e => setOrderId(e.target.value)} style={inputStyle}>
                     <option value="">— kein Auftrag —</option>
                     {M.orders.slice(0, 30).map(o => <option key={o.id} value={o.id}>{o.id} · {o.productVariant}</option>)}

@@ -149,19 +149,19 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
           </div>
           <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Beschreibung *</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Beschreibung *</div>
               <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Was ist das Problem?" style={inputStyle} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Käufer</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Käufer</div>
                 <select value={form.buyerId} onChange={e => setForm(p => ({ ...p, buyerId: e.target.value }))} style={inputStyle}>
                   <option value="">— wählen —</option>
                   {M.buyers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Auftrag</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Auftrag</div>
                 <select value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))} style={inputStyle}>
                   <option value="">— wählen —</option>
                   {M.orders.slice(0,15).map(o => <option key={o.id} value={o.id}>{o.id}</option>)}
@@ -169,7 +169,7 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Kategorie</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Kategorie</div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {['Qualität','Logistik','Lieferung','Dokumente','Preis','Sonstiges'].map(c => (
                   <span key={c} className={`chip${form.cat === c ? ' on' : ''}`} onClick={() => setForm(p => ({ ...p, cat: c }))} style={{ cursor: 'pointer' }}>{c}</span>
@@ -177,7 +177,7 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Schwere</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Schwere</div>
               <div style={{ display: 'flex', gap: 5 }}>
                 {['gering','mittel','kritisch'].map(s => (
                   <span key={s} className={`chip${form.sev === s ? ' on' : ''}`} onClick={() => setForm(p => ({ ...p, sev: s }))} style={{ cursor: 'pointer' }}>{s}</span>
@@ -186,11 +186,11 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Verantwortlich</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Verantwortlich</div>
                 <input value={form.owner} onChange={e => setForm(p => ({ ...p, owner: e.target.value }))} placeholder="Admin" style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Kostenwirkung</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Kostenwirkung</div>
                 <input value={form.impact} onChange={e => setForm(p => ({ ...p, impact: e.target.value }))} placeholder="z.B. 2.500 €" style={inputStyle} />
               </div>
             </div>

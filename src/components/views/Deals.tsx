@@ -134,38 +134,38 @@ export const DealsView = ({ lang }: DealsViewProps) => {
           <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Käufer</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Käufer</div>
                 <select value={form.buyerId} onChange={e => fld('buyerId', e.target.value)} style={inputStyle}>
                   <option value="">— wählen —</option>
                   {M.buyers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Produkt</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Produkt</div>
                 <select value={form.productId} onChange={e => fld('productId', e.target.value)} style={inputStyle}>
                   <option value="">— wählen —</option>
                   {M.products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Menge ({M.products.find(p => p.id === form.productId)?.unit ?? 'Einh.'})</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Menge ({M.products.find(p => p.id === form.productId)?.unit ?? 'Einh.'})</div>
                 <input type="number" value={form.qty} onChange={e => fld('qty', e.target.value)} placeholder="z.B. 5000" style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Unser Preis (€/Einh.)</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Unser Preis (€/Einh.)</div>
                 <input type="number" step={0.01} value={form.ourPrice} onChange={e => fld('ourPrice', e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Zielpreis Käufer (€)</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Zielpreis Käufer (€)</div>
                 <input type="number" step={0.01} value={form.targetPrice} onChange={e => fld('targetPrice', e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Wahrscheinlichkeit (%)</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Wahrscheinlichkeit (%)</div>
                 <input type="number" min={0} max={100} value={form.prob} onChange={e => fld('prob', e.target.value)} style={inputStyle} />
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Stage</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Stage</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {M.dealStages.map(s => (
                   <span key={s} className={`chip${form.stage === s ? ' on' : ''}`} onClick={() => fld('stage', s)} style={{ cursor: 'pointer' }}>{s}</span>
@@ -173,7 +173,7 @@ export const DealsView = ({ lang }: DealsViewProps) => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Nächster Follow-up</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Nächster Follow-up</div>
               <input type="date" value={form.nextFollow} onChange={e => fld('nextFollow', e.target.value)} style={inputStyle} />
             </div>
             {saveError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6 }}>{saveError}</div>}

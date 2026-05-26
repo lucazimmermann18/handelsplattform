@@ -169,7 +169,7 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
       <div className="cmd-palette" onClick={e => e.stopPropagation()}>
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <Ic name="search" size={15} color="var(--text-muted)" />
+          <Ic name="search" size={15} color="var(--text-3)" />
           <input
             ref={inputRef}
             value={query}
@@ -181,22 +181,22 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
             }}
           />
           {query && (
-            <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}>
+            <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}>
               <Ic name="x" size={12} />
             </button>
           )}
-          <kbd style={{ fontSize: 10, padding: '2px 5px', background: 'rgba(255,255,255,0.08)', borderRadius: 4, color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.1)' }}>ESC</kbd>
+          <kbd style={{ fontSize: 10, padding: '2px 5px', background: 'rgba(255,255,255,0.08)', borderRadius: 4, color: 'var(--text-3)', border: '1px solid rgba(255,255,255,0.1)' }}>ESC</kbd>
         </div>
 
         {/* Results */}
         <div ref={listRef} className="results" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           {results.length === 0 ? (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>
               Keine Ergebnisse für &bdquo;{query}&ldquo;
             </div>
           ) : groups.map(group => (
             <div key={group.name}>
-              <div style={{ padding: '8px 14px 3px', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <div style={{ padding: '8px 14px 3px', fontSize: 10, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 {group.name}
               </div>
               {group.items.map(item => (
@@ -210,13 +210,13 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Ic name={item.icon} size={13} color={item.idx === selectedIdx ? '#a78bfa' : 'var(--text-muted)'} />
+                      <Ic name={item.icon} size={13} color={item.idx === selectedIdx ? '#a78bfa' : 'var(--text-3)'} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="label" style={{ fontWeight: item.group !== 'Navigation' ? 600 : 400 }}>{item.label}</div>
                       <div className="meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.meta}</div>
                     </div>
-                    <div style={{ fontSize: 9.5, color: 'var(--text-muted)', opacity: 0.5, flexShrink: 0 }}>{item.group}</div>
+                    <div style={{ fontSize: 9.5, color: 'var(--text-3)', opacity: 0.5, flexShrink: 0 }}>{item.group}</div>
                   </div>
                 </div>
               ))}
@@ -225,7 +225,7 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '6px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 12, fontSize: 10.5, color: 'var(--text-muted)' }}>
+        <div style={{ padding: '6px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 12, fontSize: 10.5, color: 'var(--text-3)' }}>
           <span><kbd style={{ fontFamily: 'inherit' }}>↑↓</kbd> navigieren</span>
           <span><kbd style={{ fontFamily: 'inherit' }}>↵</kbd> öffnen</span>
           <span><kbd style={{ fontFamily: 'inherit' }}>ESC</kbd> schließen</span>

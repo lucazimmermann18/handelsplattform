@@ -110,7 +110,7 @@ export function CopilotDrawer({ open, onClose, onNav }: CopilotDrawerProps) {
             </div>
             <span style={{ color: '#c4b5fd', fontWeight: 600, fontSize: 13 }}>AI Copilot</span>
             {activeModelObj && isConfigured && (
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', padding: '2px 6px', background: 'rgba(167,139,250,0.1)', borderRadius: 4 }}>
+              <span style={{ fontSize: 10, color: 'var(--text-3)', padding: '2px 6px', background: 'rgba(167,139,250,0.1)', borderRadius: 4 }}>
                 {activeModelObj.name}
               </span>
             )}
@@ -170,7 +170,7 @@ export function CopilotDrawer({ open, onClose, onNav }: CopilotDrawerProps) {
             {/* Chat messages */}
             {messages.map((msg, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ fontSize: 9.5, color: 'var(--text-muted)', marginBottom: 2 }}>
+                <div style={{ fontSize: 9.5, color: 'var(--text-3)', marginBottom: 2 }}>
                   {msg.role === 'user' ? 'Du' : activeModelObj?.name ?? 'Copilot'}
                 </div>
                 <div style={{

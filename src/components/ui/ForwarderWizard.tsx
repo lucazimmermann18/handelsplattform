@@ -53,7 +53,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500,
+  fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500,
 };
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
             </span>
           ))}
           {form.rating > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 6, alignSelf: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 6, alignSelf: 'center' }}>
               {form.rating} / 5
             </span>
           )}
@@ -290,7 +290,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Spediteur angelegt!</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{savedId}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
               {form.name}{form.city ? ` · ${form.city}` : ''}{form.country ? `, ${form.country}` : ''}
             </div>
           </div>
@@ -307,7 +307,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
           Zusammenfassung
         </div>
 
@@ -320,14 +320,14 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           { l: 'Telefon',   v: form.phone || '—' },
         ].map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-            <span style={{ color: 'var(--text-muted)', width: 90, flexShrink: 0 }}>{r.l}</span>
+            <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>{r.l}</span>
             <span style={{ fontWeight: 500 }}>{r.v}</span>
           </div>
         ))}
 
         {/* Routes */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-muted)', width: 90, flexShrink: 0 }}>Routen</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Routen</span>
           <span style={{ fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             {routesArr.length > 0 ? routesArr.join(' · ') : '—'}
           </span>
@@ -335,18 +335,18 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
         {/* Services */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-muted)', width: 90, flexShrink: 0 }}>Dienste</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Dienste</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
             {form.services.length > 0
               ? form.services.map(s => <Badge key={s}>{s}</Badge>)
-              : <span style={{ color: 'var(--text-muted)' }}>—</span>
+              : <span style={{ color: 'var(--text-3)' }}>—</span>
             }
           </div>
         </div>
 
         {/* Rating */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-muted)', width: 90, flexShrink: 0 }}>Bewertung</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Bewertung</span>
           <div style={{ display: 'flex', gap: 2 }}>
             {Array.from({ length: 5 }, (_, i) => (
               <span key={i} style={{ color: i < form.rating ? '#fbbf24' : '#3a4455', fontSize: 15 }}>★</span>
@@ -403,12 +403,12 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
                         background: done ? '#34d399' : current ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)',
                         border: `1.5px solid ${done ? '#34d399' : current ? '#818cf8' : 'rgba(255,255,255,0.1)'}`,
-                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-muted)',
+                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-3)',
                         fontWeight: 600, boxShadow: current ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
                       }}>
                         {done ? '✓' : i + 1}
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
                         {s.label}
                       </span>
                     </div>

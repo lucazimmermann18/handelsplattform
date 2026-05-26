@@ -223,11 +223,11 @@ export const TasksView = ({ lang }: TasksViewProps) => {
           </div>
           <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Titel *</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Titel *</div>
               <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Was ist zu tun?" style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Priorität</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Priorität</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['hoch','mittel','niedrig'] as const).map(p => (
                   <span key={p} className={`chip${form.prio === p ? ' on' : ''}`} onClick={() => setForm(prev => ({ ...prev, prio: p }))} style={{ cursor: 'pointer' }}>
@@ -238,16 +238,16 @@ export const TasksView = ({ lang }: TasksViewProps) => {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Fällig *</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Fällig *</div>
                 <input type="date" value={form.due} onChange={e => setForm(p => ({ ...p, due: e.target.value }))} style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Verantwortlich</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Verantwortlich</div>
                 <input value={form.owner} onChange={e => setForm(p => ({ ...p, owner: e.target.value }))} placeholder="Admin" style={inputStyle} />
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Auftrag (optional)</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Auftrag (optional)</div>
               <select value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))} style={inputStyle}>
                 <option value="">— kein Auftrag —</option>
                 {M.orders.slice(0, 20).map(o => <option key={o.id} value={o.id}>{o.id} · {o.productVariant}</option>)}

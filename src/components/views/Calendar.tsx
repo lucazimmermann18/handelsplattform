@@ -113,7 +113,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
               textAlign: 'center',
               fontSize: 11,
               fontWeight: 600,
-              color: 'var(--text-muted)',
+              color: 'var(--text-3)',
               letterSpacing: '0.05em',
             }}>
               {h}
@@ -174,7 +174,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
                       </div>
                     ))}
                     {extra > 0 && (
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                      <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>
                         +{extra} weitere
                       </div>
                     )}

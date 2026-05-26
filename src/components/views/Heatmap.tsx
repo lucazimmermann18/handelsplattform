@@ -31,14 +31,13 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
   });
 
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Profitabilitäts-Heatmap</h1>
-          <p className="view-sub">Produkte × Käufer · Marge & Umsatz</p>
-        </div>
+    <div>
+      <div className="section-head">
+        <h1>Profitabilitäts-Heatmap</h1>
+        <div className="sub">Produkte × Käufer · Marge & Umsatz</div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
       <div className="card" style={{ overflowX: 'auto' }}>
         <div style={{
           display: 'grid',
@@ -48,7 +47,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
           minWidth: 'max-content',
         }}>
           {/* Header: corner + buyer names */}
-          <div style={{ background: 'var(--surface-2)', padding: '8px 10px', display: 'flex', alignItems: 'flex-end', height: 120, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>
+          <div style={{ background: 'var(--surface-2)', padding: '8px 10px', display: 'flex', alignItems: 'flex-end', height: 120, fontSize: 11, fontWeight: 600, color: 'var(--text-3)' }}>
             Produkt \ Käufer
           </div>
           {buyers.map(b => (
@@ -64,7 +63,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
                 writingMode: 'vertical-rl',
                 transform: 'rotate(180deg)',
                 fontSize: 10,
-                color: 'var(--text-muted)',
+                color: 'var(--text-3)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 maxHeight: 110,
@@ -80,7 +79,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
               {/* Product name cell */}
               <div style={{ background: 'var(--surface)', padding: '10px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3 }}>{p.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{p.hs}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>{p.hs}</div>
               </div>
 
               {/* Buyer cells */}
@@ -102,7 +101,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
                         <div style={{ fontSize: 15, fontWeight: 700, color: data.margin >= 28 ? 'rgba(16,185,129,1)' : data.margin >= 20 ? 'rgba(245,158,11,1)' : 'rgba(239,68,68,1)' }}>
                           {data.margin}%
                         </div>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'var(--text-3)', textAlign: 'center' }}>
                           {fmtCur(data.revenue)}
                         </div>
                       </>
@@ -117,7 +116,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: 20, padding: '16px 0 0', fontSize: 11, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 20, padding: '16px 0 0', fontSize: 11, color: 'var(--text-3)', flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 14, height: 14, borderRadius: 2, background: 'rgba(16,185,129,0.45)', display: 'inline-block' }} /> ≥35% Exzellent
           </span>
@@ -134,6 +133,7 @@ export const HeatmapView = ({ lang: _lang }: HeatmapViewProps) => {
             <span style={{ width: 14, height: 14, borderRadius: 2, background: 'var(--surface)', border: '1px solid var(--border)', display: 'inline-block' }} /> Kein Auftrag
           </span>
         </div>
+      </div>
       </div>
     </div>
   );

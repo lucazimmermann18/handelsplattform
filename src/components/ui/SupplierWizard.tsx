@@ -144,7 +144,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div style={{ gridColumn: '1 / -1' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
           <input
             autoFocus
             type="text"
@@ -155,7 +155,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Typ</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Typ</div>
           <select
             value={state.basic.type}
             onChange={e => updateBasic('type', e.target.value)}
@@ -167,7 +167,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           </select>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Land</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Land</div>
           <input
             type="text"
             value={state.basic.country}
@@ -177,7 +177,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Region</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Region</div>
           <input
             type="text"
             value={state.basic.region}
@@ -187,7 +187,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Stadt</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Stadt</div>
           <input
             type="text"
             value={state.basic.city}
@@ -197,7 +197,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Kontaktperson</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kontaktperson</div>
           <input
             type="text"
             value={state.basic.contact}
@@ -207,7 +207,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Telefon</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Telefon</div>
           <input
             type="text"
             value={state.basic.phone}
@@ -217,7 +217,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>E-Mail</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>E-Mail</div>
           <input
             type="email"
             value={state.basic.email}
@@ -235,7 +235,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
   const renderDetails = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Produkte</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Produkte</div>
         <input
           type="text"
           value={state.details.products}
@@ -243,10 +243,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           placeholder="z.B. Kaffee, Cashews"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
         <input
           type="text"
           value={state.details.certs}
@@ -254,10 +254,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           placeholder="z.B. Fairtrade, Organic"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500 }}>Kapazität</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kapazität</div>
         <input
           type="text"
           value={state.details.capacity}
@@ -267,7 +267,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
         />
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Tier</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Tier</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['A', 'B', 'C'].map(t => (
             <span
@@ -282,7 +282,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500 }}>Risiko</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Risiko</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['niedrig', 'mittel', 'hoch'].map(r => (
             <span
@@ -311,7 +311,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Lieferant angelegt!</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newId}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{state.basic.name} · {state.basic.country}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{state.basic.name} · {state.basic.country}</div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn ghost" onClick={handleClose}>Schließen</button>
@@ -342,10 +342,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
         {rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-            <span style={{ color: 'var(--text-muted)', width: 100, flexShrink: 0 }}>{r.l}</span>
+            <span style={{ color: 'var(--text-3)', width: 100, flexShrink: 0 }}>{r.l}</span>
             <span style={{ fontWeight: 500 }}>{r.v}</span>
           </div>
         ))}
@@ -397,12 +397,12 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
                         background: done ? '#34d399' : current ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)',
                         border: `1.5px solid ${done ? '#34d399' : current ? '#818cf8' : 'rgba(255,255,255,0.1)'}`,
-                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-muted)',
+                        color: done ? '#fff' : current ? '#a78bfa' : 'var(--text-3)',
                         fontWeight: 600, boxShadow: current ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
                       }}>
                         {done ? '✓' : i + 1}
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
                         {s.label}
                       </span>
                     </div>

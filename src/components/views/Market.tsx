@@ -23,18 +23,17 @@ const isPositive = (change: string) => change.startsWith('+');
 
 export const MarketView = ({ lang: _lang }: MarketViewProps) => {
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Marktpreise</h1>
-          <p className="view-sub">Rohstoffpreise · Internationale Börsen · Live</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div>
+      <div className="section-head">
+        <h1>Marktpreise</h1>
+        <div className="sub">Rohstoffpreise · Internationale Börsen · Live</div>
+        <div className="right">
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>LIVE · 14:22</span>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>LIVE · 14:22</span>
         </div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
       {/* Ticker Bar */}
       <div style={{
         background: 'var(--surface-2)',
@@ -63,7 +62,7 @@ export const MarketView = ({ lang: _lang }: MarketViewProps) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}>{s.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.exch}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{s.exch}</div>
               </div>
             </div>
 
@@ -74,7 +73,7 @@ export const MarketView = ({ lang: _lang }: MarketViewProps) => {
                     ? s.last.toLocaleString('de-DE')
                     : s.last}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.unit}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{s.unit}</div>
               </div>
               <div style={{
                 fontSize: 14,
@@ -97,7 +96,7 @@ export const MarketView = ({ lang: _lang }: MarketViewProps) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-                <span style={{ color: 'var(--text-muted)' }}>Unser VK</span>
+                <span style={{ color: 'var(--text-3)' }}>Unser VK</span>
                 <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                   {s.ourPrice} {s.ourUnit}
                 </span>
@@ -108,8 +107,9 @@ export const MarketView = ({ lang: _lang }: MarketViewProps) => {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
+      <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-3)', textAlign: 'center' }}>
         Quelle: Refinitiv · letzte Aktualisierung 14:22 · LIVE
+      </div>
       </div>
     </div>
   );

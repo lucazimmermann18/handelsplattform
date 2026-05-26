@@ -70,14 +70,13 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
   const selectedType = types[type];
 
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Daten importieren</h1>
-          <p className="view-sub">CSV / Excel · Schritt-für-Schritt Import-Assistent</p>
-        </div>
+    <div>
+      <div className="section-head">
+        <h1>Daten importieren</h1>
+        <div className="sub">CSV / Excel · Schritt-für-Schritt Import-Assistent</div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
       {/* Step indicator */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
@@ -90,11 +89,11 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
                   border: i <= step ? 'none' : '2px solid var(--border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 13, fontWeight: 700,
-                  color: i <= step ? '#fff' : 'var(--text-muted)',
+                  color: i <= step ? '#fff' : 'var(--text-3)',
                 }}>
                   {i < step ? <Ic name="quality" size={14} color="#fff" /> : i + 1}
                 </div>
-                <div style={{ fontSize: 10, color: i === step ? 'var(--text)' : 'var(--text-muted)', textAlign: 'center', fontWeight: i === step ? 600 : 400 }}>
+                <div style={{ fontSize: 10, color: i === step ? 'var(--text)' : 'var(--text-3)', textAlign: 'center', fontWeight: i === step ? 600 : 400 }}>
                   {s}
                 </div>
               </div>
@@ -131,7 +130,7 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <Ic name={val.icon} size={28} color={type === key ? '#fff' : 'var(--text-muted)'} />
+                  <Ic name={val.icon} size={28} color={type === key ? '#fff' : 'var(--text-3)'} />
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{val.label}</span>
                 </button>
               ))}
@@ -155,10 +154,10 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
               cursor: 'pointer',
               background: 'var(--surface-2)',
             }}>
-              <Ic name="upload" size={32} color="var(--text-muted)" />
+              <Ic name="upload" size={32} color="var(--text-3)" />
               <div style={{ marginTop: 12, fontSize: 14, fontWeight: 600 }}>CSV oder Excel-Datei hierher ziehen</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>oder klicken zum Auswählen</div>
-              <button className="btn-ghost" style={{ marginTop: 12 }}>Datei auswählen</button>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>oder klicken zum Auswählen</div>
+              <button className="btn ghost" style={{ marginTop: 12 }}>Datei auswählen</button>
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Oder CSV direkt einfügen:</div>
@@ -188,7 +187,7 @@ Beispiel GmbH,Hamburg,DE,...`}
         {step === 2 && (
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Felder zuordnen</h2>
-            <table className="data-table">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Quell-Spalte</th>
@@ -235,9 +234,9 @@ Beispiel GmbH,Hamburg,DE,...`}
               <span><strong>142</strong> Zeilen erkannt</span>
               <span style={{ color: 'var(--danger)' }}><strong>0</strong> Fehler</span>
               <span style={{ color: 'var(--warning)' }}><strong>{validationWarnings.filter(w => w.severity === 'warning').length}</strong> Warnungen</span>
-              <span style={{ color: 'var(--text-muted)' }}><strong>{validationWarnings.filter(w => w.severity === 'info').length}</strong> Hinweise</span>
+              <span style={{ color: 'var(--text-3)' }}><strong>{validationWarnings.filter(w => w.severity === 'info').length}</strong> Hinweise</span>
             </div>
-            <table className="data-table">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Zeile</th>
@@ -278,7 +277,7 @@ Beispiel GmbH,Hamburg,DE,...`}
                   <div style={{ background: 'var(--border)', borderRadius: 8, height: 10, overflow: 'hidden' }}>
                     <div style={{ background: 'var(--accent)', borderRadius: 8, height: 10, width: `${progress}%`, transition: 'width 0.1s' }} />
                   </div>
-                  <div style={{ textAlign: 'center', marginTop: 8, fontSize: 13, color: 'var(--text-muted)' }}>{progress}%</div>
+                  <div style={{ textAlign: 'center', marginTop: 8, fontSize: 13, color: 'var(--text-3)' }}>{progress}%</div>
                 </div>
               </>
             )}
@@ -289,15 +288,15 @@ Beispiel GmbH,Hamburg,DE,...`}
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 18, fontWeight: 700, color: '#34d399', marginBottom: 6 }}>Import erfolgreich!</div>
-                  <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: 14, color: 'var(--text-3)' }}>
                     142 {selectedType.label} wurden importiert
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <button className="btn-ghost" onClick={() => { setStep(0); setDone(false); setProgress(0); }}>
+                  <button className="btn ghost" onClick={() => { setStep(0); setDone(false); setProgress(0); }}>
                     Weiteren Import starten
                   </button>
-                  <button className="btn-primary">
+                  <button className="btn primary">
                     Daten anzeigen
                   </button>
                 </div>
@@ -309,9 +308,9 @@ Beispiel GmbH,Hamburg,DE,...`}
 
       {/* Navigation */}
       {!done && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16, paddingBottom: 12 }}>
           <button
-            className="btn-ghost"
+            className="btn ghost"
             onClick={handleBack}
             disabled={step === 0}
             style={{ opacity: step === 0 ? 0.4 : 1 }}
@@ -319,7 +318,7 @@ Beispiel GmbH,Hamburg,DE,...`}
             <Ic name="chevL" size={14} /> Zurück
           </button>
           <button
-            className="btn-primary"
+            className="btn primary"
             onClick={handleNext}
             disabled={step === 4 || importing}
           >
@@ -331,6 +330,7 @@ Beispiel GmbH,Hamburg,DE,...`}
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };
