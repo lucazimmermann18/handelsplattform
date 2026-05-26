@@ -230,6 +230,7 @@ export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const c = M.complaints.find(x => x.id === id) ?? M.complaints[0];
+  if (!c) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Keine Reklamation gefunden.</div>;
   const order = M.orders.find(o => o.id === c.order);
   const buyer = M.buyers.find(b => b.id === c.buyer);
 

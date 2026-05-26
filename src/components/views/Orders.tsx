@@ -60,7 +60,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
       supplier(o.supplierId)?.name ?? o.supplierId,
       o.productVariant, o.qty, o.unit,
       o.revenue, o.profit,
-      Math.round((o.profit / o.revenue) * 100),
+      o.revenue > 0 ? Math.round((o.profit / o.revenue) * 100) : 0,
       o.incoterm, o.portLoad, o.portDest,
       o.etd, o.eta, o.paid, o.status,
     ]);
@@ -145,7 +145,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
             {filtered.map((o) => {
               const buyer    = M.buyers.find((x) => x.id === o.buyerId);
               const supplier = M.suppliers.find((x) => x.id === o.supplierId);
-              const marginPct = Math.round((o.profit / o.revenue) * 100);
+              const marginPct = o.revenue > 0 ? Math.round((o.profit / o.revenue) * 100) : 0;
               return (
                 <tr key={o.id} onClick={() => onOpen(o)}>
                   <td>
@@ -214,7 +214,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
   const product  = M.products.find((x) => x.id === o.productId);
   const vessel   = M.vessels[o.vesselIdx];
   const currentIdx = ORDER_STATUS_FLOW.findIndex((x) => x.k === o.status);
-  const marginPct  = Math.round((o.profit / o.revenue) * 100);
+  const marginPct  = o.revenue > 0 ? Math.round((o.profit / o.revenue) * 100) : 0;
 
   const docs = [
     { name: 'Commercial Invoice',      req: true,  status: o.status === 'confirmed' ? 'fehlt' : 'gültig' },

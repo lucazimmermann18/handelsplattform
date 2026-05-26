@@ -120,7 +120,7 @@ export const QualityView = ({ lang }: QualityViewProps) => {
           {/* KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
             {kpis.map((k, i) => (
-              <div key={i} className="tile kacheln" style={{ padding: 9 }}>
+              <div key={i} className="card" style={{ padding: 9 }}>
                 <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase' }}>{k.l}</div>
                 <div className="mono fw600" style={{ fontSize: 20, color: k.c, marginTop: 2 }}>{k.v}</div>
               </div>

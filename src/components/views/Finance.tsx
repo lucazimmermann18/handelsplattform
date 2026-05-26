@@ -63,7 +63,7 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
     const headers = ['Auftrag-ID','Käufer','Produkt','Umsatz (€)','Einkauf (€)','Logistik (€)','Docs (€)','Gewinn (€)','Marge (%)','Incoterm','Status','Zahlung (%)'];
     const rows = orders.map(o => {
       const buyer = M.buyers.find(b => b.id === o.buyerId);
-      return [o.id, buyer?.name ?? o.buyerId, o.productVariant, o.revenue, o.costGoods, o.costLogistics, o.costDocs, o.profit, Math.round((o.profit/o.revenue)*100), o.incoterm, o.status, o.paid];
+      return [o.id, buyer?.name ?? o.buyerId, o.productVariant, o.revenue, o.costGoods, o.costLogistics, o.costDocs, o.profit, o.revenue > 0 ? Math.round((o.profit/o.revenue)*100) : 0, o.incoterm, o.status, o.paid];
     });
     const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });

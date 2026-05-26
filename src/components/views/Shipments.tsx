@@ -356,7 +356,7 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
   const sel = selected ?? inTransit[1] ?? inTransit[0] ?? null;
   const v = sel ? M.vessels[sel.vesselIdx] : null;
 
-  const lateOrders = M.orders.filter(o => o.status === 'problem' && ['in_export','shipped','in_transit','arrived'].includes(o.status));
+  const lateOrders = M.orders.filter(o => !!o.problem || (o.paid < 50 && ['delivered','arrived'].includes(o.status)));
   const kpis = [
     { l: 'Auf See', v: M.orders.filter(o => o.status === 'in_transit').length, c: '#22d3ee' },
     { l: 'Im Hafen', v: M.orders.filter(o => o.status === 'arrived').length, c: '#34d399' },

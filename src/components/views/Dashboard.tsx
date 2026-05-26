@@ -292,7 +292,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
                 <div style={{ width: 28, height: 28, borderRadius: 5, background: 'linear-gradient(135deg,#0f1a0f,#081208)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 10, color: '#34d399', fontWeight: 600, border: '1px solid var(--border)', flexShrink: 0 }}>{s.tier}</div>
                 <div style={{ flex: 1 }}>
                   <div className="fw500" style={{ fontSize: 12 }}>{s.name.split(' ').slice(0, 3).join(' ')}</div>
-                  <div className="tx3" style={{ fontSize: 10.5 }}>{s.country} · {s.products[0]}</div>
+                  <div className="tx3" style={{ fontSize: 10.5 }}>{s.country}{s.products[0] ? ` · ${s.products[0]}` : ''}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 2 }}>
                   {Array.from({ length: 5 }).map((_, si) => (

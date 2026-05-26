@@ -346,7 +346,7 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
               {b.status === 'in Verhandlung' && <span>Aktuelle Verhandlung — Empfehlung: Muster-Versand priorisieren. </span>}
               Reagiert auf <span className="fw500" style={{ color: '#e6eaf2' }}>{b.country === 'DE' ? 'detaillierte technische Specs' : 'Pricing & Lieferzeit'}</span>. Nächste sinnvolle Aktion:{' '}
               <span className="fw500" style={{ color: '#34d399' }}>
-                {b.status === 'aktiv' ? `Cross-sell ${b.interests[1] || b.interests[0]}` : 'Erstkontakt-Follow-up in 3 Tagen'}
+                {b.status === 'aktiv' ? `Cross-sell ${b.interests[1] ?? b.interests[0] ?? '—'}` : 'Erstkontakt-Follow-up in 3 Tagen'}
               </span>.
             </div>
           </div>

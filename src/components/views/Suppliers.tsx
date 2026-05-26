@@ -42,7 +42,7 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
     { l: 'Aktiv', v: M.suppliers.filter(s => s.status === 'aktiv').length, c: '#34d399' },
     { l: 'In Prüfung', v: M.suppliers.filter(s => s.status === 'in Prüfung').length, c: '#fbbf24' },
     { l: 'Tier A', v: M.suppliers.filter(s => s.tier === 'A').length, c: '#60a5fa' },
-    { l: 'Ø Score', v: (M.suppliers.reduce((s, x) => s + x.score, 0) / M.suppliers.length).toFixed(1), c: '#a78bfa' },
+    { l: 'Ø Score', v: M.suppliers.length > 0 ? (M.suppliers.reduce((s, x) => s + x.score, 0) / M.suppliers.length).toFixed(1) : '—', c: '#a78bfa' },
     { l: 'Hochrisiko', v: M.suppliers.filter(s => s.risk === 'hoch').length, c: '#f87171' },
   ];
 
