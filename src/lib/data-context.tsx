@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Lot, Communication } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -121,6 +121,23 @@ const mapVessel = (r: any): Vessel => ({
   name: r.name, voyage: r.voyage ?? '', imo: r.imo ?? '', operator: r.operator ?? '',
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapLot = (r: any): Lot => ({
+  id: r.id, productId: r.product_id ?? '', productName: r.product_name ?? '',
+  supplierId: r.supplier_id ?? '', harvestDate: r.harvest_date ?? '',
+  processingDate: r.processing_date ?? '', qty: r.qty ?? 0, unit: r.unit ?? '',
+  grade: r.grade ?? '', moisture: r.moisture ?? '', status: r.status ?? 'available',
+  certRef: r.cert_ref ?? '', linkedOrders: r.linked_order_ids ?? [], notes: r.notes ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapCommunication = (r: any): Communication => ({
+  id: r.id, contactId: r.contact_id ?? '', contactType: r.contact_type ?? 'buyer',
+  type: r.type ?? 'note', direction: r.direction ?? 'internal',
+  date: r.date ?? r.created_at?.slice(0,10) ?? '', subject: r.subject ?? '',
+  body: r.body ?? '', author: r.author ?? '',
+});
+
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 interface DataContextType {
@@ -159,6 +176,8 @@ async function fetchAllData(): Promise<MockData> {
     { data: revTrendRaw },
     { data: vesselsRaw },
     { data: portsRaw },
+    { data: lotsRaw },
+    { data: commsRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -175,6 +194,8 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('rev_trend').select('*'),
     sb.from('vessels').select('*').order('idx'),
     sb.from('ports').select('*'),
+    sb.from('lots').select('*').order('harvest_date', { ascending: false }),
+    sb.from('communications').select('*').order('date', { ascending: false }),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -197,6 +218,8 @@ async function fetchAllData(): Promise<MockData> {
     alerts:     (alertsRaw     ?? []).map(mapAlert),
     vessels:    (vesselsRaw    ?? []).map(mapVessel),
     ports,
+    lots:          (lotsRaw  ?? []).map(mapLot),
+    communications: (commsRaw ?? []).map(mapCommunication),
     revTrend:   (revTrendRaw ?? []).map((r: { month: string; expected: number; actual: number; margin: number }) => ({
       m: r.month, exp: r.expected, real: r.actual, margin: r.margin,
     })),

@@ -2,7 +2,7 @@
 import type {
   Supplier, Buyer, Product, Order, Deal, Alert, Task,
   Document, QualityCheck, InventoryItem, Offer, Complaint,
-  Vessel, Port, RevTrendEntry, StatusBadgeMap, MockData,
+  Vessel, Port, RevTrendEntry, StatusBadgeMap, MockData, Lot, Communication,
 } from './types';
 
 const todayBase = new Date('2026-05-24T10:00:00Z');
@@ -266,4 +266,6 @@ export const MOCK: MockData = {
   dealStages,
   revTrend,
   todayBase,
+  lots: [] as Lot[],
+  communications: [] as Communication[],
 };

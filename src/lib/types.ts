@@ -230,6 +230,35 @@ export interface RevTrendEntry {
 
 export type StatusBadgeMap = Record<string, string>;
 
+export interface Lot {
+  id: string;
+  productId: string;
+  productName: string;
+  supplierId: string;
+  harvestDate: string;
+  processingDate: string;
+  qty: number;
+  unit: string;
+  grade: string;
+  moisture: string;
+  status: 'available' | 'reserved' | 'shipped' | 'consumed';
+  certRef: string;
+  linkedOrders: string[];
+  notes: string;
+}
+
+export interface Communication {
+  id: string;
+  contactId: string;
+  contactType: 'buyer' | 'supplier';
+  type: 'email' | 'call' | 'meeting' | 'note' | 'whatsapp';
+  direction: 'in' | 'out' | 'internal';
+  date: string;
+  subject: string;
+  body: string;
+  author: string;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -249,4 +278,6 @@ export interface MockData {
   dealStages: string[];
   revTrend: RevTrendEntry[];
   todayBase: Date;
+  lots: Lot[];
+  communications: Communication[];
 }
