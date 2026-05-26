@@ -36,17 +36,6 @@ const Stars = ({ rating }: { rating: number }) => (
   </span>
 );
 
-// ── Demo seed (shown when DB is empty) ───────────────────────────────────────
-
-const DEMO_FORWARDERS: Forwarder[] = [
-  { id: 'FWD-001', name: 'Kühne+Nagel TZ', country: 'Tanzania', city: 'Dar es Salaam', contact: 'M. Kassim', email: 'm.kassim@kn.com', phone: '+255 22 212 0000', rating: 5, routes: ['DAR→EU all'], services: ['LCL','FCL','Reefer','Customs','Bonded WH'], status: 'aktiv', notes: 'Preferred partner' },
-  { id: 'FWD-002', name: 'Maersk Spot', country: 'Tanzania', city: 'Dar es Salaam', contact: 'P. Johansson', email: 'pj@maersk.com', phone: '+255 22 211 0001', rating: 4, routes: ['DAR→HAM','DAR→RTM','DAR→ANR'], services: ['FCL','Reefer','Booking API'], status: 'aktiv' },
-  { id: 'FWD-003', name: 'CMA CGM Tanzania', country: 'Tanzania', city: 'Dar es Salaam', contact: 'A. Nguyen', email: 'a.nguyen@cma-cgm.com', phone: '+255 22 213 0002', rating: 4, routes: ['DAR→Mod','MOM→RTM'], services: ['FCL','LCL','Customs'], status: 'aktiv' },
-  { id: 'FWD-004', name: 'DHL Global Forwarding', country: 'Tanzania', city: 'Dar es Salaam', contact: 'S. Mwangi', email: 's.mwangi@dhl.com', phone: '+255 22 214 0003', rating: 5, routes: ['NBO/MOM→EU'], services: ['Air','FCL','Customs','Reefer'], status: 'aktiv' },
-  { id: 'FWD-005', name: 'Scan Global Logistics', country: 'Kenya', city: 'Mombasa', contact: 'B. Otieno', email: 'b.otieno@sgl.com', phone: '+254 41 222 0004', rating: 4, routes: ['MOM→FXT','MOM→HAM'], services: ['FCL','LCL','Bonded WH'], status: 'aktiv' },
-  { id: 'FWD-006', name: 'DB Schenker East Africa', country: 'Kenya', city: 'Nairobi', contact: 'C. Kamau', email: 'c.kamau@dbschenker.com', phone: '+254 20 375 0005', rating: 3, routes: ['NBO→EU','NBO→UK'], services: ['Air','FCL','Customs'], status: 'aktiv' },
-];
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
@@ -67,9 +56,9 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
         routes: r.routes ?? [], services: r.services ?? [],
         status: r.status ?? 'aktiv', notes: r.notes,
       }));
-      setForwarders(mapped.length > 0 ? mapped : DEMO_FORWARDERS);
+      setForwarders(mapped);
     } catch (_e) {
-      setForwarders(DEMO_FORWARDERS);
+      setForwarders([]);
     }
     setLoading(false);
   };

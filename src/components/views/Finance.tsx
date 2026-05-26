@@ -18,31 +18,12 @@ const SUP_PAID: Record<string, number> = {
   ready: 50, in_export: 50, shipped: 50,
 };
 
-// Demo data shown when no real financial data exists in DB
-const DEMO_ORDERS_FINANCE = [
-  { id: 'ORD-2026-0155', buyerId: 'BUY-001', productVariant: 'Arabica AA Kaffee', revenue: 87400, costGoods: 54200, costLogistics: 8800, costDocs: 1200, profit: 23200, incoterm: 'FOB', status: 'in_transit', paid: 0 },
-  { id: 'ORD-2026-0148', buyerId: 'BUY-003', productVariant: 'Sesam Weiß nat.', revenue: 52800, costGoods: 34100, costLogistics: 5900, costDocs: 900, profit: 11900, incoterm: 'CFR', status: 'shipped', paid: 50 },
-  { id: 'ORD-2026-0142', buyerId: 'BUY-007', productVariant: 'Cashew W320', revenue: 124600, costGoods: 81500, costLogistics: 11200, costDocs: 1800, profit: 30100, incoterm: 'CIF', status: 'delivered', paid: 100 },
-  { id: 'ORD-2026-0137', buyerId: 'BUY-011', productVariant: 'Frozen Beef Bone.', revenue: 68200, costGoods: 44800, costLogistics: 7400, costDocs: 1100, profit: 14900, incoterm: 'FOB', status: 'paid', paid: 100 },
-  { id: 'ORD-2026-0129', buyerId: 'BUY-002', productVariant: 'Avocado Hass 18', revenue: 41300, costGoods: 27100, costLogistics: 4700, costDocs: 800, profit: 8700, incoterm: 'CFR', status: 'arrived', paid: 80 },
-  { id: 'ORD-2026-0119', buyerId: 'BUY-005', productVariant: 'Macadamia Roh', revenue: 93500, costGoods: 62400, costLogistics: 9100, costDocs: 1400, profit: 20600, incoterm: 'CIF', status: 'in_transit', paid: 0 },
-];
-const DEMO_REV_TREND = [
-  { m: 'Jun 25', exp: 185, real: 172 }, { m: 'Jul 25', exp: 210, real: 198 },
-  { m: 'Aug 25', exp: 195, real: 189 }, { m: 'Sep 25', exp: 245, real: 241 },
-  { m: 'Okt 25', exp: 268, real: 255 }, { m: 'Nov 25', exp: 290, real: 301 },
-  { m: 'Dez 25', exp: 315, real: 288 }, { m: 'Jan 26', exp: 342, real: 358 },
-  { m: 'Feb 26', exp: 378, real: 371 }, { m: 'Mär 26', exp: 410, real: 428 },
-  { m: 'Apr 26', exp: 445, real: 438 }, { m: 'Mai 26', exp: 468, real: 0 },
-];
-
 export const FinanceView = ({ lang }: FinanceViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const hasRealData = M.orders.some(o => o.revenue > 0);
-  const orders = hasRealData ? M.orders : DEMO_ORDERS_FINANCE as typeof M.orders;
-  const revTrend = M.revTrend.length > 0 ? M.revTrend : DEMO_REV_TREND;
+  const orders = M.orders;
+  const revTrend = M.revTrend;
 
   const total = orders.reduce((s, o) => s + o.revenue, 0);
   const totalProfit = orders.reduce((s, o) => s + o.profit, 0);
@@ -164,7 +145,7 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
           <div className="card-head">
             <Ic name="finance" size={14} />
             <span className="title">P&amp;L pro Auftrag</span>
-            <span className="meta">{orders.length} Aufträge{!hasRealData && <span className="tx3" style={{ marginLeft: 6, fontSize: 10 }}>· Demo</span>}</span>
+            <span className="meta">{orders.length} Aufträge</span>
           </div>
           <table className="table">
             <thead>
@@ -216,6 +197,13 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
                   </tr>
                 );
               })}
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
+                    Noch keine Aufträge mit Finanzdaten vorhanden
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
