@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 
@@ -30,7 +30,7 @@ interface Objective {
   krs: KR[];
 }
 
-const OBJECTIVES: Objective[] = [];
+// loaded from Supabase — see useEffect in component
 
 function krProgress(kr: KR): number {
   if (kr.target === 0) return 100;
@@ -305,6 +305,32 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState('okr');
   const [selectedCountry, setSelectedCountry] = useState('ES');
+  const [objectives, setObjectives] = useState<Objective[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadOKRs() {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const sb = createClient();
+        const [{ data: okrRows }, { data: krRows }] = await Promise.all([
+          sb.from('okrs').select('*').order('created_at'),
+          sb.from('key_results').select('*').order('sort_order, created_at'),
+        ]);
+        if (mounted && okrRows) {
+          setObjectives(okrRows.map(o => ({
+            id: o.id, title: o.title, why: o.why ?? '', owner: o.owner ?? '',
+            krs: (krRows ?? []).filter(kr => kr.okr_id === o.id).map(kr => ({
+              id: kr.id, text: kr.text,
+              cur: Number(kr.cur), target: Number(kr.target), unit: kr.unit ?? '%',
+            })),
+          })));
+        }
+      } catch { /* keep empty */ }
+    }
+    loadOKRs();
+    return () => { mounted = false; };
+  }, []);
 
   const tabs = [
     { id: 'okr',      label: 'OKRs',               icon: 'task' },
@@ -315,7 +341,7 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
     { id: 'compete',  label: 'Competitor Intel',     icon: 'chart' },
   ];
 
-  const allKRs = OBJECTIVES.flatMap(o => o.krs);
+  const allKRs = objectives.flatMap(o => o.krs);
   const overallProgress = allKRs.length > 0
     ? Math.round(allKRs.reduce((s, kr) => s + krProgress(kr), 0) / allKRs.length)
     : 0;
@@ -323,9 +349,9 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
   const circ = 213.6;
   const ringDash = (overallProgress / 100) * circ;
 
-  const onTrack = OBJECTIVES.filter(o => Math.round(objProgress(o)) >= 70).length;
-  const needsFocus = OBJECTIVES.filter(o => { const p = Math.round(objProgress(o)); return p >= 40 && p < 70; }).length;
-  const atRisk = OBJECTIVES.filter(o => Math.round(objProgress(o)) < 40).length;
+  const onTrack = objectives.filter(o => Math.round(objProgress(o)) >= 70).length;
+  const needsFocus = objectives.filter(o => { const p = Math.round(objProgress(o)); return p >= 40 && p < 70; }).length;
+  const atRisk = objectives.filter(o => Math.round(objProgress(o)) < 40).length;
 
   // Compute real market revenue/buyers/pipeline from DB
   const marketsWithData = MARKETS.map(mkt => {
@@ -385,7 +411,7 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
                 </svg>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-                    {OBJECTIVES.length} Objectives · {allKRs.length} Key Results · Ø {overallProgress}% Fortschritt
+                    {objectives.length} Objectives · {allKRs.length} Key Results · Ø {overallProgress}% Fortschritt
                   </div>
                   <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
                     <span style={{ color: '#34d399' }}>● {onTrack} on track</span>
@@ -397,12 +423,12 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
             </div>
 
             {/* Objective cards */}
-            {OBJECTIVES.length === 0 ? (
+            {objectives.length === 0 ? (
               <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine OKRs definiert</div>
                 <div style={{ fontSize: 12 }}>Füge Objectives und Key Results hinzu um den Fortschritt zu tracken.</div>
               </div>
-            ) : OBJECTIVES.map(obj => {
+            ) : objectives.map(obj => {
               const prog = Math.round(objProgress(obj));
               return (
                 <div key={obj.id} className="card" style={{ marginBottom: 10 }}>

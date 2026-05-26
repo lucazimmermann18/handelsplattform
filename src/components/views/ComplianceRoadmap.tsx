@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Lang } from '@/lib/i18n';
 
 import { Ic } from '@/components/ui/icons';
@@ -30,7 +30,7 @@ interface Cert {
   blocker?: string;
 }
 
-const CERTS: Cert[] = [];
+// loaded from Supabase — see useEffect in component
 
 const CERT_STATUS_KIND: Record<CertStatus, string> = {
   held: 'success', in_progress: 'warning', planned: 'info', blocked: 'danger',
@@ -57,7 +57,7 @@ interface Regulation {
   cost: string;
 }
 
-const REGULATIONS: Regulation[] = [];
+const regulations: Regulation[] = [];
 
 const IMPACT_KIND: Record<RegImpact, string> = {
   critical: 'danger', high: 'warning', medium: 'info', low: 'neutral',
@@ -107,6 +107,48 @@ function auditReadiness(audit: Audit): number {
 export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProps) => {
   const [tab, setTab] = useState('certs');
   const [selectedAudit, setSelectedAudit] = useState('');
+  const [certs, setCerts] = useState<Cert[]>([]);
+  const [regulations, setRegulations] = useState<Regulation[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const sb = createClient();
+        const [{ data: certRows }, { data: regRows }] = await Promise.all([
+          sb.from('certifications').select('*').order('sort_order, created_at'),
+          sb.from('regulations').select('*').order('sort_order, created_at'),
+        ]);
+        if (mounted) {
+          if (certRows) {
+            setCerts(certRows.map(r => ({
+              id: r.id, name: r.name, scope: r.scope ?? '',
+              status: (r.status as CertStatus) ?? 'planned',
+              validUntil: r.valid_until ?? undefined,
+              startDate: r.start_date ?? undefined,
+              completionDate: r.completion_date ?? undefined,
+              cost: r.cost ?? undefined,
+              progress: r.progress ?? undefined,
+              priority: (r.priority as CertPriority) ?? 'medium',
+              rationale: r.rationale ?? '',
+              blocker: r.blocker ?? undefined,
+            })));
+          }
+          if (regRows) {
+            setRegulations(regRows.map(r => ({
+              code: r.code, title: r.title, products: r.products ?? '',
+              deadline: r.deadline ?? '', phase: (r.phase as RegPhase) ?? 'future',
+              impact: (r.impact as RegImpact) ?? 'medium',
+              readiness: r.readiness ?? 0, action: r.action ?? '', cost: r.cost ?? '',
+            })));
+          }
+        }
+      } catch { /* keep empty */ }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const tabs = [
     { id: 'certs',  label: 'Zertifizierungsplan', icon: 'task' },
@@ -116,15 +158,15 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
 
   // Cert counts
   const certCounts = {
-    held:        CERTS.filter(c => c.status === 'held').length,
-    in_progress: CERTS.filter(c => c.status === 'in_progress').length,
-    planned:     CERTS.filter(c => c.status === 'planned').length,
-    blocked:     CERTS.filter(c => c.status === 'blocked').length,
+    held:        certs.filter(c => c.status === 'held').length,
+    in_progress: certs.filter(c => c.status === 'in_progress').length,
+    planned:     certs.filter(c => c.status === 'planned').length,
+    blocked:     certs.filter(c => c.status === 'blocked').length,
   };
 
   // Reg overall readiness
-  const avgReadiness = REGULATIONS.length > 0
-    ? Math.round(REGULATIONS.reduce((s, r) => s + r.readiness, 0) / REGULATIONS.length)
+  const avgReadiness = regulations.length > 0
+    ? Math.round(regulations.reduce((s, r) => s + r.readiness, 0) / regulations.length)
     : 0;
   const circ = 213.6;
   const ringDash = (avgReadiness / 100) * circ;
@@ -177,9 +219,9 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
               <div className="card-head">
                 <Ic name="task" size={14} />
                 <span className="title">Zertifizierungsplan</span>
-                <span className="meta">{CERTS.length} Zertifikate</span>
+                <span className="meta">{certs.length} Zertifikate</span>
               </div>
-              {CERTS.length === 0 ? (
+              {certs.length === 0 ? (
                 <div className="card-body" style={{ textAlign: 'center', color: 'var(--text-3)', padding: '32px 16px' }}>
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine Zertifizierungen erfasst</div>
                   <div style={{ fontSize: 12 }}>Füge Zertifizierungen hinzu um den Plan zu tracken.</div>
@@ -198,7 +240,7 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
                     </tr>
                   </thead>
                   <tbody>
-                    {CERTS.map((cert, i) => (
+                    {certs.map((cert, i) => (
                       <tr key={i}>
                         <td className="fw500" style={{ fontSize: 12 }}>{cert.name}</td>
                         <td style={{ fontSize: 11, color: 'var(--text-2)' }}>{cert.scope}</td>
@@ -258,12 +300,12 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
                 </svg>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-                    {REGULATIONS.length} Verordnungen getrackt · Ø {avgReadiness}% Readiness
+                    {regulations.length} Verordnungen getrackt · Ø {avgReadiness}% Readiness
                   </div>
                   <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-                    <span style={{ color: '#f87171' }}>● {REGULATIONS.filter(r => r.impact === 'critical').length} Critical</span>
-                    <span style={{ color: '#fbbf24' }}>● {REGULATIONS.filter(r => r.impact === 'high').length} High</span>
-                    <span style={{ color: '#60a5fa' }}>● {REGULATIONS.filter(r => r.impact === 'medium').length} Medium</span>
+                    <span style={{ color: '#f87171' }}>● {regulations.filter(r => r.impact === 'critical').length} Critical</span>
+                    <span style={{ color: '#fbbf24' }}>● {regulations.filter(r => r.impact === 'high').length} High</span>
+                    <span style={{ color: '#60a5fa' }}>● {regulations.filter(r => r.impact === 'medium').length} Medium</span>
                   </div>
                 </div>
               </div>
@@ -274,9 +316,9 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
               <div className="card-head">
                 <Ic name="eye" size={14} />
                 <span className="title">Regulations Watch</span>
-                <span className="meta">{REGULATIONS.length} Verordnungen</span>
+                <span className="meta">{regulations.length} Verordnungen</span>
               </div>
-              {REGULATIONS.length === 0 ? (
+              {regulations.length === 0 ? (
                 <div className="card-body" style={{ textAlign: 'center', color: 'var(--text-3)', padding: '32px 16px' }}>
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Noch keine Verordnungen erfasst</div>
                   <div style={{ fontSize: 12 }}>Füge relevante EU-Regulierungen hinzu um den Compliance-Status zu tracken.</div>
@@ -295,7 +337,7 @@ export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProp
                     </tr>
                   </thead>
                   <tbody>
-                    {REGULATIONS.map((reg, i) => (
+                    {regulations.map((reg, i) => (
                       <tr key={i}>
                         <td>
                           <div className="mono fw600" style={{ fontSize: 11, color: '#a78bfa' }}>{reg.code}</div>

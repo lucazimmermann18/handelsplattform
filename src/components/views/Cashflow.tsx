@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { useData } from '@/lib/data-context';
 
 interface CashflowViewProps {
   lang: Lang;
@@ -18,32 +19,6 @@ interface CashEntry {
   category: string;
 }
 
-// ── Static cash data ──────────────────────────────────────────────────────────
-
-const INFLOWS: CashEntry[] = [
-  { date: '2026-05-27', label: 'Bio-Importeur — Restzahlung ORD-0128', amount: 37000, category: 'Zahlungseingang' },
-  { date: '2026-05-29', label: 'Hanseatic Coffee — LC Auszahlung ORD-0142', amount: 55200, category: 'LC' },
-  { date: '2026-06-01', label: 'British Avocado — Anzahlung ORD-0135', amount: 21600, category: 'Anzahlung' },
-  { date: '2026-06-03', label: 'Mediterraneo Sugar — Überfällige Zahlung', amount: 23920, category: 'Zahlungseingang' },
-  { date: '2026-06-05', label: 'Amsterdam Spice — Restzahlung ORD-0139', amount: 12180, category: 'Zahlungseingang' },
-  { date: '2026-06-08', label: 'Bio-Importeur — Anzahlung ORD-0144', amount: 18300, category: 'Anzahlung' },
-  { date: '2026-06-10', label: 'Frankfurter Bio-Markt — Vorauszahlung', amount: 14520, category: 'Vorauszahlung' },
-  { date: '2026-06-14', label: 'Nordic Nuts AB — Deal-Abschluss (erwartet)', amount: 22080, category: 'Erwartet' },
-  { date: '2026-06-18', label: 'British Avocado — Restbetrag ORD-0135', amount: 21600, category: 'Zahlungseingang' },
-];
-
-const OUTFLOWS: CashEntry[] = [
-  { date: '2026-05-26', label: 'Dodoma Oilseed — Anzahlung SES-031', amount: 9570, category: 'Einkauf' },
-  { date: '2026-05-28', label: 'Kühne+Nagel — Fracht ORD-0144', amount: 5800, category: 'Logistik' },
-  { date: '2026-05-30', label: 'Kenya Macadamia Coop — Anzahlung MAC-008', amount: 18200, category: 'Einkauf' },
-  { date: '2026-06-02', label: 'HAPAG-Lloyd — Fracht ORD-0137', amount: 3200, category: 'Logistik' },
-  { date: '2026-06-04', label: 'Bureau Veritas — QC-Gebühren Mai', amount: 2400, category: 'Qualität' },
-  { date: '2026-06-06', label: 'Ruvuma Sugar Estates — Lieferantenzahlung', amount: 16120, category: 'Einkauf' },
-  { date: '2026-06-09', label: 'TPHC — Phyto-Cert Eilgebühr ORD-0144', amount: 820, category: 'Dokumente' },
-  { date: '2026-06-12', label: 'Mbeya Highland Farms — Avocado-Ernte', amount: 19800, category: 'Einkauf' },
-  { date: '2026-06-16', label: 'Löhne &amp; Betrieb — Juni', amount: 14000, category: 'Betrieb' },
-];
-
 // ── Build daily series ────────────────────────────────────────────────────────
 
 interface DayEntry {
@@ -54,8 +29,9 @@ interface DayEntry {
   balance: number;
 }
 
-function buildSeries(startBalance: number): DayEntry[] {
-  const start = new Date('2026-05-25');
+function buildSeries(startBalance: number, inflows: CashEntry[], outflows: CashEntry[]): DayEntry[] {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
   const days: DayEntry[] = [];
   let balance = startBalance;
 
@@ -65,8 +41,8 @@ function buildSeries(startBalance: number): DayEntry[] {
     const dateStr = d.toISOString().slice(0, 10);
     const label = d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
 
-    const inflow = INFLOWS.filter(e => e.date === dateStr).reduce((s, e) => s + e.amount, 0);
-    const outflow = OUTFLOWS.filter(e => e.date === dateStr).reduce((s, e) => s + e.amount, 0);
+    const inflow = inflows.filter(e => e.date === dateStr).reduce((s, e) => s + e.amount, 0);
+    const outflow = outflows.filter(e => e.date === dateStr).reduce((s, e) => s + e.amount, 0);
     balance = balance + inflow - outflow;
     days.push({ date: dateStr, label, inflow, outflow, balance });
   }
@@ -76,8 +52,89 @@ function buildSeries(startBalance: number): DayEntry[] {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export const CashflowView = ({ lang }: CashflowViewProps) => {
+  const { data: M } = useData();
   const START_BALANCE = 142000;
-  const series = buildSeries(START_BALANCE);
+
+  // Derive inflows & outflows from live order data
+  const { INFLOWS, OUTFLOWS } = useMemo((): { INFLOWS: CashEntry[]; OUTFLOWS: CashEntry[] } => {
+    if (!M) return { INFLOWS: [], OUTFLOWS: [] };
+
+    const today = new Date();
+    const horizon = new Date(today);
+    horizon.setDate(today.getDate() + 30);
+    const INFLOWS: CashEntry[] = [];
+    const OUTFLOWS: CashEntry[] = [];
+
+    M.orders.forEach(o => {
+      if (o.revenue <= 0) return;
+      const paidPct = Math.max(0, Math.min(100, o.paid));
+      const outstanding = Math.round(o.revenue * (100 - paidPct) / 100);
+
+      // ── Inflows: expected payment receipts ──
+      if (outstanding > 0) {
+        let payDate: Date | null = null;
+        if (['delivered', 'arrived'].includes(o.status)) {
+          // Overdue / just delivered → expect in 7 days
+          payDate = new Date(today);
+          payDate.setDate(today.getDate() + 7);
+        } else if (o.eta) {
+          const eta = new Date(o.eta);
+          if (!isNaN(eta.getTime())) {
+            // Payment due 30 days after delivery (standard T/T terms)
+            payDate = new Date(eta);
+            payDate.setDate(eta.getDate() + 30);
+          }
+        }
+        if (payDate && payDate >= today && payDate <= horizon) {
+          const buyerName = M.buyers.find(b => b.id === o.buyerId)?.name ?? o.buyerId;
+          INFLOWS.push({
+            date: payDate.toISOString().slice(0, 10),
+            label: `${buyerName} — ${paidPct > 0 ? 'Rest' : ''}zahlung ${o.id}`,
+            amount: outstanding,
+            category: paidPct > 0 ? 'Restzahlung' : 'Zahlungseingang',
+          });
+        }
+      }
+
+      // ── Outflows: procurement costs for upcoming shipments ──
+      const procCost = o.costGoods ?? Math.round((o.revenue - o.profit) * 0.7);
+      if (procCost > 500 && ['in_procurement', 'in_quality', 'ready', 'in_export'].includes(o.status)) {
+        const etd = o.etd ? new Date(o.etd) : null;
+        // Supplier payment = 14 days before ETD (or today+7 if no ETD)
+        const payDate = etd && !isNaN(etd.getTime())
+          ? new Date(etd.getTime() - 14 * 86400000)
+          : new Date(today.getTime() + 7 * 86400000);
+        if (payDate >= today && payDate <= horizon) {
+          const supplierName = M.suppliers.find(s => s.id === o.supplierId)?.name ?? 'Lieferant';
+          OUTFLOWS.push({
+            date: payDate.toISOString().slice(0, 10),
+            label: `${supplierName} — Einkauf ${o.id}`,
+            amount: procCost,
+            category: 'Einkauf',
+          });
+          // Logistics cost
+          const logCost = o.costLogistics ?? 0;
+          if (logCost > 0) {
+            const logDate = etd && !isNaN(etd.getTime()) ? new Date(etd) : payDate;
+            if (logDate >= today && logDate <= horizon) {
+              OUTFLOWS.push({
+                date: logDate.toISOString().slice(0, 10),
+                label: `Fracht / Logistik ${o.id}`,
+                amount: logCost,
+                category: 'Logistik',
+              });
+            }
+          }
+        }
+      }
+    });
+
+    INFLOWS.sort((a, b) => a.date.localeCompare(b.date));
+    OUTFLOWS.sort((a, b) => a.date.localeCompare(b.date));
+    return { INFLOWS, OUTFLOWS };
+  }, [M]);
+
+  const series = buildSeries(START_BALANCE, INFLOWS, OUTFLOWS);
 
   const totalIn = INFLOWS.reduce((s, e) => s + e.amount, 0);
   const totalOut = OUTFLOWS.reduce((s, e) => s + e.amount, 0);
@@ -172,7 +229,7 @@ export const CashflowView = ({ lang }: CashflowViewProps) => {
         <div className="card" style={{ marginBottom: 14 }}>
           <div className="card-head">
             <Ic name="activity" size={14} />
-            <span className="title">Liquiditätsverlauf — 30 Tage (25. Mai – 23. Jun 2026)</span>
+            <span className="title">Liquiditätsverlauf — 30 Tage ({series[0]?.label} – {series[series.length - 1]?.label})</span>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
                 <span style={{ width: 16, height: 3, background: '#60a5fa', display: 'inline-block', borderRadius: 2 }} /> Bestand

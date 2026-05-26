@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars } from '@/components/ui/primitives';
+import { useData } from '@/lib/data-context';
 
 interface CapitalViewProps {
   lang: Lang;
@@ -203,9 +204,21 @@ const INVESTORS: Investor[] = [
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState('forecast');
   const [scenario, setScenario] = useState<Scenario>('base');
   const [selectedUpdate, setSelectedUpdate] = useState('U-05');
+
+  // Compute actual revenue & profit from real orders
+  const { actualRevK, actualEbitdaK } = useMemo(() => {
+    if (!M || M.orders.length === 0) return { actualRevK: 928, actualEbitdaK: 28 };
+    const totalRev  = M.orders.reduce((s, o) => s + o.revenue, 0);
+    const totalProfit = M.orders.reduce((s, o) => s + o.profit, 0);
+    return {
+      actualRevK:    Math.max(1, Math.round(totalRev / 1000)),
+      actualEbitdaK: Math.round(totalProfit / 1000),
+    };
+  }, [M]);
 
   const tabs = [
     { id: 'forecast',    label: 'Business Forecast',      icon: 'chart' },
@@ -213,7 +226,11 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
     { id: 'investor',    label: 'Investor Updates',        icon: 'mail' },
   ];
 
-  const sc = SCENARIOS[scenario];
+  // Inject real actuals into the selected scenario's base year
+  const sc = {
+    ...SCENARIOS[scenario],
+    y2025: { ...SCENARIOS[scenario].y2025, rev: actualRevK, ebitda: actualEbitdaK },
+  };
 
   // P&L rows helper
   const plRows = (yd: YearData) => {
@@ -334,7 +351,7 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
                   {/* Dots + labels */}
                   {pts.map(([x, y], i) => {
                     const years = [sc.y2025, sc.y2026, sc.y2027, sc.y2028];
-                    const yearLabels = ['2025 Ist', '2026F', '2027F', '2028F'];
+                    const yearLabels = ['Aktuell', '2026F', '2027F', '2028F'];
                     return (
                       <g key={i}>
                         <circle cx={x} cy={y} r={5} fill={sc.color} />
