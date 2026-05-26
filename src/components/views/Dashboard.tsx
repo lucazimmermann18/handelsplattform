@@ -51,15 +51,16 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
   const tasksHigh = M.tasks.filter(x => x.prio === 'hoch' && x.status !== 'erledigt').length;
   const tasksWaiting = M.tasks.filter(x => x.status === 'wartet').length;
 
+  const flat: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   const kpis: KpiEntry[] = [
-    { lbl: t(lang, 'kpi_active_orders'), v: activeOrders.length, sub: `${inShipping.length} in Verschiffung`, spark: [8,9,10,9,11,10,12,11,12], target: 'orders', icon: 'box' },
-    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: `${M.orders.filter(o => o.status === 'in_transit').length} auf See`, spark: [3,4,3,5,4,5,4,5,4], target: 'shipments', icon: 'ship' },
-    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: `${M.suppliers.filter(s => s.status === 'aktiv').length} Lieferanten aktiv`, spark: [2,3,2,3,2,2,3,2,2], target: 'orders', icon: 'pkg' },
-    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: `${M.quality.filter(q => q.status === 'in_progress').length} in Labor`, spark: [1,1,2,1,2,1,1,2,1], target: 'quality', icon: 'quality' },
-    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: `${M.orders.filter(o => !['paid','done','delivered'].includes(o.status)).length} offene Aufträge`, spark: [62,68,72,78,76,82,85,88,92], target: 'finance', icon: 'finance' },
-    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev), sub: `${M.orders.filter(o => ['paid','delivered','done'].includes(o.status)).length} abgeschlossen`, spark: [40,52,58,68,72,84,88,92,99], target: 'finance', icon: 'chart' },
-    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: `${M.orders.length} Aufträge`, spark: [27,28,28,30,29,31,30,32,31], target: 'reports', icon: 'activity' },
-    { lbl: t(lang, 'kpi_inventory_value'), v: fmtCur(invValue), sub: `${M.inventory.length} SKU`, spark: [120,140,135,150,162,158,170,175,182], target: 'inventory', icon: 'inv' },
+    { lbl: t(lang, 'kpi_active_orders'), v: activeOrders.length, sub: `${inShipping.length} in Verschiffung`, spark: activeOrders.length > 0 ? [8,9,10,9,11,10,12,11,12] : flat, target: 'orders', icon: 'box' },
+    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: `${M.orders.filter(o => o.status === 'in_transit').length} auf See`, spark: inShipping.length > 0 ? [3,4,3,5,4,5,4,5,4] : flat, target: 'shipments', icon: 'ship' },
+    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: `${M.suppliers.filter(s => s.status === 'aktiv').length} Lieferanten aktiv`, spark: inProc > 0 ? [2,3,2,3,2,2,3,2,2] : flat, target: 'orders', icon: 'pkg' },
+    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: `${M.quality.filter(q => q.status === 'in_progress').length} in Labor`, spark: inQual > 0 ? [1,1,2,1,2,1,1,2,1] : flat, target: 'quality', icon: 'quality' },
+    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: `${M.orders.filter(o => !['paid','done','delivered'].includes(o.status)).length} offene Aufträge`, spark: expRev > 0 ? [62,68,72,78,76,82,85,88,92] : flat, target: 'finance', icon: 'finance' },
+    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev), sub: `${M.orders.filter(o => ['paid','delivered','done'].includes(o.status)).length} abgeschlossen`, spark: realRev > 0 ? [40,52,58,68,72,84,88,92,99] : flat, target: 'finance', icon: 'chart' },
+    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: `${M.orders.length} Aufträge`, spark: avgMargin > 0 ? [27,28,28,30,29,31,30,32,31] : flat, target: 'reports', icon: 'activity' },
+    { lbl: t(lang, 'kpi_inventory_value'), v: fmtCur(invValue), sub: `${M.inventory.length} SKU`, spark: invValue > 0 ? [120,140,135,150,162,158,170,175,182] : flat, target: 'inventory', icon: 'inv' },
     { lbl: t(lang, 'kpi_open_deals'), v: M.deals.length, sub: fmtCur(pipelineValue) + ' gewichtet', target: 'deals', icon: 'deals' },
     { lbl: t(lang, 'kpi_open_offers'), v: openOffers.length, sub: `${M.offers.length} gesamt`, target: 'offers', icon: 'offer' },
     { lbl: t(lang, 'kpi_supplier_docs'), v: M.documents.length, sub: expiringDocs.length > 0 ? `${expiringDocs.length} laufen ab (30d)` : 'alle aktuell', warn: expiringDocs.length > 0, target: 'documents', icon: 'doc' },
