@@ -30,3 +30,20 @@ create table if not exists forwarders (
 );
 alter table forwarders enable row level security;
 create policy "allow all" on forwarders for all using (true);
+
+-- samples: Musterverwaltung
+create table if not exists samples (
+  id          text primary key,
+  product     text not null,
+  buyer_id    text not null,
+  qty         text not null default '',
+  supplier_id text not null default '',
+  courier     text not null default '',
+  tracking    text not null default '',
+  sent_at     date,
+  status      text not null default 'in_transit',
+  feedback    text not null default '—',
+  created_at  timestamptz not null default now()
+);
+alter table samples enable row level security;
+create policy "allow all" on samples for all using (true);

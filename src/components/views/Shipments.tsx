@@ -276,12 +276,67 @@ interface ShipmentsViewProps {
   onOpenOrder: (order: Order) => void;
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6,
+  color: 'var(--text)',
+  fontFamily: 'inherit',
+  fontSize: 13,
+  padding: '7px 10px',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const EMPTY_SHIP_FORM = { orderId: '', vesselIdx: '0', etd: '', eta: '' };
+
 export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
   const { data: M, refresh } = useData();
   const inTransit = (M?.orders ?? []).filter(o => ['in_export','shipped','in_transit','arrived'].includes(o.status));
   const [selected, setSelected] = useState<Order | null>(null);
   const [lastAisUpdate, setLastAisUpdate] = useState<Date | null>(null);
+  const [shipOpen, setShipOpen] = useState(false);
+  const [shipForm, setShipForm] = useState(EMPTY_SHIP_FORM);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (shipForm.etd) {
+      const d = new Date(shipForm.etd);
+      d.setDate(d.getDate() + 30);
+      setShipForm(p => ({ ...p, eta: d.toISOString().slice(0, 10) }));
+    }
+  }, [shipForm.etd]);
+
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const shippableOrders = M.orders.filter(o => ['confirmed', 'ready', 'in_export'].includes(o.status));
+  const selectedOrder = shippableOrders.find(o => o.id === shipForm.orderId) ?? null;
+
+  const handleShipment = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const sb = createClient();
+      const { error } = await sb.from('orders').update({
+        status: 'in_export',
+        status_key: 'in_export',
+        vessel_idx: parseInt(shipForm.vesselIdx),
+        etd: shipForm.etd,
+        eta: shipForm.eta,
+      }).eq('id', shipForm.orderId);
+      if (error) throw new Error(error.message);
+      setShipOpen(false);
+      setShipForm(EMPTY_SHIP_FORM);
+      refresh();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Fehler beim Speichern');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const sel = selected ?? inTransit[1] ?? inTransit[0] ?? null;
   const v = sel ? M.vessels[sel.vesselIdx] : null;
@@ -308,6 +363,7 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
   ] : [];
 
   return (
+    <>
     <div>
       <div className="section-head">
         <h1>{t(lang, 'nav_shipments')}</h1>
@@ -322,7 +378,7 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
             )}
           </button>
           <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
-          <button className="btn primary"><Ic name="plus" size={13} /> Shipment buchen</button>
+          <button className="btn primary" onClick={() => setShipOpen(true)}><Ic name="plus" size={13} /> Shipment buchen</button>
         </div>
       </div>
 
@@ -433,5 +489,102 @@ export const ShipmentsView = ({ lang, onOpenOrder }: ShipmentsViewProps) => {
         </div>
       </div>
     </div>
+
+    {shipOpen && (
+      <div className="overlay" onClick={() => { setShipOpen(false); setSaveError(null); }} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 460, padding: 0, overflow: 'hidden' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <Ic name="ship" size={16} color="#22d3ee" />
+            <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>Shipment buchen</span>
+            <button className="btn sm ghost" onClick={() => { setShipOpen(false); setSaveError(null); }}>✕</button>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: '16px 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Auftrag */}
+            <div>
+              <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Auftrag</div>
+              <select
+                value={shipForm.orderId}
+                onChange={e => setShipForm(p => ({ ...p, orderId: e.target.value }))}
+                style={inputStyle}
+              >
+                <option value="">— Auftrag wählen —</option>
+                {shippableOrders.map(o => {
+                  const buyer = M.buyers.find(b => b.id === o.buyerId);
+                  return (
+                    <option key={o.id} value={o.id}>
+                      {o.id} · {o.productVariant} · {buyer?.name ?? o.buyerId}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Schiff */}
+            <div>
+              <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Schiff</div>
+              <select
+                value={shipForm.vesselIdx}
+                onChange={e => setShipForm(p => ({ ...p, vesselIdx: e.target.value }))}
+                style={inputStyle}
+              >
+                {M.vessels.map((v, idx) => (
+                  <option key={idx} value={idx}>{v.name} · {v.operator}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* ETD + ETA */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>ETD (Abfahrt)</div>
+                <input
+                  type="date"
+                  value={shipForm.etd}
+                  onChange={e => setShipForm(p => ({ ...p, etd: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>ETA (Ankunft)</div>
+                <input
+                  type="date"
+                  value={shipForm.eta}
+                  onChange={e => setShipForm(p => ({ ...p, eta: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Route info */}
+            {selectedOrder && (
+              <div className="tx3">{`Route: ${selectedOrder.portLoad} → ${selectedOrder.portDest}`}</div>
+            )}
+
+            {/* Error */}
+            {saveError && (
+              <div style={{ color: '#f87171', fontSize: 12, background: 'rgba(248,113,113,0.08)', borderRadius: 6, padding: '6px 10px' }}>
+                {saveError}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <button className="btn ghost" onClick={() => { setShipOpen(false); setSaveError(null); }}>Abbrechen</button>
+            <button
+              className="btn primary"
+              onClick={handleShipment}
+              disabled={!shipForm.orderId || !shipForm.etd || !shipForm.eta || saving}
+            >
+              {saving ? 'Speichern…' : 'Verschiffung buchen'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
