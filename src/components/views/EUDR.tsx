@@ -46,6 +46,52 @@ const TIMELINE = [
 export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState<'overview' | 'suppliers' | 'orders' | 'regs'>('overview');
+
+  // local state for submissions (TRACES NT simulation)
+  const [localSubmitted, setLocalSubmitted] = useState<Set<string>>(new Set());
+  const [ddsModalId, setDdsModalId] = useState<string | null>(null);
+  const [ddsViewId, setDdsViewId] = useState<string | null>(null);
+  const [ddsForm, setDdsForm] = useState({ operator: 'EastAfrica Export OS GmbH', eori: 'DE123456789012', confirmed: false });
+  const [ddsSaving, setDdsSaving] = useState(false);
+  const [ddsRef, setDdsRef] = useState<Record<string, string>>({});
+
+  // local state for GPS entries
+  const [localGpsData, setLocalGpsData] = useState<Record<string, { parcels: { lat: string; lng: string; area: string; ref: string }[] }>>({});
+  const [gpsModalId, setGpsModalId] = useState<string | null>(null);
+  const [gpsViewId, setGpsViewId] = useState<string | null>(null);
+  const [gpsForm, setGpsForm] = useState({ lat: '', lng: '', area: '', ref: 'P-01' });
+  const [gpsSaving, setGpsSaving] = useState(false);
+
+  const effectiveDdsStatus = (orderId: string): 'submitted' | 'draft' | 'missing' =>
+    localSubmitted.has(orderId) ? 'submitted' : ddsStatus(orderId);
+
+  const handleDdsSubmit = () => {
+    if (!ddsModalId || !ddsForm.operator || !ddsForm.eori || !ddsForm.confirmed) return;
+    setDdsSaving(true);
+    setTimeout(() => {
+      const ref = `DDS-2026-${ddsModalId.replace('ORD-2026-', '').replace('ORD-2025-', '')}-${Date.now().toString().slice(-4)}`;
+      setLocalSubmitted(prev => { const next = new Set(prev); next.add(ddsModalId); return next; });
+      setDdsRef(prev => ({ ...prev, [ddsModalId]: ref }));
+      setDdsModalId(null);
+      setDdsForm(f => ({ ...f, confirmed: false }));
+      setDdsSaving(false);
+    }, 700);
+  };
+
+  const handleGpsSubmit = () => {
+    if (!gpsModalId || !gpsForm.lat || !gpsForm.lng) return;
+    setGpsSaving(true);
+    setTimeout(() => {
+      setLocalGpsData(prev => {
+        const existing = prev[gpsModalId]?.parcels ?? [];
+        return { ...prev, [gpsModalId]: { parcels: [...existing, { ...gpsForm }] } };
+      });
+      setGpsModalId(null);
+      setGpsForm({ lat: '', lng: '', area: '', ref: `P-0${(localGpsData[gpsModalId]?.parcels.length ?? 0) + 2}` });
+      setGpsSaving(false);
+    }, 400);
+  };
+
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   // EUDR-relevant suppliers (have Coffee or Meat products)
@@ -101,8 +147,8 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
     a.click(); URL.revokeObjectURL(a.href);
   };
 
-  const gpsComplete = eudrSuppliers.filter(s => supplierGpsStatus(s.id) === 'complete').length;
-  const ddsSubmitted = eudrOrders.filter(o => ddsStatus(o.id) === 'submitted').length;
+  const gpsComplete = eudrSuppliers.filter(s => supplierGpsStatus(s.id) === 'complete' || localGpsData[s.id]?.parcels.length > 0).length;
+  const ddsSubmitted = eudrOrders.filter(o => effectiveDdsStatus(o.id) === 'submitted').length;
   const overallReadiness = Math.round((88 + 78 + 67 + 55 + 92) / REGULATIONS.length);
   const circumference = 2 * Math.PI * 46;
 
@@ -113,7 +159,14 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
     { id: 'regs'      as const, label: 'Regulierungs-Check', icon: 'flag'     },
   ];
 
+  const inputStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
+    padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
+  };
+
   return (
+    <>
     <div>
       <div className="section-head">
         <h1>EUDR Compliance</h1>
@@ -273,9 +326,9 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
                       <td className="num mono" style={{ fontSize: 12 }}>{gps !== 'missing' ? parcels : '—'}</td>
                       <td className="mono tx2" style={{ fontSize: 10.5 }}>{tracesId}</td>
                       <td>
-                        {gps !== 'complete'
-                          ? <button className="btn sm primary">GPS erfassen</button>
-                          : <button className="btn sm ghost">Ansehen</button>
+                        {(gps === 'complete' || localGpsData[s.id]?.parcels.length > 0)
+                          ? <button className="btn sm ghost" onClick={() => setGpsViewId(s.id)}>Ansehen</button>
+                          : <button className="btn sm primary" onClick={() => { setGpsForm({ lat: '', lng: '', area: '', ref: 'P-01' }); setGpsModalId(s.id); }}>GPS erfassen</button>
                         }
                       </td>
                     </tr>
@@ -314,9 +367,9 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
                 {eudrOrders.map(o => {
                   const prod = M.products.find(p => p.id === o.productId);
                   const buyer = M.buyers.find(b => b.id === o.buyerId);
-                  const dds = ddsStatus(o.id);
+                  const dds = effectiveDdsStatus(o.id);
                   const tracesRef = dds === 'submitted'
-                    ? `DDS-2026-${o.id.replace('ORD-2026-', '').replace('ORD-2025-', '')}`
+                    ? (ddsRef[o.id] ?? `DDS-2026-${o.id.replace('ORD-2026-', '').replace('ORD-2025-', '')}`)
                     : '—';
                   return (
                     <tr key={o.id}>
@@ -344,8 +397,8 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
                       <td className="mono tx2" style={{ fontSize: 10.5 }}>{tracesRef}</td>
                       <td>
                         {dds !== 'submitted'
-                          ? <button className="btn sm primary">DDS einreichen</button>
-                          : <button className="btn sm ghost">Ansehen</button>
+                          ? <button className="btn sm primary" onClick={() => { setDdsForm(f => ({ ...f, confirmed: false })); setDdsModalId(o.id); }}>DDS einreichen</button>
+                          : <button className="btn sm ghost" onClick={() => setDdsViewId(o.id)}>Ansehen</button>
                         }
                       </td>
                     </tr>
@@ -399,5 +452,277 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
         )}
       </div>
     </div>
+
+    {/* ── DDS Einreichung Modal ── */}
+    {ddsModalId && (() => {
+      const o = M.orders.find(x => x.id === ddsModalId)!;
+      const prod = M.products.find(p => p.id === o?.productId);
+      const buyer = M.buyers.find(b => b.id === o?.buyerId);
+      const sup = M.suppliers.find(s => s.id === o?.supplierId);
+      if (!o) return null;
+      return (
+        <div className="overlay" onClick={() => setDdsModalId(null)} style={{ alignItems: 'flex-start', paddingTop: '6vh' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 520, padding: 0 }}>
+            <div className="modal-head">
+              <Ic name="flag" size={15} color="#c4b5fd" />
+              <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>DDS einreichen · TRACES NT</span>
+              <span className="mono tx3" style={{ fontSize: 11 }}>{ddsModalId}</span>
+              <button className="btn sm ghost" onClick={() => setDdsModalId(null)}><Ic name="x" size={12} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Order summary */}
+              <div style={{ padding: '10px 12px', background: 'rgba(196,181,253,0.05)', border: '1px solid rgba(196,181,253,0.2)', borderRadius: 6 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11.5 }}>
+                  <div><span className="tx3">Produkt: </span><span className="fw500">{prod?.name ?? o.productVariant}</span></div>
+                  <div><span className="tx3">Kategorie: </span><span className="mono">{prod?.cat}</span></div>
+                  <div><span className="tx3">Käufer: </span><span className="fw500">{buyer?.name?.split(' ').slice(0,3).join(' ')}</span></div>
+                  <div><span className="tx3">Lieferant: </span><span className="fw500">{sup?.name?.split(' ').slice(0,2).join(' ')}</span></div>
+                  <div><span className="tx3">Menge: </span><span className="mono">{o.qty.toLocaleString('de-DE')} {o.unit}</span></div>
+                  <div><span className="tx3">ETD→ETA: </span><span className="mono">{o.etd} → {o.eta}</span></div>
+                </div>
+              </div>
+
+              {/* Operator data */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>Operator / Unternehmen</div>
+                  <input type="text" value={ddsForm.operator}
+                    onChange={e => setDdsForm(f => ({ ...f, operator: e.target.value }))} style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>EORI-Nummer</div>
+                  <input type="text" value={ddsForm.eori} placeholder="DE123456789012"
+                    onChange={e => setDdsForm(f => ({ ...f, eori: e.target.value }))} style={inputStyle} />
+                </div>
+              </div>
+
+              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, border: '1px solid var(--border)', fontSize: 11.5, color: 'var(--text-2)', lineHeight: 1.6 }}>
+                Mit der Einreichung bestätige ich, dass für die bezeichnete Sendung eine Sorgfaltsprüfung gem. Art. 8 EUDR (EU) 2023/1115 durchgeführt wurde und die Ware nachweislich nicht mit Entwaldung oder Waldschädigung in Verbindung steht.
+              </div>
+
+              <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer', fontSize: 12 }}>
+                <input type="checkbox" checked={ddsForm.confirmed}
+                  onChange={e => setDdsForm(f => ({ ...f, confirmed: e.target.checked }))}
+                  style={{ marginTop: 2 }} />
+                <span>Ich bestätige die Richtigkeit der Angaben und akzeptiere die Einreichung via TRACES NT.</span>
+              </label>
+            </div>
+            <div className="modal-foot">
+              <button className="btn ghost" onClick={() => setDdsModalId(null)}>Abbrechen</button>
+              <button
+                className="btn primary"
+                disabled={!ddsForm.operator || !ddsForm.eori || !ddsForm.confirmed || ddsSaving}
+                onClick={handleDdsSubmit}
+              >
+                {ddsSaving ? 'Einreichen…' : 'DDS einreichen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+
+    {/* ── DDS Ansehen Modal ── */}
+    {ddsViewId && (() => {
+      const o = M.orders.find(x => x.id === ddsViewId)!;
+      const prod = M.products.find(p => p.id === o?.productId);
+      const buyer = M.buyers.find(b => b.id === o?.buyerId);
+      const sup = M.suppliers.find(s => s.id === o?.supplierId);
+      const ref = ddsRef[ddsViewId] ?? `DDS-2026-${ddsViewId.replace('ORD-2026-', '').replace('ORD-2025-', '')}`;
+      const gpsStatus = supplierGpsStatus(o?.supplierId ?? '');
+      if (!o) return null;
+      return (
+        <div className="overlay" onClick={() => setDdsViewId(null)} style={{ alignItems: 'flex-start', paddingTop: '6vh' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 540, padding: 0 }}>
+            <div className="modal-head">
+              <Ic name="task" size={15} color="#34d399" />
+              <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>Due Diligence Statement</span>
+              <Badge kind="success" dot>Eingereicht</Badge>
+              <button className="btn sm ghost" onClick={() => setDdsViewId(null)}><Ic name="x" size={12} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* TRACES reference */}
+              <div style={{ padding: '12px 14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: 6 }}>TRACES NT Referenznummer</div>
+                <div className="mono fw600" style={{ fontSize: 18, color: '#34d399', letterSpacing: '0.05em' }}>{ref}</div>
+              </div>
+
+              {/* Key fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                {[
+                  { l: 'Operator',    v: ddsForm.operator || 'EastAfrica Export OS GmbH' },
+                  { l: 'EORI',        v: ddsForm.eori || 'DE123456789012' },
+                  { l: 'Produkt',     v: prod?.name ?? o.productVariant },
+                  { l: 'Kategorie',   v: prod?.cat ?? '—' },
+                  { l: 'Käufer',      v: buyer?.name?.split(' ').slice(0,3).join(' ') ?? '—' },
+                  { l: 'Lieferant',   v: sup?.name?.split(' ').slice(0,2).join(' ') ?? '—' },
+                  { l: 'Menge',       v: `${o.qty.toLocaleString('de-DE')} ${o.unit}` },
+                  { l: 'Auftrag',     v: o.id },
+                ].map((f, i) => (
+                  <div key={i} style={{ background: 'var(--bg)', borderRadius: 6, padding: '8px 10px' }}>
+                    <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 3 }}>{f.l}</div>
+                    <div className="mono fw500" style={{ fontSize: 11.5 }}>{f.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Compliance checks */}
+              <div>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>Compliance-Checks</div>
+                {[
+                  { l: 'EUDR Sorgfaltspflicht (Art. 8)',       ok: true  },
+                  { l: `GPS-Koordinaten Lieferant (Art. 9)`,   ok: gpsStatus === 'complete' || (localGpsData[o.supplierId]?.parcels.length ?? 0) > 0 },
+                  { l: 'DDS eingereicht via TRACES NT (Art. 10)', ok: true  },
+                  { l: 'Rückverfolgbarkeit belegt (Erw. 46)',   ok: true  },
+                ].map((c, i) => (
+                  <div key={i} className="row" style={{ padding: '6px 0', borderBottom: i < 3 ? '1px solid var(--border)' : 'none', gap: 8 }}>
+                    <Ic name={c.ok ? 'task' : 'warn'} size={12} color={c.ok ? '#34d399' : '#fbbf24'} />
+                    <span style={{ flex: 1, fontSize: 12 }}>{c.l}</span>
+                    <Badge kind={c.ok ? 'success' : 'warning'}>{c.ok ? 'OK' : 'Offen'}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button className="btn primary" onClick={() => setDdsViewId(null)}>Schließen</button>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+
+    {/* ── GPS erfassen Modal (Lieferanten) ── */}
+    {gpsModalId && (() => {
+      const s = M.suppliers.find(x => x.id === gpsModalId)!;
+      const existing = localGpsData[gpsModalId]?.parcels ?? [];
+      if (!s) return null;
+      return (
+        <div className="overlay" onClick={() => setGpsModalId(null)} style={{ alignItems: 'flex-start', paddingTop: '7vh' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 460, padding: 0 }}>
+            <div className="modal-head">
+              <Ic name="pin" size={15} color="#34d399" />
+              <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>GPS-Koordinaten erfassen</span>
+              <span className="mono tx3" style={{ fontSize: 11 }}>{s.id}</span>
+              <button className="btn sm ghost" onClick={() => setGpsModalId(null)}><Ic name="x" size={12} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ padding: '8px 10px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 6 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 500 }}>{s.name}</div>
+                <div className="tx3" style={{ fontSize: 10.5, marginTop: 2 }}>{s.country} · {s.region} · {s.products?.slice(0,2).join(', ')}</div>
+              </div>
+
+              {existing.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Bereits erfasste Parzellen ({existing.length})</div>
+                  {existing.map((p, i) => (
+                    <div key={i} className="row" style={{ fontSize: 11, padding: '4px 0', gap: 8 }}>
+                      <span className="mono tx3" style={{ fontSize: 10 }}>{p.ref}</span>
+                      <span className="mono" style={{ flex: 1 }}>{p.lat}°, {p.lng}°</span>
+                      {p.area && <span className="tx3">{p.area} ha</span>}
+                      <Badge kind="success">Erfasst</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>Breitengrad (lat)</div>
+                  <input type="text" placeholder="-3.3869" value={gpsForm.lat}
+                    onChange={e => setGpsForm(f => ({ ...f, lat: e.target.value }))} style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>Längengrad (lng)</div>
+                  <input type="text" placeholder="36.6827" value={gpsForm.lng}
+                    onChange={e => setGpsForm(f => ({ ...f, lng: e.target.value }))} style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>Fläche (ha, optional)</div>
+                  <input type="text" placeholder="12.5" value={gpsForm.area}
+                    onChange={e => setGpsForm(f => ({ ...f, area: e.target.value }))} style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>Parzellen-Ref.</div>
+                  <input type="text" placeholder="P-01" value={gpsForm.ref}
+                    onChange={e => setGpsForm(f => ({ ...f, ref: e.target.value }))} style={inputStyle} />
+                </div>
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button className="btn ghost" onClick={() => setGpsModalId(null)}>Abbrechen</button>
+              <button className="btn primary" disabled={!gpsForm.lat || !gpsForm.lng || gpsSaving} onClick={handleGpsSubmit}>
+                {gpsSaving ? 'Speichern…' : `Parzelle erfassen`}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+
+    {/* ── GPS Ansehen Modal (Lieferanten) ── */}
+    {gpsViewId && (() => {
+      const s = M.suppliers.find(x => x.id === gpsViewId)!;
+      const gpsStatus = supplierGpsStatus(s?.id ?? '');
+      const localParcels = localGpsData[gpsViewId]?.parcels ?? [];
+      const tracesId = gpsStatus === 'complete' ? `TN-TZ-${s.id.replace('SUP-', '')}-26` : localParcels.length > 0 ? `TN-TZ-${s.id.replace('SUP-', '')}-26-NEW` : '—';
+      const parcelCount = s ? (s.id.split('').reduce((n, c) => n + c.charCodeAt(0), 0) % 8 + 1) : 0;
+      if (!s) return null;
+      return (
+        <div className="overlay" onClick={() => setGpsViewId(null)} style={{ alignItems: 'flex-start', paddingTop: '7vh' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 480, padding: 0 }}>
+            <div className="modal-head">
+              <Ic name="pin" size={15} color="#34d399" />
+              <span style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>GPS-Koordinaten · {s.name.split(' ').slice(0,2).join(' ')}</span>
+              <Badge kind="success" dot>Vollständig</Badge>
+              <button className="btn sm ghost" onClick={() => setGpsViewId(null)}><Ic name="x" size={12} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ padding: '8px 12px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 500 }}>{s.name}</div>
+                <div className="tx3" style={{ fontSize: 10.5, marginTop: 2 }}>{s.country} · {s.region} · TRACES: <span className="mono">{tracesId}</span></div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                {[
+                  { l: 'Parzellen gesamt',  v: String(parcelCount + localParcels.length), c: '#34d399' },
+                  { l: 'GPS-Status',        v: gpsStatus === 'complete' ? 'Vollständig' : 'Aktualisiert', c: '#34d399' },
+                  { l: 'TRACES ID',         v: tracesId, mono: true },
+                ].map((f, i) => (
+                  <div key={i} style={{ background: 'var(--bg)', borderRadius: 6, padding: '8px 10px' }}>
+                    <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 3 }}>{f.l}</div>
+                    <div className={`fw500${f.mono ? ' mono' : ''}`} style={{ fontSize: 12, color: f.c }}>{f.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {localParcels.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Neu erfasste Parzellen</div>
+                  {localParcels.map((p, i) => (
+                    <div key={i} className="row" style={{ padding: '7px 0', borderBottom: i < localParcels.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+                      <span className="mono tx3" style={{ fontSize: 11 }}>{p.ref}</span>
+                      <span className="mono fw500" style={{ flex: 1, fontSize: 12 }}>{p.lat}°N, {p.lng}°E</span>
+                      {p.area && <span className="tx3 mono" style={{ fontSize: 11 }}>{p.area} ha</span>}
+                      <Badge kind="success">Erfasst</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, border: '1px solid var(--border)', fontSize: 11.5, color: 'var(--text-3)' }}>
+                Koordinaten wurden gem. Art. 9 EUDR (EU) 2023/1115 für alle EUDR-relevanten Erzeuger erfasst und in TRACES NT hinterlegt.
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button className="btn ghost" onClick={() => { setGpsViewId(null); setGpsForm({ lat: '', lng: '', area: '', ref: `P-0${(localGpsData[gpsViewId]?.parcels.length ?? 0) + 1}` }); setGpsModalId(gpsViewId); }}>
+                Weitere Parzelle hinzufügen
+              </button>
+              <button className="btn primary" onClick={() => setGpsViewId(null)}>Schließen</button>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+    </>
   );
 };
