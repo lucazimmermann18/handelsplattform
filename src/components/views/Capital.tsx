@@ -208,6 +208,8 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
   const [tab, setTab] = useState('forecast');
   const [scenario, setScenario] = useState<Scenario>('base');
   const [selectedUpdate, setSelectedUpdate] = useState('U-05');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
 
   // Compute actual revenue & profit from real orders
   const { actualRevK, actualEbitdaK } = useMemo(() => {
@@ -611,11 +613,15 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
               <div className="card-head">
                 <Ic name="mail" size={14} />
                 <span className="title">Investor Update Mai 2026</span>
-                <Badge kind="warning">Entwurf</Badge>
+                <Badge kind={isGenerated ? 'success' : 'warning'}>{isGenerated ? 'Bereit' : 'Entwurf'}</Badge>
                 <div style={{ marginLeft: 'auto' }}>
-                  <button className="btn">
+                  <button className="btn" disabled={isGenerating} onClick={() => {
+                    if (isGenerating) return;
+                    setIsGenerating(true);
+                    setTimeout(() => { setIsGenerating(false); setIsGenerated(true); }, 1800);
+                  }}>
                     <Ic name="sparkle" size={13} color="#a78bfa" />
-                    Generieren
+                    {isGenerating ? 'Generiert…' : isGenerated ? 'Aktualisieren' : 'Generieren'}
                   </button>
                 </div>
               </div>

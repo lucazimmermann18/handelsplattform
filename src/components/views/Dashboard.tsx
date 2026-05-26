@@ -16,8 +16,32 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const exportCSV = () => {
+    const headers = ['KPI', 'Wert'];
+    const ordersRows = [
+      ['Aktive Aufträge', activeOrders.length],
+      ['In Verschiffung', inShipping.length],
+      ['Erwarteter Umsatz (€)', expRev],
+      ['Realisierter Umsatz (€)', realRev],
+      ['Ø Marge (%)', avgMargin],
+      ['Lagerbestand (€)', invValue],
+      ['Pipeline gewichtet (€)', Math.round(pipelineValue)],
+      ['Offene Deals', M.deals.length],
+      ['Aktive Lieferanten', M.suppliers.filter(s => s.status === 'aktiv').length],
+      ['Käufer gesamt', M.buyers.length],
+      ['Offene Aufgaben', M.tasks.filter(x => x.status !== 'erledigt').length],
+    ];
+    const csv = [headers, ...ordersRows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `dashboard-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const activeOrders = M.orders.filter((o) => !['done'].includes(o.status));
   const inShipping = M.orders.filter((o) => ['in_transit', 'shipped', 'arrived', 'in_export'].includes(o.status));
   const inProc = M.orders.filter((o) => o.status === 'procurement').length;
@@ -101,8 +125,8 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
         <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{t(lang, 'welcome_back')}</h1>
         <span className="tx3" style={{ fontSize: 12 }}>{t(lang, 'overview')} · {new Date(M.todayBase).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          <button className="btn"><Ic name="refresh" size={13} /> {t(lang, 'refresh')}</button>
-          <button className="btn"><Ic name="download" size={13} /> {t(lang, 'export')}</button>
+          <button className="btn" onClick={refresh}><Ic name="refresh" size={13} /> {t(lang, 'refresh')}</button>
+          <button className="btn" onClick={exportCSV}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
           <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}><Ic name="plus" size={13} /> {t(lang, 'new')} Auftrag</button>
         </div>
       </div>

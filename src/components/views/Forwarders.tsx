@@ -42,6 +42,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
   const [forwarders, setForwarders] = useState<Forwarder[]>([]);
   const [loading, setLoading]       = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [fwdMenu, setFwdMenu]       = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -203,10 +204,23 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
                       </td>
 
                       {/* Aktionen */}
-                      <td style={{ padding: '10px 12px' }}>
-                        <button className="btn sm ghost">
+                      <td style={{ padding: '10px 12px', position: 'relative' }}>
+                        <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setFwdMenu(fwdMenu === f.id ? null : f.id); }}>
                           <Ic name="more" size={11} />
                         </button>
+                        {fwdMenu === f.id && (
+                          <>
+                            <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setFwdMenu(null)} />
+                            <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 160, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                              <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }} onClick={() => setFwdMenu(null)}>
+                                <Ic name="info" size={11} /> Details anzeigen
+                              </button>
+                              <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }} onClick={() => { setWizardOpen(true); setFwdMenu(null); }}>
+                                <Ic name="edit" size={11} /> Bearbeiten
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}

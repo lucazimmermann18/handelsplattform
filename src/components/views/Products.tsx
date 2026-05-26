@@ -165,8 +165,8 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
           ? <Badge kind="success" dot>Export-ready</Badge>
           : <Badge kind="danger" dot>blockiert</Badge>}
         <div className="right">
-          <button className="btn"><Ic name="download" size={13} /> Datenblatt PDF</button>
-          <button className="btn primary"><Ic name="star" size={13} /> Angebot erstellen</button>
+          <button className="btn" onClick={() => window.print()}><Ic name="download" size={13} /> Datenblatt PDF</button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard', { detail: { productId: p.id } }))}><Ic name="star" size={13} /> Angebot erstellen</button>
         </div>
       </div>
 

@@ -227,7 +227,11 @@ interface ComplaintDetailProps {
 }
 
 export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
+  const [solveOpen, setSolveOpen] = useState(false);
+  const [solveNote, setSolveNote] = useState('');
+  const [solveSaving, setSolveSaving] = useState(false);
+  const [solveError, setSolveError] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const c = M.complaints.find(x => x.id === id) ?? M.complaints[0];
   if (!c) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Keine Reklamation gefunden.</div>;
@@ -253,7 +257,19 @@ export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
     { lbl: 'Korrespondenz',           tag: 'mail' },
   ];
 
+  const handleSolve = async () => {
+    setSolveSaving(true); setSolveError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('complaints').update({ status: 'gelöst' }).eq('id', c.id);
+      if (error) throw new Error(error.message);
+      setSolveOpen(false); setSolveNote(''); refresh();
+    } catch (e) { setSolveError((e as Error).message); }
+    finally { setSolveSaving(false); }
+  };
+
   return (
+    <>
     <div>
       <div className="section-head">
         <button className="btn ghost" onClick={onBack} style={{ padding: 4 }}>
@@ -263,8 +279,11 @@ export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
         <Badge kind={SEV_KIND[c.sev] ?? 'neutral'} dot>{c.sev}</Badge>
         <div className="tx2" style={{ fontSize: 13 }}>{c.t}</div>
         <div className="right">
-          <button className="btn"><Ic name="mail" size={13} /> Käufer informieren</button>
-          <button className="btn primary"><Ic name="task" size={13} /> Lösung dokumentieren</button>
+          <button className="btn" onClick={() => window.dispatchEvent(new CustomEvent('open-email', { detail: {
+            type: 'complaint_notification', to: buyer?.email ?? '', subject: `Reklamation ${c.id} — ${c.t}`,
+            recipientName: buyer?.name ?? '', data: { complaintId: c.id },
+          }}))}><Ic name="mail" size={13} /> Käufer informieren</button>
+          <button className="btn primary" onClick={() => setSolveOpen(true)}><Ic name="task" size={13} /> Lösung dokumentieren</button>
         </div>
       </div>
 
@@ -383,5 +402,39 @@ export const ComplaintDetail = ({ id, lang, onBack }: ComplaintDetailProps) => {
         </div>
       </div>
     </div>
+
+    {solveOpen && (
+      <div className="overlay" onClick={() => setSolveOpen(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 460, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ic name="task" size={14} color="#34d399" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Lösung dokumentieren · {c.id}</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setSolveOpen(false)}><Ic name="x" size={13} /></button>
+          </div>
+          <div style={{ padding: '16px 18px' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Lösungsbeschreibung</div>
+            <textarea
+              autoFocus
+              value={solveNote}
+              onChange={e => setSolveNote(e.target.value)}
+              placeholder="Wie wurde der Fall gelöst? Maßnahmen, Ergebnis, Lessons Learned…"
+              rows={5}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+            />
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 10 }}>
+              Status wird auf <strong style={{ color: '#34d399' }}>Gelöst</strong> gesetzt.
+            </div>
+            {solveError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6, marginTop: 10 }}>{solveError}</div>}
+          </div>
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="btn ghost" onClick={() => setSolveOpen(false)}>Abbrechen</button>
+            <button className="btn primary" onClick={handleSolve} disabled={solveSaving || !solveNote.trim()}>
+              {solveSaving ? 'Speichern…' : <><Ic name="task" size={13} /> Fall abschließen</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };

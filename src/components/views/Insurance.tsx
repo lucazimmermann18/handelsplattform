@@ -45,6 +45,9 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState<'policies' | 'claims' | 'coverage'>('policies');
   const [claimAkteOpen, setClaimAkteOpen] = useState(false);
+  const [newPolicyOpen, setNewPolicyOpen] = useState(false);
+  const [policyForm, setPolicyForm] = useState({ orderId: '', underwriter: UNDERWRITERS[0], coverage: 'All Risks (ICC A)', insured: '', premium: '', validUntil: '2026-12-31' });
+  const [policySaved, setPolicySaved] = useState(false);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const policies = M.orders
@@ -96,7 +99,7 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
         <h1>Versicherungs-Tracker</h1>
         <div className="sub">Transportversicherung · Police-Verwaltung · Claim-Status · ICC A/B/C</div>
         <div className="right">
-          <button className="btn primary"><Ic name="plus" size={13} /> Neue Police</button>
+          <button className="btn primary" onClick={() => { setPolicySaved(false); setNewPolicyOpen(true); }}><Ic name="plus" size={13} /> Neue Police</button>
           <button className="btn" onClick={exportCSV}><Ic name="download" size={13} /> Export</button>
         </div>
       </div>
@@ -407,6 +410,72 @@ export const InsuranceView = ({ lang: _lang }: InsuranceViewProps) => {
             <button className="btn ghost" onClick={() => setClaimAkteOpen(false)}>Schließen</button>
             <button className="btn primary" onClick={exportCSV}><Ic name="download" size={13} /> Akte exportieren</button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {newPolicyOpen && (
+      <div className="overlay" onClick={() => setNewPolicyOpen(false)} style={{ alignItems: 'flex-start', paddingTop: '8vh' }}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 480, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ic name="doc" size={14} color="#34d399" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Neue Police erfassen</span>
+            <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNewPolicyOpen(false)}><Ic name="x" size={13} /></button>
+          </div>
+          {policySaved ? (
+            <div style={{ padding: '40px 18px', textAlign: 'center' }}>
+              <Ic name="quality" size={36} color="#34d399" />
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#34d399', marginTop: 12 }}>Police erfasst</div>
+              <div className="tx3" style={{ fontSize: 12, marginTop: 6 }}>Die Police wurde manuell registriert.</div>
+              <button className="btn primary" style={{ marginTop: 16 }} onClick={() => setNewPolicyOpen(false)}>Schließen</button>
+            </div>
+          ) : (
+            <>
+            <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Auftrag</div>
+                <select value={policyForm.orderId} onChange={e => setPolicyForm(p => ({ ...p, orderId: e.target.value }))} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%' }}>
+                  <option value="">— wählen (optional) —</option>
+                  {M.orders.filter(o => ['in_transit','shipped','arrived','in_export'].includes(o.status)).map(o => <option key={o.id} value={o.id}>{o.id} · {o.productVariant}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Underwriter</div>
+                <select value={policyForm.underwriter} onChange={e => setPolicyForm(p => ({ ...p, underwriter: e.target.value }))} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%' }}>
+                  {UNDERWRITERS.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Deckungsart</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {['All Risks (ICC A)', 'All Risks ICC A + Cold-Chain Rider'].map(c => (
+                    <span key={c} className={`chip${policyForm.coverage === c ? ' on' : ''}`} onClick={() => setPolicyForm(p => ({ ...p, coverage: c }))} style={{ cursor: 'pointer', fontSize: 11 }}>{c}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Versichert (€)</div>
+                  <input type="number" value={policyForm.insured} onChange={e => setPolicyForm(p => ({ ...p, insured: e.target.value }))} placeholder="z.B. 85000" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Prämie (€)</div>
+                  <input type="number" value={policyForm.premium} onChange={e => setPolicyForm(p => ({ ...p, premium: e.target.value }))} placeholder="z.B. 1062" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Gültig bis</div>
+                  <input type="date" value={policyForm.validUntil} onChange={e => setPolicyForm(p => ({ ...p, validUntil: e.target.value }))} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn ghost" onClick={() => setNewPolicyOpen(false)}>Abbrechen</button>
+              <button className="btn primary" onClick={() => setPolicySaved(true)}>
+                <Ic name="plus" size={13} /> Police erfassen
+              </button>
+            </div>
+            </>
+          )}
         </div>
       </div>
     )}

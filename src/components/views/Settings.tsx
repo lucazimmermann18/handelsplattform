@@ -242,6 +242,7 @@ function ModelPicker() {
 export const SettingsView = ({ lang }: SettingsViewProps) => {
   const { isConnected, error: dbError, loading: dbLoading, lastSync, supabaseUrl, refresh } = useData();
   const { isConfigured, activeModelObj } = useAiConfig();
+  const [userMenu, setUserMenu]         = useState<string | null>(null);
   const [inviteOpen, setInviteOpen]     = useState(false);
   const [inviteEmail, setInviteEmail]   = useState('');
   const [inviteName, setInviteName]     = useState('');
@@ -411,7 +412,24 @@ export const SettingsView = ({ lang }: SettingsViewProps) => {
                             <span className="tx2">{u.a}</span>
                           </div>
                         </td>
-                        <td><button className="btn sm ghost"><Ic name="more" size={11} /></button></td>
+                        <td style={{ position: 'relative' }}>
+                          <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setUserMenu(userMenu === u.n ? null : u.n); }}>
+                            <Ic name="more" size={11} />
+                          </button>
+                          {userMenu === u.n && (
+                            <>
+                              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setUserMenu(null)} />
+                              <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                                <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }} onClick={() => setUserMenu(null)}>
+                                  <Ic name="edit" size={11} /> Rolle ändern
+                                </button>
+                                <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px', color: '#f87171' }} onClick={() => setUserMenu(null)}>
+                                  <Ic name="x" size={11} /> Entfernen
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
