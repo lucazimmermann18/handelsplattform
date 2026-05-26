@@ -19,6 +19,10 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: 'EastAfrica Export OS',
   description: 'Operations Platform for East African Export Business',
+  icons: {
+    icon: '/logo.svg',
+    apple: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

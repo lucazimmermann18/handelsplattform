@@ -1,0 +1,37 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark navy background with rounded corners -->
+  <rect width="200" height="200" rx="36" fill="#0c1c3e"/>
+
+  <!-- Bridge left arch arm: sweeps from outer-left upward to tower-left top -->
+  <path d="M 18 108 C 18 60 55 38 55 38" stroke="white" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <!-- Bridge right arch arm -->
+  <path d="M 182 108 C 182 60 145 38 145 38" stroke="white" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <!-- Top arch connecting the two towers -->
+  <path d="M 55 38 Q 100 24 145 38" stroke="white" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Left suspension cables (from arch to deck) -->
+  <line x1="55" y1="38" x2="76" y2="108" stroke="white" stroke-width="2" opacity="0.65" stroke-linecap="round"/>
+  <line x1="40" y1="72" x2="68" y2="108" stroke="white" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+  <!-- Right suspension cables -->
+  <line x1="145" y1="38" x2="124" y2="108" stroke="white" stroke-width="2" opacity="0.65" stroke-linecap="round"/>
+  <line x1="160" y1="72" x2="132" y2="108" stroke="white" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+
+  <!-- Left tower pillar -->
+  <rect x="50" y="38" width="11" height="70" rx="2" fill="white"/>
+  <!-- Right tower pillar -->
+  <rect x="139" y="38" width="11" height="70" rx="2" fill="white"/>
+
+  <!-- Horizontal bridge deck -->
+  <rect x="18" y="104" width="164" height="8" rx="4" fill="white"/>
+
+  <!-- Teal buildings / skyline under bridge -->
+  <rect x="78"  y="116" width="13" height="22" rx="2" fill="#11b8d4"/>
+  <rect x="94"  y="111" width="13" height="27" rx="2" fill="#11b8d4"/>
+  <rect x="110" y="119" width="13" height="19" rx="2" fill="#0da5bf"/>
+
+  <!-- Teal converging roads at bottom (perspective) -->
+  <path d="M 24 160 Q 62 142 100 150 Q 138 142 176 160"
+        stroke="#11b8d4" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 30 176 Q 65 158 100 164 Q 135 158 170 176"
+        stroke="#0c9ab5" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+</svg>

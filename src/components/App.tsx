@@ -239,7 +239,7 @@ export const App = () => {
       <div className="app">
         {/* Logo */}
         <div className="logo-cell">
-          <div className="logo-mark" />
+          <img src="/logo.svg" alt="Logo" className="logo-mark" />
           <div className="logo-text">
             EastAfrica<br />
             <span className="sub">Export OS</span>
