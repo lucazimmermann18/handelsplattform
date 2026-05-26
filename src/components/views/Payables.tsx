@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/primitives';
 
 export interface PayablesViewProps { lang: Lang }
 
-const TODAY = new Date('2026-05-26');
+const TODAY = new Date();
 
 function fmtDaysLeft(eta: string): string {
   if (!eta) return '—';
