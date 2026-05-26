@@ -1,28 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { ForwarderWizard } from '@/components/ui/ForwarderWizard';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface Forwarder {
-  id: string;
-  name: string;
-  country: string;
-  city: string;
-  contact: string;
-  email: string;
-  phone: string;
-  website?: string;
-  rating: number;
-  routes: string[];
-  services: string[];
-  status: string;
-  notes?: string;
-}
+import { useData } from '@/lib/data-context';
 
 interface ForwardersViewProps { lang: Lang; }
 
@@ -39,32 +22,13 @@ const Stars = ({ rating }: { rating: number }) => (
 // ── Main component ────────────────────────────────────────────────────────────
 
 export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
-  const [forwarders, setForwarders] = useState<Forwarder[]>([]);
-  const [loading, setLoading]       = useState(true);
+  const { data: M, refresh } = useData();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [fwdMenu, setFwdMenu]       = useState<string | null>(null);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const { data } = await createClient().from('forwarders').select('*').order('name');
-      const mapped = (data ?? []).map((r: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-        id: r.id, name: r.name, country: r.country ?? '',
-        city: r.city ?? '', contact: r.contact ?? '',
-        email: r.email ?? '', phone: r.phone ?? '',
-        website: r.website, rating: r.rating ?? 0,
-        routes: r.routes ?? [], services: r.services ?? [],
-        status: r.status ?? 'aktiv', notes: r.notes,
-      }));
-      setForwarders(mapped);
-    } catch (_e) {
-      setForwarders([]);
-    }
-    setLoading(false);
-  };
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  useEffect(() => { load(); }, []);
+  const forwarders = M.forwarders;
 
   // ── KPI values ──────────────────────────────────────────────────────────────
 
@@ -108,16 +72,8 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
           ))}
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-            <div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-          </div>
-        )}
-
         {/* Empty state */}
-        {!loading && forwarders.length === 0 && (
+        {forwarders.length === 0 && (
           <div className="card">
             <div className="card-body" style={{ padding: 48, textAlign: 'center' }}>
               <div style={{ marginBottom: 10 }}>
@@ -135,7 +91,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
         )}
 
         {/* Table */}
-        {!loading && forwarders.length > 0 && (
+        {forwarders.length > 0 && (
           <div className="card">
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
@@ -235,7 +191,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
       <ForwarderWizard
         open={wizardOpen}
         onClose={() => setWizardOpen(false)}
-        onSuccess={() => { setWizardOpen(false); load(); }}
+        onSuccess={() => { setWizardOpen(false); refresh(); }}
       />
     </div>
   );

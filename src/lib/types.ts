@@ -230,6 +230,49 @@ export interface RevTrendEntry {
 
 export type StatusBadgeMap = Record<string, string>;
 
+export interface Forwarder {
+  id: string; name: string; country: string; city: string;
+  contact: string; email: string; phone: string; website?: string;
+  rating: number; routes: string[]; services: string[];
+  status: string; notes?: string;
+}
+
+export interface Sample {
+  id: string; product: string; buyerId: string; qty: string;
+  supplierId: string; courier: string; tracking: string;
+  sent: string; status: string; feedback: string;
+}
+
+export interface Certification {
+  id: string; name: string; scope: string; status: string;
+  validUntil?: string; startDate?: string; completionDate?: string;
+  cost?: string; progress?: number; priority: string;
+  rationale: string; blocker?: string;
+}
+
+export interface Regulation {
+  code: string; title: string; products: string; deadline: string;
+  phase: string; impact: string; readiness: number; action: string; cost: string;
+}
+
+export interface KeyResult {
+  id: string; text: string; cur: number; target: number; unit: string;
+}
+
+export interface Objective {
+  id: string; title: string; why: string; owner: string; krs: KeyResult[];
+}
+
+export interface SupplierNote {
+  id: string; supplier_id: string; author: string;
+  content: string; type: string; created_at: string;
+}
+
+export interface FieldVisit {
+  id: string; supplier_id: string; type: string;
+  visit_date: string; inspector: string; notes: string; result: string;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -245,6 +288,13 @@ export interface MockData {
   complaints: Complaint[];
   vessels: Vessel[];
   ports: Record<string, Port>;
+  forwarders: Forwarder[];
+  samples: Sample[];
+  certifications: Certification[];
+  regulations: Regulation[];
+  objectives: Objective[];
+  supplierNotes: SupplierNote[];
+  fieldVisits: FieldVisit[];
   statusBadge: StatusBadgeMap;
   dealStages: string[];
   revTrend: RevTrendEntry[];

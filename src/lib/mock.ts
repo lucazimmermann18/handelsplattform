@@ -266,4 +266,11 @@ export const MOCK: MockData = {
   dealStages,
   revTrend,
   todayBase,
+  forwarders: [],
+  samples: [],
+  certifications: [],
+  regulations: [],
+  objectives: [],
+  supplierNotes: [],
+  fieldVisits: [],
 };

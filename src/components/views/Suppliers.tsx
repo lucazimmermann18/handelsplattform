@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -220,17 +220,12 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string|null>(null);
 
-  // Notes state
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [notes, setNotes] = useState<{id:string; author:string; content:string; type:string; created_at:string}[]>([]);
-  const [notesLoading, setNotesLoading] = useState(true);
+  // Notes form state
   const [newNote, setNewNote] = useState('');
   const [noteType, setNoteType] = useState<'note'|'email'|'call'>('note');
   const [noteSaving, setNoteSaving] = useState(false);
 
-  // Field visits state
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [visits, setVisits] = useState<{id:string; type:string; visit_date:string; inspector:string; result:string; notes:string}[]>([]);
+  // Field visits form state
   const [visitOpen, setVisitOpen] = useState(false);
   const [visitForm, setVisitForm] = useState({ type: 'Field Visit', date: '', inspector: 'Admin', notes: '', result: 'ausstehend' });
   const [visitSaving, setVisitSaving] = useState(false);
@@ -244,36 +239,11 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
     [seed]
   );
 
-  // Load notes
-  useEffect(() => {
-    let mounted = true;
-    const loadNotes = async () => {
-      setNotesLoading(true);
-      try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const { data } = await createClient().from('supplier_notes')
-          .select('*').eq('supplier_id', id).order('created_at', { ascending: true });
-        if (mounted) setNotes(data ?? []);
-      } catch (_e) {}
-      if (mounted) setNotesLoading(false);
-    };
-    loadNotes();
-    return () => { mounted = false; };
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Load visits
-  const loadVisits = async () => {
-    try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const { data } = await createClient().from('field_visits')
-        .select('*').eq('supplier_id', id).order('visit_date', { ascending: false });
-      setVisits(data ?? []);
-    } catch (_e) {}
-  };
-  useEffect(() => { loadVisits(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   if (!s) return <div className="empty">Lieferant nicht gefunden</div>;
+
+  const notes  = M.supplierNotes.filter(n => n.supplier_id === id);
+  const visits = M.fieldVisits.filter(v => v.supplier_id === id);
 
   const circumference = 2 * Math.PI * 38;
   const scoreDash = (s.score / 5) * circumference;
@@ -306,11 +276,11 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
     setNoteSaving(true);
     try {
       const { createClient } = await import('@/lib/supabase/client');
-      const { data: inserted } = await createClient().from('supplier_notes').insert({
+      await createClient().from('supplier_notes').insert({
         supplier_id: id, author: 'Admin', content: newNote, type: noteType,
-      }).select().single();
-      if (inserted) setNotes(prev => [...prev, inserted]);
+      });
       setNewNote('');
+      refresh();
     } catch (_e) {}
     setNoteSaving(false);
   };
@@ -327,7 +297,7 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
       if (error) throw new Error(error.message);
       setVisitOpen(false);
       setVisitForm({ type: 'Field Visit', date: '', inspector: 'Admin', notes: '', result: 'ausstehend' });
-      await loadVisits();
+      refresh();
     } catch (_e) {}
     setVisitSaving(false);
   };
@@ -492,9 +462,7 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
               </div>
               <div style={{ padding: '14px 16px' }}>
                 {/* Timeline */}
-                {notesLoading ? (
-                  <div className="tx3" style={{ fontSize: 12, padding: '8px 0' }}>Lädt…</div>
-                ) : notes.length === 0 ? (
+                {notes.length === 0 ? (
                   <div className="tx3" style={{ fontSize: 12, marginBottom: 12 }}>Noch keine Notizen erfasst.</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 
@@ -305,32 +305,10 @@ export const StrategyView = ({ lang: _lang }: StrategyViewProps) => {
   const { data: M } = useData();
   const [tab, setTab] = useState('okr');
   const [selectedCountry, setSelectedCountry] = useState('ES');
-  const [objectives, setObjectives] = useState<Objective[]>([]);
 
-  useEffect(() => {
-    let mounted = true;
-    async function loadOKRs() {
-      try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const sb = createClient();
-        const [{ data: okrRows }, { data: krRows }] = await Promise.all([
-          sb.from('okrs').select('*').order('created_at'),
-          sb.from('key_results').select('*').order('sort_order, created_at'),
-        ]);
-        if (mounted && okrRows) {
-          setObjectives(okrRows.map(o => ({
-            id: o.id, title: o.title, why: o.why ?? '', owner: o.owner ?? '',
-            krs: (krRows ?? []).filter(kr => kr.okr_id === o.id).map(kr => ({
-              id: kr.id, text: kr.text,
-              cur: Number(kr.cur), target: Number(kr.target), unit: kr.unit ?? '%',
-            })),
-          })));
-        }
-      } catch { /* keep empty */ }
-    }
-    loadOKRs();
-    return () => { mounted = false; };
-  }, []);
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const objectives = M.objectives;
 
   const tabs = [
     { id: 'okr',      label: 'OKRs',               icon: 'task' },

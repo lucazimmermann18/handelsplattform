@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -121,6 +121,54 @@ const mapVessel = (r: any): Vessel => ({
   name: r.name, voyage: r.voyage ?? '', imo: r.imo ?? '', operator: r.operator ?? '',
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapForwarder = (r: any): Forwarder => ({
+  id: r.id, name: r.name, country: r.country ?? '', city: r.city ?? '',
+  contact: r.contact ?? '', email: r.email ?? '', phone: r.phone ?? '',
+  website: r.website, rating: r.rating ?? 0, routes: r.routes ?? [],
+  services: r.services ?? [], status: r.status ?? 'aktiv', notes: r.notes,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapSample = (r: any): Sample => ({
+  id: r.id, product: r.product ?? '', buyerId: r.buyer_id ?? '',
+  qty: r.qty ?? '', supplierId: r.supplier_id ?? '',
+  courier: r.courier ?? '', tracking: r.tracking ?? '',
+  sent: r.sent_at ?? '', status: r.status ?? '', feedback: r.feedback ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapCertification = (r: any): Certification => ({
+  id: String(r.id), name: r.name ?? '', scope: r.scope ?? '',
+  status: r.status ?? 'planned', validUntil: r.valid_until ?? undefined,
+  startDate: r.start_date ?? undefined, completionDate: r.completion_date ?? undefined,
+  cost: r.cost ?? undefined, progress: r.progress ?? undefined,
+  priority: r.priority ?? 'medium', rationale: r.rationale ?? '',
+  blocker: r.blocker ?? undefined,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapRegulation = (r: any): Regulation => ({
+  code: r.code ?? '', title: r.title ?? '', products: r.products ?? '',
+  deadline: r.deadline ?? '', phase: r.phase ?? 'future',
+  impact: r.impact ?? 'medium', readiness: r.readiness ?? 0,
+  action: r.action ?? '', cost: r.cost ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapSupplierNote = (r: any): SupplierNote => ({
+  id: r.id, supplier_id: r.supplier_id ?? '', author: r.author ?? '',
+  content: r.content ?? '', type: r.type ?? 'note',
+  created_at: r.created_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapFieldVisit = (r: any): FieldVisit => ({
+  id: r.id, supplier_id: r.supplier_id ?? '', type: r.type ?? 'Field Visit',
+  visit_date: r.visit_date ?? '', inspector: r.inspector ?? '',
+  notes: r.notes ?? '', result: r.result ?? 'ausstehend',
+});
+
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 interface DataContextType {
@@ -159,6 +207,14 @@ async function fetchAllData(): Promise<MockData> {
     { data: revTrendRaw },
     { data: vesselsRaw },
     { data: portsRaw },
+    { data: forwardersRaw },
+    { data: samplesRaw },
+    { data: certsRaw },
+    { data: regsRaw },
+    { data: okrsRaw },
+    { data: krsRaw },
+    { data: notesRaw },
+    { data: visitsRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -175,6 +231,14 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('rev_trend').select('*'),
     sb.from('vessels').select('*').order('idx'),
     sb.from('ports').select('*'),
+    sb.from('forwarders').select('*').order('name'),
+    sb.from('samples').select('*').order('created_at', { ascending: false }),
+    sb.from('certifications').select('*').order('sort_order, created_at'),
+    sb.from('regulations').select('*').order('sort_order, created_at'),
+    sb.from('okrs').select('*').order('created_at'),
+    sb.from('key_results').select('*').order('sort_order, created_at'),
+    sb.from('supplier_notes').select('*').order('created_at'),
+    sb.from('field_visits').select('*').order('visit_date', { ascending: false }),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -200,6 +264,22 @@ async function fetchAllData(): Promise<MockData> {
     revTrend:   (revTrendRaw ?? []).map((r: { month: string; expected: number; actual: number; margin: number }) => ({
       m: r.month, exp: r.expected, real: r.actual, margin: r.margin,
     })),
+    forwarders:    (forwardersRaw ?? []).map(mapForwarder),
+    samples:       (samplesRaw    ?? []).map(mapSample),
+    certifications:(certsRaw      ?? []).map(mapCertification),
+    regulations:   (regsRaw       ?? []).map(mapRegulation),
+    objectives:    (okrsRaw ?? []).map((o: { id: string; title: string; why: string; owner: string }) => ({
+      id: o.id, title: o.title, why: o.why ?? '', owner: o.owner ?? '',
+      krs: (krsRaw ?? [])
+        .filter((kr: { okr_id: string }) => kr.okr_id === o.id)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((kr: any): import('@/lib/types').KeyResult => ({
+          id: kr.id, text: kr.text, cur: Number(kr.cur),
+          target: Number(kr.target), unit: kr.unit ?? '%',
+        })),
+    } satisfies Objective)),
+    supplierNotes: (notesRaw   ?? []).map(mapSupplierNote),
+    fieldVisits:   (visitsRaw  ?? []).map(mapFieldVisit),
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,

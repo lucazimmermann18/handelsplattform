@@ -1,24 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
-
-interface Sample {
-  id: string;
-  product: string;
-  buyerId: string;
-  qty: string;
-  supplierId: string;
-  courier: string;
-  tracking: string;
-  sent: string;
-  status: string;
-  feedback: string;
-}
 
 const statusKind: Record<string, string> = {
   delivered: 'success',
@@ -43,38 +30,11 @@ const inputStyle: React.CSSProperties = {
 interface SamplesViewProps { lang: Lang; }
 
 export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
-  const { data: M } = useData();
-  const [samples, setSamples] = useState<Sample[]>([]);
-  const [loadingDb, setLoadingDb] = useState(true);
+  const { data: M, refresh } = useData();
   const [newSample, setNewSample] = useState(false);
   const [form, setForm] = useState({ product: '', buyerId: '', qty: '', supplierId: '', courier: '', tracking: '', sentAt: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  const load = async () => {
-    setLoadingDb(true);
-    try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const { data } = await createClient().from('samples').select('*').order('created_at', { ascending: false });
-      setSamples((data ?? []).map((r: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-        id: r.id,
-        product: r.product,
-        buyerId: r.buyer_id,
-        qty: r.qty,
-        supplierId: r.supplier_id,
-        courier: r.courier,
-        tracking: r.tracking,
-        sent: r.sent_at ?? '',
-        status: r.status,
-        feedback: r.feedback,
-      })));
-    } catch (_e) {
-      // table may not exist yet, use empty array
-    }
-    setLoadingDb(false);
-  };
-
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fld = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -99,13 +59,14 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
       if (error) throw new Error(error.message);
       setNewSample(false);
       setForm({ product: '', buyerId: '', qty: '', supplierId: '', courier: '', tracking: '', sentAt: '' });
-      await load();
+      refresh();
     } catch (e) { setSaveError((e as Error).message); }
     finally { setSaving(false); }
   };
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
+  const samples = M.samples;
   const buyerName = (id: string) => M.buyers.find(b => b.id === id)?.name ?? id;
 
   const total = samples.length;
@@ -162,10 +123,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
           <Ic name="pkg" size={14} />
           <span className="title">Alle Muster</span>
         </div>
-        {loadingDb ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Lädt…</div>
-        ) : (
-          <table className="table">
+        <table className="table">
             <thead>
               <tr>
                 <th>Sample-ID</th>
@@ -220,7 +178,6 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
               )}
             </tbody>
           </table>
-        )}
       </div>
       </div>
     </div>

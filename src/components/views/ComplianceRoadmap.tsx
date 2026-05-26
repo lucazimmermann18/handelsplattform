@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
+import { useData } from '@/lib/data-context';
 
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -101,50 +102,14 @@ function auditReadiness(audit: Audit): number {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export const ComplianceRoadmapView = ({ lang: _lang }: ComplianceRoadmapViewProps) => {
+  const { data: M } = useData();
   const [tab, setTab] = useState('certs');
   const [selectedAudit, setSelectedAudit] = useState('');
-  const [certs, setCerts] = useState<Cert[]>([]);
-  const [regulations, setRegulations] = useState<Regulation[]>([]);
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const sb = createClient();
-        const [{ data: certRows }, { data: regRows }] = await Promise.all([
-          sb.from('certifications').select('*').order('sort_order, created_at'),
-          sb.from('regulations').select('*').order('sort_order, created_at'),
-        ]);
-        if (mounted) {
-          if (certRows) {
-            setCerts(certRows.map(r => ({
-              id: r.id, name: r.name, scope: r.scope ?? '',
-              status: (r.status as CertStatus) ?? 'planned',
-              validUntil: r.valid_until ?? undefined,
-              startDate: r.start_date ?? undefined,
-              completionDate: r.completion_date ?? undefined,
-              cost: r.cost ?? undefined,
-              progress: r.progress ?? undefined,
-              priority: (r.priority as CertPriority) ?? 'medium',
-              rationale: r.rationale ?? '',
-              blocker: r.blocker ?? undefined,
-            })));
-          }
-          if (regRows) {
-            setRegulations(regRows.map(r => ({
-              code: r.code, title: r.title, products: r.products ?? '',
-              deadline: r.deadline ?? '', phase: (r.phase as RegPhase) ?? 'future',
-              impact: (r.impact as RegImpact) ?? 'medium',
-              readiness: r.readiness ?? 0, action: r.action ?? '', cost: r.cost ?? '',
-            })));
-          }
-        }
-      } catch { /* keep empty */ }
-    }
-    load();
-    return () => { mounted = false; };
-  }, []);
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const certs = M.certifications as unknown as Cert[];
+  const regulations = M.regulations as unknown as Regulation[];
 
   const tabs = [
     { id: 'certs',  label: 'Zertifizierungsplan', icon: 'task' },
