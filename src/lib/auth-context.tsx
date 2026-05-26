@@ -40,6 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(user);
           setLoading(false);
         }
+      }).catch(() => {
+        if (mounted) setLoading(false);
       });
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

@@ -19,7 +19,7 @@ function getInitials(email?: string, name?: string): string {
   if (name) return name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   if (email) {
     const local = email.split('@')[0];
-    const parts = local.split(/[._-]/);
+    const parts = local.split(/[._-]/).filter(p => p.length > 0);
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return local.slice(0, 2).toUpperCase();
   }

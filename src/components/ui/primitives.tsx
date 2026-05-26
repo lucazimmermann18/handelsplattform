@@ -38,9 +38,11 @@ interface SparklineProps {
   fill?: boolean;
 }
 export const Sparkline = ({ data, w = 80, h = 24, color = '#3b82f6', fill = true }: SparklineProps) => {
+  if (data.length === 0) return <svg className="spark" width={w} height={h} viewBox={`0 0 ${w} ${h}`} />;
   const min = Math.min(...data), max = Math.max(...data);
   const range = max - min || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 2) - 1}`).join(' ');
+  const denom = Math.max(data.length - 1, 1);
+  const pts = data.map((v, i) => `${(i / denom) * w},${h - ((v - min) / range) * (h - 2) - 1}`).join(' ');
   const fillPts = `0,${h} ${pts} ${w},${h}`;
   return (
     <svg className="spark" width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
@@ -65,8 +67,9 @@ interface BarChartProps {
   lblKey?: string;
 }
 export const BarChart = ({ data, w = 380, h = 130, color = '#3b82f6', secondColor = '#22d3ee', valKey = 'v', val2Key = null, lblKey = 'm' }: BarChartProps) => {
+  if (data.length === 0) return <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} />;
   const all = data.flatMap(d => [d[valKey] as number, val2Key ? d[val2Key] as number : 0]).filter(v => v != null);
-  const max = Math.max(...all) * 1.15;
+  const max = Math.max(...all, 1) * 1.15;
   const bw = w / data.length;
   const ih = h - 22;
   return (

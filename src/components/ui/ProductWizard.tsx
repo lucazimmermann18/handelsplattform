@@ -284,7 +284,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
       <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 12.5 }}>
         <span style={{ color: 'var(--text-3)' }}>Marge: </span>
         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-3)' }}>
-          {`Marge: ${margin}%`}
+          {`${margin}%`}
         </span>
       </div>
 
