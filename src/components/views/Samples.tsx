@@ -211,6 +211,13 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                   </td>
                 </tr>
               ))}
+              {samples.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
+                    Noch keine Muster erfasst
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
