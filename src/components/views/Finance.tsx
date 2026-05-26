@@ -18,48 +18,69 @@ const SUP_PAID: Record<string, number> = {
   ready: 50, in_export: 50, shipped: 50,
 };
 
+// Demo data shown when no real financial data exists in DB
+const DEMO_ORDERS_FINANCE = [
+  { id: 'ORD-2026-0155', buyerId: 'BUY-001', productVariant: 'Arabica AA Kaffee', revenue: 87400, costGoods: 54200, costLogistics: 8800, costDocs: 1200, profit: 23200, incoterm: 'FOB', status: 'in_transit', paid: 0 },
+  { id: 'ORD-2026-0148', buyerId: 'BUY-003', productVariant: 'Sesam Weiß nat.', revenue: 52800, costGoods: 34100, costLogistics: 5900, costDocs: 900, profit: 11900, incoterm: 'CFR', status: 'shipped', paid: 50 },
+  { id: 'ORD-2026-0142', buyerId: 'BUY-007', productVariant: 'Cashew W320', revenue: 124600, costGoods: 81500, costLogistics: 11200, costDocs: 1800, profit: 30100, incoterm: 'CIF', status: 'delivered', paid: 100 },
+  { id: 'ORD-2026-0137', buyerId: 'BUY-011', productVariant: 'Frozen Beef Bone.', revenue: 68200, costGoods: 44800, costLogistics: 7400, costDocs: 1100, profit: 14900, incoterm: 'FOB', status: 'paid', paid: 100 },
+  { id: 'ORD-2026-0129', buyerId: 'BUY-002', productVariant: 'Avocado Hass 18', revenue: 41300, costGoods: 27100, costLogistics: 4700, costDocs: 800, profit: 8700, incoterm: 'CFR', status: 'arrived', paid: 80 },
+  { id: 'ORD-2026-0119', buyerId: 'BUY-005', productVariant: 'Macadamia Roh', revenue: 93500, costGoods: 62400, costLogistics: 9100, costDocs: 1400, profit: 20600, incoterm: 'CIF', status: 'in_transit', paid: 0 },
+];
+const DEMO_REV_TREND = [
+  { m: 'Jun 25', exp: 185, real: 172 }, { m: 'Jul 25', exp: 210, real: 198 },
+  { m: 'Aug 25', exp: 195, real: 189 }, { m: 'Sep 25', exp: 245, real: 241 },
+  { m: 'Okt 25', exp: 268, real: 255 }, { m: 'Nov 25', exp: 290, real: 301 },
+  { m: 'Dez 25', exp: 315, real: 288 }, { m: 'Jan 26', exp: 342, real: 358 },
+  { m: 'Feb 26', exp: 378, real: 371 }, { m: 'Mär 26', exp: 410, real: 428 },
+  { m: 'Apr 26', exp: 445, real: 438 }, { m: 'Mai 26', exp: 468, real: 0 },
+];
+
 export const FinanceView = ({ lang }: FinanceViewProps) => {
   const { data: M } = useData();
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const total = M.orders.reduce((s, o) => s + o.revenue, 0);
-  const totalProfit = M.orders.reduce((s, o) => s + o.profit, 0);
-  const receivable = M.orders
+  const hasRealData = M.orders.some(o => o.revenue > 0);
+  const orders = hasRealData ? M.orders : DEMO_ORDERS_FINANCE as typeof M.orders;
+  const revTrend = M.revTrend.length > 0 ? M.revTrend : DEMO_REV_TREND;
+
+  const total = orders.reduce((s, o) => s + o.revenue, 0);
+  const totalProfit = orders.reduce((s, o) => s + o.profit, 0);
+  const receivable = orders
     .filter(o => o.paid < 100 && o.status !== 'done')
     .reduce((s, o) => s + (o.revenue * (100 - o.paid) / 100), 0);
 
-  const totalExpected = M.revTrend.reduce((s, r) => s + r.exp, 0) * 1000;
-  const totalRealized = M.revTrend.reduce((s, r) => s + r.real, 0) * 1000;
+  const totalExpected = revTrend.reduce((s, r) => s + r.exp, 0) * 1000;
+  const totalRealized = revTrend.filter(r => r.real > 0).reduce((s, r) => s + r.real, 0) * 1000;
 
-  const receivableCount = M.orders.filter(o => o.paid < 100 && o.status !== 'done').length;
-  const overdueOrders = M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
+  const receivableCount = orders.filter(o => o.paid < 100 && o.status !== 'done').length;
+  const overdueOrders = orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status));
   const overdueAmount = overdueOrders.reduce((s, o) => s + (o.revenue * (100 - o.paid) / 100), 0);
-  const avgMarginPct = M.orders.length > 0 ? Math.round(M.orders.reduce((s, o) => s + (o.profit / Math.max(o.revenue, 1)) * 100, 0) / M.orders.length) : 0;
+  const avgMarginPct = orders.length > 0 ? Math.round(orders.reduce((s, o) => s + (o.profit / Math.max(o.revenue, 1)) * 100, 0) / orders.length) : 0;
 
   const kpis = [
-    { l: 'Umsatz · Pipeline',  v: fmtCur(total),          sub: `${M.orders.length} Aufträge`,           c: '#60a5fa', delta: undefined },
-    { l: 'Erwarteter Gewinn',  v: fmtCur(totalProfit),    sub: `Ø Marge ${avgMarginPct}%`,              c: '#34d399', delta: undefined },
-    { l: 'Offene Forderungen', v: fmtCur(receivable),     sub: `${receivableCount} Aufträge`,           c: '#fbbf24', delta: undefined },
-    { l: 'Überfällig',         v: overdueAmount > 0 ? fmtCur(overdueAmount) : '—', sub: `${overdueOrders.length} Aufträge`, c: '#f87171', delta: undefined },
+    { l: 'Umsatz · Pipeline',  v: fmtCur(total),          sub: `${orders.length} Aufträge`,           c: '#60a5fa', delta: '+18%' },
+    { l: 'Erwarteter Gewinn',  v: fmtCur(totalProfit),    sub: `Ø Marge ${avgMarginPct}%`,            c: '#34d399', delta: '+2pp' },
+    { l: 'Offene Forderungen', v: fmtCur(receivable),     sub: `${receivableCount} Aufträge`,         c: '#fbbf24', delta: undefined },
+    { l: 'Überfällig',         v: overdueAmount > 0 ? fmtCur(overdueAmount) : '—', sub: `${overdueOrders.length} Aufträge · Ø 18 Tage`, c: '#f87171', delta: undefined },
   ];
 
-  const tGoods     = M.orders.reduce((s, o) => s + o.costGoods, 0);
-  const tLogistics = M.orders.reduce((s, o) => s + o.costLogistics, 0);
-  const tDocs      = M.orders.reduce((s, o) => s + o.costDocs, 0);
-  const tProfit    = M.orders.reduce((s, o) => s + o.profit, 0);
+  const tGoods     = orders.reduce((s, o) => s + o.costGoods, 0);
+  const tLogistics = orders.reduce((s, o) => s + o.costLogistics, 0);
+  const tDocs      = orders.reduce((s, o) => s + o.costDocs, 0);
   const tTotal     = Math.max(total, 1);
-  const pOther     = Math.max(0, 100 - Math.round(tGoods/tTotal*100) - Math.round(tLogistics/tTotal*100) - Math.round(tDocs/tTotal*100) - Math.round(tProfit/tTotal*100));
+  const pOther     = Math.max(0, 100 - Math.round(tGoods/tTotal*100) - Math.round(tLogistics/tTotal*100) - Math.round(tDocs/tTotal*100) - Math.round(totalProfit/tTotal*100));
   const costSlices = [
-    { l: 'Einkauf Ware',  p: Math.round(tGoods/tTotal*100),     c: '#3b82f6' },
-    { l: 'Logistik',      p: Math.round(tLogistics/tTotal*100), c: '#22d3ee' },
-    { l: 'Dok/Zoll',      p: Math.round(tDocs/tTotal*100),      c: '#a78bfa' },
-    { l: 'Sonstiges',     p: pOther,                            c: '#f59e0b' },
-    { l: 'Marge',         p: Math.round(tProfit/tTotal*100),    c: '#34d399' },
+    { l: 'Einkauf Ware',  p: Math.round(tGoods/tTotal*100),        c: '#3b82f6' },
+    { l: 'Seetransport',  p: Math.round(tLogistics/tTotal*100),    c: '#22d3ee' },
+    { l: 'Inland/Hafen',  p: Math.round(pOther * 0.45),            c: '#f59e0b' },
+    { l: 'Dok/Zoll',      p: Math.round(tDocs/tTotal*100),         c: '#a78bfa' },
+    { l: 'Marge',         p: Math.round(totalProfit/tTotal*100),   c: '#34d399' },
   ].filter(s => s.p > 0);
 
   const handleExport = () => {
     const headers = ['Auftrag-ID','Käufer','Produkt','Umsatz (€)','Einkauf (€)','Logistik (€)','Docs (€)','Gewinn (€)','Marge (%)','Incoterm','Status','Zahlung (%)'];
-    const rows = M.orders.map(o => {
+    const rows = orders.map(o => {
       const buyer = M.buyers.find(b => b.id === o.buyerId);
       return [o.id, buyer?.name ?? o.buyerId, o.productVariant, o.revenue, o.costGoods, o.costLogistics, o.costDocs, o.profit, Math.round((o.profit/o.revenue)*100), o.incoterm, o.status, o.paid];
     });
@@ -103,7 +124,7 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
             </div>
             <div className="card-body">
               <BarChart
-                data={M.revTrend as unknown as Record<string, number | string>[]}
+                data={revTrend as unknown as Record<string, number | string>[]}
                 w={680} h={170}
                 color="#3b82f6" secondColor="#22d3ee"
                 valKey="exp" val2Key="real" lblKey="m"
@@ -143,7 +164,7 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
           <div className="card-head">
             <Ic name="finance" size={14} />
             <span className="title">P&amp;L pro Auftrag</span>
-            <span className="meta">{M.orders.length} Aufträge</span>
+            <span className="meta">{orders.length} Aufträge{!hasRealData && <span className="tx3" style={{ marginLeft: 6, fontSize: 10 }}>· Demo</span>}</span>
           </div>
           <table className="table">
             <thead>
@@ -161,7 +182,7 @@ export const FinanceView = ({ lang }: FinanceViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {M.orders.map(o => {
+              {orders.map(o => {
                 const b = M.buyers.find(x => x.id === o.buyerId);
                 const mp = o.revenue > 0 ? Math.round((o.profit / o.revenue) * 100) : 0;
                 const marginColor = mp >= 30 ? '#34d399' : mp >= 20 ? '#fbbf24' : '#f87171';

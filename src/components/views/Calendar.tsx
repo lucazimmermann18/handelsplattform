@@ -70,13 +70,11 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
   const isToday = (day: number) => day === today.getDate() && MONTH === today.getMonth() && YEAR === today.getFullYear();
 
   return (
-    <div className="view-content">
-      <div className="view-header">
-        <div>
-          <h1 className="view-title">Kalender</h1>
-          <p className="view-sub">{MONTH_NAMES[MONTH]} {YEAR} · ETDs, ETAs, Follow-ups</p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+    <div>
+      <div className="section-head">
+        <h1>Kalender</h1>
+        <div className="sub">{MONTH_NAMES[MONTH]} {YEAR} · ETDs, ETAs, Follow-ups</div>
+        <div className="right">
           <button className="btn" onClick={() => setOffset(o => o - 1)}>
             <Ic name="chevL" size={14} /> {MONTH_SHORT[(MONTH - 1 + 12) % 12]}
           </button>
@@ -86,9 +84,10 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
         </div>
       </div>
 
+      <div style={{ padding: '0 16px 12px' }}>
       <div className="card">
-        <div className="card-header" style={{ justifyContent: 'space-between' }}>
-          <span className="card-title" style={{ fontSize: 16, fontWeight: 700 }}>{MONTH_NAMES[MONTH]} {YEAR}</span>
+        <div className="card-head" style={{ justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>{MONTH_NAMES[MONTH]} {YEAR}</span>
           <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
@@ -188,34 +187,43 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
       </div>
 
       {/* Upcoming events list */}
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="card-header">
-          <span className="card-title"><Ic name="clock" size={14} /> Nächste Ereignisse</span>
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-head">
+          <Ic name="clock" size={14} />
+          <span className="title">Nächste Ereignisse</span>
+          <span className="meta">{Object.values(eventMap).reduce((s, a) => s + a.length, 0)} Events diesen Monat</span>
         </div>
-        <div>
-          {Object.entries(eventMap)
-            .sort(([a], [b]) => Number(a) - Number(b))
-            .slice(0, 8)
-            .map(([day, events]) => (
-              <div key={day} style={{ display: 'flex', gap: 16, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ width: 48, flexShrink: 0, textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, fontWeight: 700 }}>{day}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{MONTH_SHORT[MONTH]}</div>
+        <div className="card-body">
+          {Object.keys(eventMap).length === 0 ? (
+            <div className="tx3" style={{ fontSize: 12, padding: '12px 0', textAlign: 'center' }}>
+              Keine Ereignisse in diesem Monat
+            </div>
+          ) : (
+            Object.entries(eventMap)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .slice(0, 8)
+              .map(([day, events]) => (
+                <div key={day} className="row" style={{ gap: 16, padding: '8px 0', borderBottom: '1px solid var(--border)', alignItems: 'flex-start' }}>
+                  <div style={{ width: 40, flexShrink: 0, textAlign: 'center' }}>
+                    <div className="mono fw600" style={{ fontSize: 18 }}>{day}</div>
+                    <div className="tx3" style={{ fontSize: 11 }}>{MONTH_SHORT[MONTH]}</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    {events.map((ev, i) => (
+                      <div key={i} className="row" style={{ gap: 8, marginBottom: 4 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: eventColor[ev.type], flexShrink: 0 }} />
+                        <span style={{ fontSize: 12.5 }}>{ev.label}</span>
+                        <Badge kind={ev.type === 'etd' ? 'info' : ev.type === 'eta' ? 'success' : 'neutral'}>
+                          {ev.type.toUpperCase()}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  {events.map((ev, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: eventColor[ev.type], flexShrink: 0 }} />
-                      <span style={{ fontSize: 13 }}>{ev.label}</span>
-                      <Badge kind={ev.type === 'etd' ? 'info' : ev.type === 'eta' ? 'success' : 'neutral'}>
-                        {ev.type.toUpperCase()}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))
+          )}
         </div>
+      </div>
       </div>
     </div>
   );

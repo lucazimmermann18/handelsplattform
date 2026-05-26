@@ -36,6 +36,17 @@ const Stars = ({ rating }: { rating: number }) => (
   </span>
 );
 
+// ── Demo seed (shown when DB is empty) ───────────────────────────────────────
+
+const DEMO_FORWARDERS: Forwarder[] = [
+  { id: 'FWD-001', name: 'Kühne+Nagel TZ', country: 'Tanzania', city: 'Dar es Salaam', contact: 'M. Kassim', email: 'm.kassim@kn.com', phone: '+255 22 212 0000', rating: 5, routes: ['DAR→EU all'], services: ['LCL','FCL','Reefer','Customs','Bonded WH'], status: 'aktiv', notes: 'Preferred partner' },
+  { id: 'FWD-002', name: 'Maersk Spot', country: 'Tanzania', city: 'Dar es Salaam', contact: 'P. Johansson', email: 'pj@maersk.com', phone: '+255 22 211 0001', rating: 4, routes: ['DAR→HAM','DAR→RTM','DAR→ANR'], services: ['FCL','Reefer','Booking API'], status: 'aktiv' },
+  { id: 'FWD-003', name: 'CMA CGM Tanzania', country: 'Tanzania', city: 'Dar es Salaam', contact: 'A. Nguyen', email: 'a.nguyen@cma-cgm.com', phone: '+255 22 213 0002', rating: 4, routes: ['DAR→Mod','MOM→RTM'], services: ['FCL','LCL','Customs'], status: 'aktiv' },
+  { id: 'FWD-004', name: 'DHL Global Forwarding', country: 'Tanzania', city: 'Dar es Salaam', contact: 'S. Mwangi', email: 's.mwangi@dhl.com', phone: '+255 22 214 0003', rating: 5, routes: ['NBO/MOM→EU'], services: ['Air','FCL','Customs','Reefer'], status: 'aktiv' },
+  { id: 'FWD-005', name: 'Scan Global Logistics', country: 'Kenya', city: 'Mombasa', contact: 'B. Otieno', email: 'b.otieno@sgl.com', phone: '+254 41 222 0004', rating: 4, routes: ['MOM→FXT','MOM→HAM'], services: ['FCL','LCL','Bonded WH'], status: 'aktiv' },
+  { id: 'FWD-006', name: 'DB Schenker East Africa', country: 'Kenya', city: 'Nairobi', contact: 'C. Kamau', email: 'c.kamau@dbschenker.com', phone: '+254 20 375 0005', rating: 3, routes: ['NBO→EU','NBO→UK'], services: ['Air','FCL','Customs'], status: 'aktiv' },
+];
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
@@ -48,16 +59,17 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
     try {
       const { createClient } = await import('@/lib/supabase/client');
       const { data } = await createClient().from('forwarders').select('*').order('name');
-      setForwarders((data ?? []).map((r: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+      const mapped = (data ?? []).map((r: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
         id: r.id, name: r.name, country: r.country ?? '',
         city: r.city ?? '', contact: r.contact ?? '',
         email: r.email ?? '', phone: r.phone ?? '',
         website: r.website, rating: r.rating ?? 0,
         routes: r.routes ?? [], services: r.services ?? [],
         status: r.status ?? 'aktiv', notes: r.notes,
-      })));
+      }));
+      setForwarders(mapped.length > 0 ? mapped : DEMO_FORWARDERS);
     } catch (_e) {
-      // table may not exist yet
+      setForwarders(DEMO_FORWARDERS);
     }
     setLoading(false);
   };
@@ -97,11 +109,11 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
 
       <div style={{ padding: '0 16px 12px' }}>
         {/* KPI tiles */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
           {kpis.map((k, i) => (
-            <div key={i} className="tile kacheln" style={{ padding: 9 }}>
-              <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase' }}>{k.l}</div>
-              <div className="mono fw600" style={{ fontSize: 20, color: k.c, marginTop: 2 }}>{k.v}</div>
+            <div key={i} className="card" style={{ padding: 14 }}>
+              <div className="tx3" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.l}</div>
+              <div className="mono fw600" style={{ fontSize: 22, color: k.c, marginTop: 4 }}>{k.v}</div>
             </div>
           ))}
         </div>
