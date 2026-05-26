@@ -29,6 +29,7 @@ function LoginForm() {
         );
         setLoading(false);
       } else {
+        setLoading(false);
         router.push(next);
         router.refresh();
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
@@ -40,16 +40,21 @@ export const ImportView = ({ lang: _lang }: ImportViewProps) => {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [csvText, setCsvText] = useState('');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (intervalRef.current !== null) clearInterval(intervalRef.current); };
+  }, []);
 
   const handleNext = () => {
     if (step === 3) {
       // Start simulated import
       setImporting(true);
       setProgress(0);
-      const id = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         setProgress(p => {
           if (p >= 100) {
-            clearInterval(id);
+            if (intervalRef.current !== null) { clearInterval(intervalRef.current); intervalRef.current = null; }
             setImporting(false);
             setDone(true);
             setStep(4);

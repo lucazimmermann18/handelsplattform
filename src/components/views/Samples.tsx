@@ -111,7 +111,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
   const total = samples.length;
   const inTransit = samples.filter(s => s.status === 'in_transit').length;
   const feedbackPending = samples.filter(s => s.status === 'feedback_pending').length;
-  const accepted = samples.filter(s => s.feedback.toLowerCase().includes('akzeptiert')).length;
+  const accepted = samples.filter(s => typeof s.feedback === 'string' && s.feedback.toLowerCase().includes('akzeptiert')).length;
   const rejected = samples.filter(s => s.status === 'rejected').length;
 
   return (

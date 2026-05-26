@@ -113,7 +113,7 @@ const mapInventory = (r: any): InventoryItem => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapAlert = (r: any): Alert => ({
   sev: r.sev, t: r.title, m: r.message ?? '', kind: r.kind ?? '',
-  time: new Date(r.created_at).toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+  time: r.created_at && !isNaN(new Date(r.created_at).getTime()) ? new Date(r.created_at).toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—',
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

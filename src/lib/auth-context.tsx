@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     let mounted = true;
+    let subscription: { unsubscribe: () => void } | null = null;
 
     // Dynamically import to avoid build errors when env vars are missing
     import('@/lib/supabase/client').then(({ createClient }) => {
@@ -44,14 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted) setLoading(false);
       });
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         if (mounted) setUser(session?.user ?? null);
       });
-
-      return () => { mounted = false; subscription.unsubscribe(); };
+      subscription = data.subscription;
     });
 
-    return () => { mounted = false; };
+    return () => { mounted = false; subscription?.unsubscribe(); };
   }, [configured]);
 
   const signOut = async () => {

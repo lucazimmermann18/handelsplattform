@@ -44,7 +44,7 @@ export const TradeFinanceView = ({ lang: _lang }: TradeFinanceViewProps) => {
   const totalLCAmount = lcs.reduce((s, lc) => s + lc.amount, 0);
   const fxExposure = fxPositions.reduce((s, fx) => s + fx.exposure, 0);
   const fxHedged = fxPositions.reduce((s, fx) => s + fx.hedged, 0);
-  const hedgedPct = Math.round((fxHedged / fxExposure) * 100);
+  const hedgedPct = fxExposure > 0 ? Math.round((fxHedged / fxExposure) * 100) : 0;
 
   return (
     <div>

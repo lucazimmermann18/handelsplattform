@@ -72,6 +72,7 @@ export const AiConfigProvider = ({ children }: { children: React.ReactNode }) =>
   const [ready, setReady]                 = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     // Load localStorage settings
     try {
       const k = localStorage.getItem(LS_KEYS);
@@ -81,11 +82,14 @@ export const AiConfigProvider = ({ children }: { children: React.ReactNode }) =>
     } catch { /* ignore */ }
 
     // Fetch which providers have server-side env keys
-    fetch('/api/ai/providers')
+    const controller = new AbortController();
+    fetch('/api/ai/providers', { signal: controller.signal })
       .then(r => r.json())
-      .then((data: Partial<Record<AiProvider, boolean>>) => setEnvProviders(data))
+      .then((data: Partial<Record<AiProvider, boolean>>) => { if (mounted) setEnvProviders(data); })
       .catch(() => { /* server unreachable — no env providers */ })
-      .finally(() => setReady(true));
+      .finally(() => { if (mounted) setReady(true); });
+
+    return () => { mounted = false; controller.abort(); };
   }, []);
 
   const setKey = useCallback((provider: AiProvider, key: string) => {

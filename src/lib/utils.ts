@@ -17,8 +17,14 @@ export const fmtKg = (v: number | null | undefined): string =>
 export const fmtPct = (v: number | null | undefined): string =>
   v == null ? '—' : v + '%';
 
-export const fmtDate = (s: string | null | undefined): string =>
-  s ? new Date(s).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) : '—';
+export const fmtDate = (s: string | null | undefined): string => {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+};
 
-export const fmtDateLong = (s: string | null | undefined): string =>
-  s ? new Date(s).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+export const fmtDateLong = (s: string | null | undefined): string => {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+};

@@ -42,7 +42,9 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
   const criticalAlerts = M.alerts.filter((a: { sev: string }) => a.sev === 'r').length;
   const expiringDocs = M.documents.filter(d => {
     if (!d.expires) return false;
-    const diff = (new Date(d.expires).getTime() - new Date(M.todayBase).getTime()) / 86400000;
+    const exp = new Date(d.expires), today = new Date(M.todayBase);
+    if (isNaN(exp.getTime()) || isNaN(today.getTime())) return false;
+    const diff = (exp.getTime() - today.getTime()) / 86400000;
     return diff >= 0 && diff <= 30;
   });
   const dealsInNegotiation = M.deals.filter(d => d.stage === 'Verhandlung' || d.stage === 'negotiation').length;

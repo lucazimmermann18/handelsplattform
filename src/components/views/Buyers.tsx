@@ -128,8 +128,8 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
     const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
     const byMonth = new Array(12).fill(0);
     buyerOrders.forEach(o => {
-      const m = new Date(o.created).getMonth();
-      byMonth[m] += o.revenue / 1000;
+      const d = new Date(o.created);
+      if (!isNaN(d.getTime())) byMonth[d.getMonth()] += o.revenue / 1000;
     });
     return months.map((m, i) => ({ m, v: parseFloat(byMonth[i].toFixed(1)) }));
   }, [buyerOrders]);

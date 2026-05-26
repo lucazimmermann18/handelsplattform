@@ -76,7 +76,8 @@ export function CopilotDrawer({ open, onClose, onNav }: CopilotDrawerProps) {
       const response = await generate(text.trim(), buildSystemPrompt());
       setMessages(prev => [...prev, { role: 'assistant', content: response, ts: Date.now() }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Fehler: ${(e as Error).message}`, ts: Date.now() }]);
+      const msg = e instanceof Error ? e.message : String(e);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Fehler: ${msg}`, ts: Date.now() }]);
     } finally {
       setLoading(false);
     }
