@@ -37,6 +37,7 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
   const [tab, setTab] = useState<'list' | 'trace'>('list');
   const [createOpen, setCreateOpen] = useState(false);
   const [traceInput, setTraceInput] = useState('');
+  const [traceQuery, setTraceQuery] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -51,8 +52,8 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
   const lots = M.lots ?? [];
 
   const traceResult = (() => {
-    if (!traceInput.trim()) return null;
-    const q = traceInput.trim().toLowerCase();
+    if (!traceQuery.trim()) return null;
+    const q = traceQuery.trim().toLowerCase();
     const lot = lots.find(l => l.id.toLowerCase() === q);
     if (lot) {
       const supplier = M.suppliers.find(s => s.id === lot.supplierId);
@@ -185,8 +186,9 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
                         placeholder="z.B. LOT-001 oder ORD-001"
                         value={traceInput}
                         onChange={e => setTraceInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') setTraceQuery(traceInput); }}
                       />
-                      <button className="btn primary" onClick={() => {}}>
+                      <button className="btn primary" onClick={() => setTraceQuery(traceInput)}>
                         <Ic name="search" size={13} /> Suchen
                       </button>
                     </div>
@@ -194,10 +196,10 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
                 </div>
               </div>
 
-              {traceInput.trim() && !traceResult && (
+              {traceQuery.trim() && !traceResult && (
                 <div className="card">
                   <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)' }}>
-                    Keine Rückverfolgungsdaten für &quot;{traceInput}&quot; gefunden.
+                    Keine Rückverfolgungsdaten für &quot;{traceQuery}&quot; gefunden.
                   </div>
                 </div>
               )}

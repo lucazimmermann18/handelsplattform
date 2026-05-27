@@ -51,7 +51,7 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
   const [localSubmitted, setLocalSubmitted] = useState<Set<string>>(new Set());
   const [ddsModalId, setDdsModalId] = useState<string | null>(null);
   const [ddsViewId, setDdsViewId] = useState<string | null>(null);
-  const [ddsForm, setDdsForm] = useState({ operator: 'EastAfrica Export OS GmbH', eori: 'DE123456789012', confirmed: false });
+  const [ddsForm, setDdsForm] = useState({ operator: 'EastAfrica Export OS GmbH', eori: '', confirmed: false });
   const [ddsSaving, setDdsSaving] = useState(false);
   const [ddsRef, setDdsRef] = useState<Record<string, string>>({});
 
@@ -568,7 +568,7 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                 {[
                   { l: 'Operator',    v: ddsForm.operator || 'EastAfrica Export OS GmbH' },
-                  { l: 'EORI',        v: ddsForm.eori || 'DE123456789012' },
+                  { l: 'EORI',        v: ddsForm.eori },
                   { l: 'Produkt',     v: prod?.name ?? o.productVariant },
                   { l: 'Kategorie',   v: prod?.cat ?? '—' },
                   { l: 'Käufer',      v: buyer?.name?.split(' ').slice(0,3).join(' ') ?? '—' },
