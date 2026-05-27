@@ -248,7 +248,7 @@ const EditModal = ({ product, initialTab = 'grunddaten', onClose, onSaved }: Edi
           {tab === 'varianten' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="tx3" style={{ fontSize: 11.5 }}>
-                Jede Variante steht für eine Qualitätsstufe oder Aufbereitungsform dieses Produkts (z.B. „Specialty SCA 87+", „Bio Hulled").
+                Jede Variante steht für eine Qualitätsstufe oder Aufbereitungsform dieses Produkts (z.B. &bdquo;Specialty SCA 87+&ldquo;, &bdquo;Bio Hulled&ldquo;).
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>

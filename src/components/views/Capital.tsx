@@ -633,7 +633,7 @@ export const CapitalView = ({ lang: _lang }: CapitalViewProps) => {
                   const ytdRev = M!.orders.reduce((s, o) => s + o.revenue, 0);
                   const ytdProfit = M!.orders.reduce((s, o) => s + o.profit, 0);
                   const ytdMarge = ytdRev > 0 ? ((ytdProfit / ytdRev) * 100).toFixed(1) : '—';
-                  const pipelineVal = M!.deals.reduce((s, d) => s + ((d as any).value ?? 0), 0);
+                  const pipelineVal = M!.deals.reduce((s, d) => s + (d.value ?? 0), 0);
                   return (
                     <div style={{ marginBottom: 16 }}>
                       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: '#a78bfa' }}>📊 KPI-Zusammenfassung</div>

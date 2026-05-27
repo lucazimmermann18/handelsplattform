@@ -19,8 +19,8 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
   // Derive transit routes from real orders
   const routeMap = new Map<string, number[]>();
   M.orders.forEach(o => {
-    const load = (o as any).portLoad as string | undefined;
-    const dest = (o as any).portDest as string | undefined;
+    const load = o.portLoad;
+    const dest = o.portDest;
     if (!load || !dest || !o.etd || !o.eta) return;
     const key = `${load.slice(0, 3).toUpperCase()} → ${dest.slice(0, 3).toUpperCase()}`;
     const days = Math.round((new Date(o.eta).getTime() - new Date(o.etd).getTime()) / 86400000);
@@ -39,7 +39,6 @@ export const ReportsView = ({ lang }: ReportsViewProps) => {
   const qcTotal = M.quality.length;
   const qcReleased = M.quality.filter(q => q.status === 'released').length;
   const qcInProgress = M.quality.filter(q => q.status === 'in_progress').length;
-  const qcBlocked = M.quality.filter(q => q.status === 'blocked').length;
   const qcRelPct = qcTotal > 0 ? Math.round((qcReleased / qcTotal) * 100) : 0;
   const qcInPct = qcTotal > 0 ? Math.round((qcInProgress / qcTotal) * 100) : 0;
   const qcBlkPct = qcTotal > 0 ? 100 - qcRelPct - qcInPct : 0;

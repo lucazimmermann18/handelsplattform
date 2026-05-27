@@ -244,7 +244,6 @@ export const VesselTrackingView = ({ lang: _lang }: VesselTrackingViewProps) => 
     if (t.dest)   usedPorts.add(t.dest.label);
   });
 
-  const selectedTransit = activeTransits.find(t => t.vessel?.imo === selectedImo);
   const selectedSearch  = searchResults.find(r => r.imo === selectedImo);
   const selectedLive    = selectedImo ? (positions[selectedImo] ?? selectedSearch) : undefined;
 

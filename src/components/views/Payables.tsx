@@ -49,9 +49,7 @@ export const PayablesView = ({ lang: _lang }: PayablesViewProps) => {
   const [tab, setTab] = useState<'ar' | 'ap'>('ar');
   const [markingId, setMarkingId] = useState<string | null>(null);
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-
-  const orders = M.orders;
+  const orders = M?.orders ?? [];
   const ytdStart = new Date('2026-01-01');
 
   const arData = useMemo(() => orders.map(o => {
@@ -61,6 +59,8 @@ export const PayablesView = ({ lang: _lang }: PayablesViewProps) => {
     const paidAmt = o.revenue * (paid / 100);
     return { o, dueDate, paid, openAmt, paidAmt, bucket: getAgingBucket(dueDate), status: getPayStatus(paid, dueDate) };
   }), [orders]);
+
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const totalOpen = arData.reduce((s, x) => s + x.openAmt, 0);
   const totalOverdue = arData.filter(x => x.status.kind === 'danger').reduce((s, x) => s + x.openAmt, 0);

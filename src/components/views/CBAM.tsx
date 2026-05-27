@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
-import { fmtCur, fmtNum } from '@/lib/utils';
+import { fmtNum } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 
@@ -37,23 +37,18 @@ function toTons(qty: number, unit: string): number {
 export const CBAMView = ({ lang: _lang }: CBAMViewProps) => {
   const { data: M } = useData();
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-
-  const rows = useMemo(() => M.orders.map(o => {
-    const product = M.products.find(p => p.id === o.productId);
-    const tons = toTons(o.qty, o.unit);
-    const dist = getDistance(o.portDest);
-    const co2Kg = tons * dist * EMISSION_FACTOR;
-    const co2PerEur = o.revenue > 0 ? co2Kg / o.revenue : 0;
-    const eudrRelevant = product ? EUDR_CATS.includes(product.cat) : false;
-    return { o, product, tons, dist, co2Kg, co2PerEur, eudrRelevant };
-  }), [M]);
-
-  const totalCO2 = rows.reduce((s, r) => s + r.co2Kg, 0);
-  const avgCO2 = rows.length > 0 ? totalCO2 / rows.length : 0;
-  const eudrCount = rows.filter(r => r.eudrRelevant).length;
-  const totalRev = M.orders.reduce((s, o) => s + o.revenue, 0);
-  const co2Intensity = totalRev > 0 ? totalCO2 / totalRev : 0;
+  const rows = useMemo(() => {
+    if (!M) return [];
+    return M.orders.map(o => {
+      const product = M.products.find(p => p.id === o.productId);
+      const tons = toTons(o.qty, o.unit);
+      const dist = getDistance(o.portDest);
+      const co2Kg = tons * dist * EMISSION_FACTOR;
+      const co2PerEur = o.revenue > 0 ? co2Kg / o.revenue : 0;
+      const eudrRelevant = product ? EUDR_CATS.includes(product.cat) : false;
+      return { o, product, tons, dist, co2Kg, co2PerEur, eudrRelevant };
+    });
+  }, [M]);
 
   const byMonth = useMemo(() => {
     const acc: Record<string, number> = {};
@@ -63,6 +58,14 @@ export const CBAMView = ({ lang: _lang }: CBAMViewProps) => {
     });
     return Object.entries(acc).sort(([a], [b]) => a.localeCompare(b)).slice(-6);
   }, [rows]);
+
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  const totalCO2 = rows.reduce((s, r) => s + r.co2Kg, 0);
+  const avgCO2 = rows.length > 0 ? totalCO2 / rows.length : 0;
+  const eudrCount = rows.filter(r => r.eudrRelevant).length;
+  const totalRev = M.orders.reduce((s, o) => s + o.revenue, 0);
+  const co2Intensity = totalRev > 0 ? totalCO2 / totalRev : 0;
 
   const maxMonthCO2 = Math.max(...byMonth.map(([, v]) => v), 1);
 
