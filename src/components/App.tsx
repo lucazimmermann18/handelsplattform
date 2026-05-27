@@ -151,7 +151,6 @@ export const App = () => {
     if (['buyer_detail'].includes(route.view)) return 'buyers';
     if (['product_detail'].includes(route.view)) return 'products';
     if (['complaint_detail'].includes(route.view)) return 'complaints';
-    if (['heatmap'].includes(route.view)) return 'reports';
     return route.view;
   }, [route.view]);
 
