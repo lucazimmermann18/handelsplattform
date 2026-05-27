@@ -57,34 +57,44 @@ function getPort(code: string) {
   return null;
 }
 
-// ── Parse VesselAPI response ──────────────────────────────────────────────────
+// ── Parse VesselAPI + BarentsWatch AIS response ──────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parsePosition(raw: any): LivePosition | null {
   if (!raw) return null;
-  const d = raw.data ?? raw;
-  const vessel = Array.isArray(d) ? d[0] : d;
+
+  // VesselAPI container (Stammdaten)
+  const container = raw.vessel ?? raw.vessels ?? raw.data ?? raw;
+  const vessel = Array.isArray(container) ? container[0] : container;
   if (!vessel) return null;
 
-  const lat = vessel.latitude  ?? vessel.lat ?? null;
-  const lon = vessel.longitude ?? vessel.lng ?? vessel.lon ?? null;
+  const imo  = String(vessel.imo  ?? '');
+  const name = vessel.name ?? '';
+  const mmsi = vessel.mmsi ?? '';
+
+  // BarentsWatch AIS-Position (in raw.position)
+  const pos = raw.position ?? null;
+
+  const lat = pos?.latitude  ?? pos?.lat  ?? vessel.latitude  ?? vessel.lat  ?? null;
+  const lon = pos?.longitude ?? pos?.lon  ?? vessel.longitude ?? vessel.lng  ?? null;
+
   if (lat === null || lon === null) return null;
 
   return {
-    imo:         String(vessel.imo ?? ''),
-    mmsi:        String(vessel.mmsi ?? ''),
-    name:        vessel.name ?? vessel.vesselName ?? '',
+    imo,
+    mmsi:        String(mmsi),
+    name,
     lat:         parseFloat(lat),
     lon:         parseFloat(lon),
-    sog:         parseFloat(vessel.sog ?? 0),
-    cog:         parseFloat(vessel.cog ?? 0),
-    heading:     parseFloat(vessel.heading ?? vessel.cog ?? 0),
-    navStatus:   vessel.navStatus ?? vessel.navigationalStatus ?? '',
-    destination: vessel.destination ?? '',
-    eta:         vessel.eta ?? '',
-    timestamp:   vessel.timestamp ?? vessel.lastUpdate ?? new Date().toISOString(),
-    callSign:    vessel.callSign ?? vessel.callsign,
-    draught:     vessel.draught != null ? parseFloat(vessel.draught) : undefined,
+    sog:         parseFloat(pos?.speedOverGround   ?? pos?.sog     ?? 0),
+    cog:         parseFloat(pos?.courseOverGround  ?? pos?.cog     ?? 0),
+    heading:     parseFloat(pos?.trueHeading       ?? pos?.heading ?? pos?.cog ?? 0),
+    navStatus:   pos?.navigationalStatus ?? pos?.navStatus ?? '',
+    destination: pos?.destination ?? '',
+    eta:         pos?.eta ?? '',
+    timestamp:   pos?.timestamp ?? pos?.lastUpdate ?? new Date().toISOString(),
+    callSign:    vessel.call_sign ?? vessel.callSign ?? vessel.callsign,
+    draught:     pos?.draught != null ? parseFloat(pos.draught) : undefined,
   };
 }
 
@@ -147,7 +157,7 @@ export const VesselTrackingView = ({ lang: _lang }: VesselTrackingViewProps) => 
 
   const fetchPosition = useCallback(async (imo: string): Promise<LivePosition | null> => {
     try {
-      const res = await fetch(`/api/vessels?imo=${encodeURIComponent(imo)}`);
+      const res = await fetch(`/api/vessels?imo=${encodeURIComponent(imo)}&position=true`);
       if (res.status === 503) { setApiConfigured(false); return null; }
       setApiConfigured(true);
       if (!res.ok) {
@@ -207,7 +217,7 @@ export const VesselTrackingView = ({ lang: _lang }: VesselTrackingViewProps) => 
     searchTimeout.current = setTimeout(async () => {
       setSearching(true); setSearchError(null);
       try {
-        const res = await fetch(`/api/vessels?q=${encodeURIComponent(q.trim())}`);
+        const res = await fetch(`/api/vessels?q=${encodeURIComponent(q.trim())}&position=true`);
         if (res.status === 503) { setApiConfigured(false); return; }
         const json = await res.json();
         if (!res.ok) { setSearchError(json.error ?? 'Fehler'); return; }
