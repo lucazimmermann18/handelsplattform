@@ -313,11 +313,11 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
         ] },
         { key: 'feedback', label: 'Feedback', type: 'textarea', span: 2 },
       ];
-      return <GenericEditModal title="Muster bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="samples" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />;
+      return <GenericEditModal title="Muster bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="samples" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); refresh(); }} />;
     })()}
     {deleteId && (() => {
       const r = samples.find(x => x.id === deleteId);
-      return r ? <ConfirmDelete label={`Muster '${r.id}'`} table="samples" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); load(); }} /> : null;
+      return r ? <ConfirmDelete label={`Muster '${r.id}'`} table="samples" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); refresh(); }} /> : null;
     })()}
     </>
   );
