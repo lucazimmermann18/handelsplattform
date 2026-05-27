@@ -50,6 +50,8 @@ const mapProduct = (r: any): Product => ({
   marketPrices: r.market_prices ?? null,
   defaultIncoterms: r.default_incoterms ?? null,
   requiredDocs: r.required_docs ?? null,
+  // Product Master (JSONB — passed through as-is for the new PIM UI)
+  ...((r.product_master ? { product_master: r.product_master } : {})),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
