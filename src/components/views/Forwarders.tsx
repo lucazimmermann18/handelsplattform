@@ -198,11 +198,11 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
           ] },
           { key: 'notes', label: 'Notizen', type: 'textarea', span: 2 },
         ];
-        return <GenericEditModal title="Spediteur bearbeiten" subtitle={r.name} record={r as unknown as Record<string, unknown>} fields={fields} table="forwarders" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />;
+        return <GenericEditModal title="Spediteur bearbeiten" subtitle={r.name} record={r as unknown as Record<string, unknown>} fields={fields} table="forwarders" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); refresh(); }} />;
       })()}
       {deleteId && (() => {
         const r = forwarders.find(x => x.id === deleteId);
-        return r ? <ConfirmDelete label={`Spediteur '${r.name}'`} table="forwarders" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); load(); }} /> : null;
+        return r ? <ConfirmDelete label={`Spediteur '${r.name}'`} table="forwarders" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); refresh(); }} /> : null;
       })()}
     </div>
   );

@@ -8,7 +8,6 @@ import { OrderComments } from '@/components/ui/OrderComments';
 import { UploadModal } from '@/components/ui/UploadModal';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
-import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -671,23 +670,6 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
           </div>
         </div>
       </div>
-      {editOpen && (() => {
-        const fields: FieldDef[] = [
-          { key: 'status', label: 'Status', type: 'select', options: [
-            { value: 'confirmed', label: 'Bestätigt' }, { value: 'procurement', label: 'Beschaffung' },
-            { value: 'quality', label: 'Qualitätsprüfung' }, { value: 'ready', label: 'Exportbereit' },
-            { value: 'in_export', label: 'Exportdokumente' }, { value: 'shipped', label: 'Verladen' },
-            { value: 'in_transit', label: 'Auf See' }, { value: 'arrived', label: 'Angekommen' },
-            { value: 'delivered', label: 'Geliefert' }, { value: 'paid', label: 'Bezahlt' },
-          ] },
-          { key: 'responsible', label: 'Verantwortlich', type: 'text' },
-          { key: 'incoterm', label: 'Incoterm', type: 'text' },
-          { key: 'paid', label: 'Zahlung (%)', type: 'number' },
-          { key: 'etd', label: 'ETD', type: 'date' },
-          { key: 'eta', label: 'ETA', type: 'date' },
-        ];
-        return <GenericEditModal title="Auftrag bearbeiten" subtitle={o.id} record={o as unknown as Record<string, unknown>} fields={fields} table="orders" onClose={() => setEditOpen(false)} onSaved={() => setEditOpen(false)} />;
-      })()}
       {deleteOpen && <ConfirmDelete label={`Auftrag '${o.id}'`} table="orders" id={o.id} onClose={() => setDeleteOpen(false)} onDeleted={onBack} />}
     </div>
 
