@@ -7,12 +7,36 @@ import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars, BarChart, StatusBadge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
+import { useDelete } from '@/lib/use-entity-action';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
   padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
 };
+
+const BUYER_FIELDS: FieldDef[] = [
+  { key: 'name',      label: 'Name',      type: 'text',   required: true, span: 2 },
+  { key: 'country',   label: 'Land',      type: 'text',   placeholder: 'z.B. DE' },
+  { key: 'city',      label: 'Stadt',     type: 'text' },
+  { key: 'industry',  label: 'Branche',   type: 'text' },
+  { key: 'contact',   label: 'Kontakt',   type: 'text' },
+  { key: 'position',  label: 'Position',  type: 'text' },
+  { key: 'email',     label: 'E-Mail',    type: 'text' },
+  { key: 'phone',     label: 'Telefon',   type: 'text' },
+  { key: 'status',    label: 'Status',    type: 'select', options: [
+      { value: 'active', label: 'Aktiv' }, { value: 'inactive', label: 'Inaktiv' },
+      { value: 'prospect', label: 'Prospect' },
+    ]
+  },
+  { key: 'incoterm',  label: 'Incoterm',  type: 'text' },
+  { key: 'terms',     label: 'Zahlungsbedingungen', type: 'text' },
+  { key: 'moq',       label: 'MOQ',       type: 'text' },
+  { key: 'interests', label: 'Interessen', type: 'chips', span: 2 },
+];
 
 // ────────────────────────────────────────────────────────────
 // Buyers List
@@ -25,8 +49,14 @@ interface BuyersListProps {
 
 export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
   const { data: M } = useData();
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const totalRevenue = M.buyers.reduce((s, b) => s + b.revenue, 0);
+
+  const editRecord = editId ? M.buyers.find(x => x.id === editId) ?? null : null;
+  const deleteRecord = deleteId ? M.buyers.find(x => x.id === deleteId) ?? null : null;
 
   const handleExport = () => {
     const headers = ['ID','Name','Land','Stadt','Branche','Kontakt','Email','Rating','Incoterm','MOQ','Umsatz (€)','Status'];
@@ -53,7 +83,13 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
       <div style={{ padding: '0 16px 12px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           {M.buyers.map(b => (
-            <div key={b.id} className="card" style={{ cursor: 'pointer' }} onClick={() => onOpen(b.id)}>
+            <div key={b.id} className="card" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => onOpen(b.id)}>
+              <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }} onClick={e => e.stopPropagation()}>
+                <ActionMenu
+                  onEdit={() => setEditId(b.id)}
+                  onDelete={() => setDeleteId(b.id)}
+                />
+              </div>
               <div style={{ padding: 14 }}>
                 <div className="row" style={{ marginBottom: 8 }}>
                   <div style={{
@@ -110,6 +146,25 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
           ))}
         </div>
       </div>
+
+      {editRecord && (
+        <GenericEditModal
+          title="Käufer bearbeiten"
+          subtitle={`${editRecord.id}`}
+          record={editRecord as unknown as Record<string, unknown>}
+          fields={BUYER_FIELDS}
+          table="buyers"
+          onClose={() => setEditId(null)}
+        />
+      )}
+      {deleteRecord && (
+        <ConfirmDelete
+          label={`${deleteRecord.name} (${deleteRecord.id})`}
+          table="buyers"
+          id={deleteRecord.id}
+          onClose={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 };
@@ -139,6 +194,9 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
   });
   const [commSaving, setCommSaving] = useState(false);
   const [commError, setCommError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const { deleteItem } = useDelete('communications');
 
   const handleSaveComm = async () => {
     setCommSaving(true); setCommError(null);
@@ -217,6 +275,12 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
           <button className="btn" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
             <Ic name="star" size={13} /> Angebot
           </button>
+          <button className="btn" onClick={() => setEditOpen(true)}>
+            <Ic name="edit" size={13} /> Bearbeiten
+          </button>
+          <button className="btn" style={{ color: '#f87171' }} onClick={() => setDeleteOpen(true)}>
+            <Ic name="trash" size={13} /> Löschen
+          </button>
           <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
             <Ic name="plus" size={13} /> Neuer Auftrag
           </button>
@@ -266,6 +330,12 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
                             {c.direction === 'in' ? 'Eingehend' : c.direction === 'out' ? 'Ausgehend' : 'Intern'}
                           </Badge>
                           <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 'auto' }}>{fmtDate(c.date)}</span>
+                          <button
+                            className="btn sm ghost"
+                            style={{ padding: '2px 5px', color: '#f87171' }}
+                            onClick={() => deleteItem(c.id)}
+                            title="Löschen"
+                          >×</button>
                         </div>
                         <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.5, marginBottom: 3 }}>{c.body}</div>
                         <div className="tx3" style={{ fontSize: 10 }}>{c.author}</div>
@@ -510,6 +580,27 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
             </div>
           </div>
         </div>
+      )}
+
+      {editOpen && b && (
+        <GenericEditModal
+          title="Käufer bearbeiten"
+          subtitle={`${b.id}`}
+          record={b as unknown as Record<string, unknown>}
+          fields={BUYER_FIELDS}
+          table="buyers"
+          onClose={() => setEditOpen(false)}
+        />
+      )}
+
+      {deleteOpen && b && (
+        <ConfirmDelete
+          label={`${b.name} (${b.id})`}
+          table="buyers"
+          id={b.id}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={onBack}
+        />
       )}
     </div>
   );

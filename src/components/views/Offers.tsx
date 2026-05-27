@@ -7,6 +7,9 @@ import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 const STATUS_KIND: Record<string, string> = {
   draft: 'neutral', sent: 'info', viewed: 'info',
@@ -43,6 +46,8 @@ export const OffersView = ({ lang }: OffersViewProps) => {
   const [form, setForm] = useState({ buyerId: '', productId: '', qty: '', price: '', validUntil: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const resetForm = () => setForm({ buyerId: '', productId: '', qty: '', price: '', validUntil: '' });
 
@@ -133,6 +138,7 @@ export const OffersView = ({ lang }: OffersViewProps) => {
                       </td>
                       <td style={{ display: 'flex', gap: 4 }}>
                         <button className="btn sm ghost" title="Angebot ansehen" onClick={() => setDetailOfferId(o.id)}><Ic name="eye" size={11} /></button>
+                        <ActionMenu onEdit={() => setEditId(o.id)} onDelete={() => setDeleteId(o.id)} />
                         <button
                           className="btn sm ghost"
                           title="Per E-Mail senden"
@@ -377,6 +383,25 @@ export const OffersView = ({ lang }: OffersViewProps) => {
           </div>
         </div>
       )}
+      {editId && (() => {
+        const r = M.offers.find(x => x.id === editId);
+        if (!r) return null;
+        const fields: FieldDef[] = [
+          { key: 'qty', label: 'Menge', type: 'number' },
+          { key: 'price', label: 'Preis (€/Einh.)', type: 'number' },
+          { key: 'valid', label: 'Gültig bis', type: 'date', dbKey: 'valid_until' },
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'draft', label: 'Entwurf' }, { value: 'sent', label: 'Gesendet' },
+            { value: 'viewed', label: 'Angesehen' }, { value: 'negotiation', label: 'Verhandlung' },
+            { value: 'accepted', label: 'Angenommen' }, { value: 'rejected', label: 'Abgelehnt' },
+          ] },
+        ];
+        return <GenericEditModal title="Angebot bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="offers" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+      })()}
+      {deleteId && (() => {
+        const r = M.offers.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`Angebot '${r.id}'`} table="offers" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
     </>
   );
 };

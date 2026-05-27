@@ -6,6 +6,9 @@ import type { Lang } from '@/lib/i18n';
 import { fmtNum, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 export interface LotsViewProps { lang: Lang }
 
@@ -36,6 +39,8 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
   const [traceInput, setTraceInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({
     productId: '', supplierId: '', harvestDate: '', qty: '', unit: 'MT',
     grade: 'A', moisture: '', notes: '',
@@ -123,12 +128,13 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
                     <th>Grade</th>
                     <th>Status</th>
                     <th className="num">Aufträge</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {lots.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)' }}>
+                      <td colSpan={9} style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)' }}>
                         <Ic name="layers" size={24} color="var(--text-3)" />
                         <div style={{ marginTop: 8 }}>Noch keine Lots erfasst. Klicken Sie auf &quot;Neu erfassen&quot;.</div>
                       </td>
@@ -156,6 +162,9 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
                         <td><Badge kind="info">{l.grade}</Badge></td>
                         <td><Badge kind={statusKind(l.status)} dot>{statusLabel(l.status)}</Badge></td>
                         <td className="num mono">{l.linkedOrders.length}</td>
+                        <td>
+                          <ActionMenu onEdit={() => setEditId(l.id)} onDelete={() => setDeleteId(l.id)} />
+                        </td>
                       </tr>
                     );
                   })}
@@ -334,6 +343,31 @@ export const LotsView = ({ lang: _lang }: LotsViewProps) => {
           </div>
         </div>
       )}
+      {editId && (() => {
+        const r = lots.find(x => x.id === editId);
+        if (!r) return null;
+        const fields: FieldDef[] = [
+          { key: 'productName', label: 'Produkt', type: 'text', dbKey: 'product_name' },
+          { key: 'qty', label: 'Menge', type: 'number' },
+          { key: 'unit', label: 'Einheit', type: 'select', options: [
+            { value: 'MT', label: 'MT' }, { value: 'KG', label: 'KG' }, { value: 'L', label: 'L' }, { value: 'PCE', label: 'PCE' },
+          ] },
+          { key: 'grade', label: 'Grade', type: 'select', options: [
+            { value: 'A', label: 'A' }, { value: 'B', label: 'B' }, { value: 'C', label: 'C' },
+          ] },
+          { key: 'moisture', label: 'Feuchte %', type: 'text' },
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'available', label: 'Verfügbar' }, { value: 'reserved', label: 'Reserviert' },
+            { value: 'shipped', label: 'Versendet' }, { value: 'consumed', label: 'Verbraucht' },
+          ] },
+          { key: 'notes', label: 'Notizen', type: 'textarea', span: 2 },
+        ];
+        return <GenericEditModal title="Lot bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="lots" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+      })()}
+      {deleteId && (() => {
+        const r = lots.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`Lot '${r.id}'`} table="lots" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
     </>
   );
 };

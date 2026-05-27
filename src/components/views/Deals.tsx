@@ -7,6 +7,9 @@ import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -24,6 +27,8 @@ export const DealsView = ({ lang }: DealsViewProps) => {
   const [form, setForm] = useState({ buyerId: '', productId: '', qty: '', ourPrice: '', targetPrice: '', stage: 'Qualifizierung', prob: '30', nextFollow: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const stages = M.dealStages;
@@ -106,6 +111,7 @@ export const DealsView = ({ lang }: DealsViewProps) => {
                         <Ic name="clock" size={10} />
                         <span>Follow-up {fmtDate(d.nextFollow)}</span>
                         <span style={{ marginLeft: 'auto' }} className="mono">{d.id.slice(-4)}</span>
+                        <ActionMenu onEdit={() => setEditId(d.id)} onDelete={() => setDeleteId(d.id)} />
                       </div>
                     </div>
                   );
@@ -187,6 +193,23 @@ export const DealsView = ({ lang }: DealsViewProps) => {
         </div>
       </div>
     )}
+    {editId && (() => {
+      const r = M.deals.find(x => x.id === editId);
+      if (!r) return null;
+      const fields: FieldDef[] = [
+        { key: 'stage', label: 'Stage', type: 'select', options: M.dealStages.map(s => ({ value: s, label: s })) },
+        { key: 'prob', label: 'Wahrscheinlichkeit (%)', type: 'number', dbKey: 'prob' },
+        { key: 'nextFollow', label: 'Nächster Follow-up', type: 'date', dbKey: 'next_follow' },
+        { key: 'ourPrice', label: 'Unser Preis (€)', type: 'number', dbKey: 'our_price' },
+        { key: 'targetPrice', label: 'Zielpreis (€)', type: 'number', dbKey: 'target_price' },
+        { key: 'qty', label: 'Menge', type: 'number' },
+      ];
+      return <GenericEditModal title="Deal bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="deals" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+    })()}
+    {deleteId && (() => {
+      const r = M.deals.find(x => x.id === deleteId);
+      return r ? <ConfirmDelete label={`Deal '${r.id}'`} table="deals" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+    })()}
   </>
   );
 };

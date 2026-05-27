@@ -5,6 +5,9 @@ import type { Lang } from '@/lib/i18n';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { ForwarderWizard } from '@/components/ui/ForwarderWizard';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +45,8 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
   const [forwarders, setForwarders] = useState<Forwarder[]>([]);
   const [loading, setLoading]       = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -204,9 +209,7 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
 
                       {/* Aktionen */}
                       <td style={{ padding: '10px 12px' }}>
-                        <button className="btn sm ghost">
-                          <Ic name="more" size={11} />
-                        </button>
+                        <ActionMenu onEdit={() => setEditId(f.id)} onDelete={() => setDeleteId(f.id)} />
                       </td>
                     </tr>
                   ))}
@@ -223,6 +226,28 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
         onClose={() => setWizardOpen(false)}
         onSuccess={() => { setWizardOpen(false); load(); }}
       />
+      {editId && (() => {
+        const r = forwarders.find(x => x.id === editId);
+        if (!r) return null;
+        const fields: FieldDef[] = [
+          { key: 'name', label: 'Name', type: 'text', required: true, span: 2 },
+          { key: 'country', label: 'Land', type: 'text' },
+          { key: 'city', label: 'Stadt', type: 'text' },
+          { key: 'contact', label: 'Ansprechpartner', type: 'text' },
+          { key: 'email', label: 'E-Mail', type: 'text' },
+          { key: 'phone', label: 'Telefon', type: 'text' },
+          { key: 'rating', label: 'Bewertung (1-5)', type: 'number' },
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'aktiv', label: 'Aktiv' }, { value: 'inaktiv', label: 'Inaktiv' },
+          ] },
+          { key: 'notes', label: 'Notizen', type: 'textarea', span: 2 },
+        ];
+        return <GenericEditModal title="Spediteur bearbeiten" subtitle={r.name} record={r as unknown as Record<string, unknown>} fields={fields} table="forwarders" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />;
+      })()}
+      {deleteId && (() => {
+        const r = forwarders.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`Spediteur '${r.name}'`} table="forwarders" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); load(); }} /> : null;
+      })()}
     </div>
   );
 };

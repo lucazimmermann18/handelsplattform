@@ -7,6 +7,8 @@ import { t } from '@/lib/i18n';
 import { fmtDate, fmtNum } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars, BarChart, StatusBadge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -24,6 +26,7 @@ interface SuppliersListProps {
 export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
   const { data: M, refresh } = useData();
   const [mapOpen, setMapOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
@@ -91,6 +94,7 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
                   <th>Letzte Lieferung</th>
                   <th>Risiko</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -130,6 +134,9 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
                     <td>
                       <Badge kind={s.status === 'aktiv' ? 'success' : 'warning'} dot>{s.status}</Badge>
                     </td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <ActionMenu onEdit={() => onOpen(s.id)} onDelete={() => setDeleteId(s.id)} editLabel="Details / Bearbeiten" />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -137,6 +144,11 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
           </div>
         </div>
       </div>
+
+      {deleteId && (() => {
+        const s = M.suppliers.find(x => x.id === deleteId);
+        return s ? <ConfirmDelete label={`Lieferant '${s.name}'`} table="suppliers" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
 
       {/* Map Modal */}
       {mapOpen && (
@@ -250,6 +262,9 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
     if (tp === 'whatsapp') return 'phone';
     return 'doc';
   };
+
+  // Delete state
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -402,6 +417,9 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
             </button>
             <button className="btn primary" onClick={openEdit}>
               <Ic name="edit" size={13} /> Bearbeiten
+            </button>
+            <button className="btn" style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }} onClick={() => setDeleteOpen(true)}>
+              <Ic name="trash" size={13} /> Löschen
             </button>
           </div>
         </div>
@@ -974,6 +992,7 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
           </div>
         </div>
       )}
+      {deleteOpen && s && <ConfirmDelete label={`Lieferant '${s.name}'`} table="suppliers" id={s.id} onClose={() => setDeleteOpen(false)} onDeleted={onBack} />}
     </>
   );
 };

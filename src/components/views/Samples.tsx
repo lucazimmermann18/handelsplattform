@@ -6,6 +6,9 @@ import type { Lang } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 interface Sample {
   id: string;
@@ -50,6 +53,8 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
   const [form, setForm] = useState({ product: '', buyerId: '', qty: '', supplierId: '', courier: '', tracking: '', sentAt: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const load = async () => {
     setLoadingDb(true);
@@ -176,6 +181,7 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                 <th>Tracking</th>
                 <th>Status</th>
                 <th>Feedback</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -209,11 +215,14 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
                       {s.feedback}
                     </span>
                   </td>
+                  <td>
+                    <ActionMenu onEdit={() => setEditId(s.id)} onDelete={() => setDeleteId(s.id)} />
+                  </td>
                 </tr>
               ))}
               {samples.length === 0 && (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
                     Noch keine Muster erfasst
                   </td>
                 </tr>
@@ -332,6 +341,27 @@ export const SamplesView = ({ lang: _lang }: SamplesViewProps) => {
         </div>
       </div>
     )}
+    {editId && (() => {
+      const r = samples.find(x => x.id === editId);
+      if (!r) return null;
+      const fields: FieldDef[] = [
+        { key: 'product', label: 'Produkt', type: 'text', span: 2 },
+        { key: 'qty', label: 'Menge', type: 'text' },
+        { key: 'courier', label: 'Kurier', type: 'text' },
+        { key: 'tracking', label: 'Tracking', type: 'text' },
+        { key: 'sent', label: 'Sendedatum', type: 'date', dbKey: 'sent_at' },
+        { key: 'status', label: 'Status', type: 'select', options: [
+          { value: 'in_transit', label: 'Unterwegs' }, { value: 'delivered', label: 'Geliefert' },
+          { value: 'feedback_pending', label: 'Feedback offen' }, { value: 'rejected', label: 'Abgelehnt' },
+        ] },
+        { key: 'feedback', label: 'Feedback', type: 'textarea', span: 2 },
+      ];
+      return <GenericEditModal title="Muster bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="samples" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />;
+    })()}
+    {deleteId && (() => {
+      const r = samples.find(x => x.id === deleteId);
+      return r ? <ConfirmDelete label={`Muster '${r.id}'`} table="samples" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); load(); }} /> : null;
+    })()}
     </>
   );
 };
