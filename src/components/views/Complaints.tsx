@@ -7,6 +7,9 @@ import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -36,6 +39,8 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
   const [form, setForm] = useState({ title: '', orderId: '', buyerId: '', cat: 'Qualität', sev: 'mittel', owner: '', impact: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const open = M.complaints.filter(c => c.status !== 'geschlossen').length;
 
@@ -100,6 +105,7 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
                 <th>Eröffnet</th>
                 <th>Kostenwirkung</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -129,12 +135,15 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
                     <td>
                       {meta && <Badge kind={meta.kind} dot>{c.status}</Badge>}
                     </td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <ActionMenu onEdit={() => setEditId(c.id)} onDelete={() => setDeleteId(c.id)} />
+                    </td>
                   </tr>
                 );
               })}
               {M.complaints.length === 0 && (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-3)', fontSize: 12 }}>
                     Noch keine Reklamationen erfasst
                   </td>
                 </tr>
@@ -212,6 +221,31 @@ export const ComplaintsList = ({ lang, onOpen }: ComplaintsListProps) => {
         </div>
       </div>
     )}
+    {editId && (() => {
+      const r = M.complaints.find(x => x.id === editId);
+      if (!r) return null;
+      const fields: FieldDef[] = [
+        { key: 't', label: 'Beschreibung', type: 'textarea', dbKey: 'title', span: 2 },
+        { key: 'cat', label: 'Kategorie', type: 'select', dbKey: 'category', options: [
+          { value: 'Qualität', label: 'Qualität' }, { value: 'Logistik', label: 'Logistik' },
+          { value: 'Lieferung', label: 'Lieferung' }, { value: 'Dokumente', label: 'Dokumente' },
+          { value: 'Preis', label: 'Preis' }, { value: 'Sonstiges', label: 'Sonstiges' },
+        ] },
+        { key: 'sev', label: 'Schwere', type: 'select', dbKey: 'severity', options: [
+          { value: 'gering', label: 'Gering' }, { value: 'mittel', label: 'Mittel' }, { value: 'kritisch', label: 'Kritisch' },
+        ] },
+        { key: 'owner', label: 'Verantwortlich', type: 'text' },
+        { key: 'status', label: 'Status', type: 'select', options: [
+          { value: 'in Bearbeitung', label: 'In Bearbeitung' }, { value: 'gelöst', label: 'Gelöst' }, { value: 'geschlossen', label: 'Geschlossen' },
+        ] },
+        { key: 'impact', label: 'Kostenwirkung', type: 'text' },
+      ];
+      return <GenericEditModal title="Reklamation bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="complaints" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+    })()}
+    {deleteId && (() => {
+      const r = M.complaints.find(x => x.id === deleteId);
+      return r ? <ConfirmDelete label={`Reklamation '${r.id}'`} table="complaints" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+    })()}
   </>
   );
 };

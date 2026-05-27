@@ -15,33 +15,7 @@ interface Reefer {
   etd: string; eta: string; portLoad: string; portDest: string;
 }
 
-const REEFERS: Reefer[] = [
-  {
-    id: 'SHP-0135-RC', container: 'CMAU7799118', order: 'ORD-2026-0135',
-    product: 'Avocado Hass Size 18', vessel: 'ONE TRADITION',
-    set: '+5.5°C', current: '+5.4°C', min: '+5.1°C', max: '+5.8°C',
-    status: 'normal', breaches: 0, sensor: 'Emerson CT-1850',
-    readings: 4200, etd: '2026-05-10', eta: '2026-06-08',
-    portLoad: 'Mombasa', portDest: 'Rotterdam',
-  },
-  {
-    id: 'SHP-0118-RC', container: 'LMCU6648721', order: 'ORD-2026-0118',
-    product: 'Frozen Beef Boneless (–18°C)', vessel: 'MAERSK COPENHAGEN',
-    set: '–18°C', current: '–18.2°C', min: '–18.4°C', max: '–17.6°C',
-    status: 'normal', breaches: 0, sensor: 'StarCool SC-3 IoT',
-    readings: 1860, etd: '2026-05-18', eta: '2026-06-14',
-    portLoad: 'Dar es Salaam', portDest: 'Hamburg',
-  },
-  {
-    id: 'SHP-0098-RC', container: 'MSCU8814226', order: 'ORD-2025-0098',
-    product: 'Avocado Hass Size 20 (historisch)', vessel: 'MSC OSCAR',
-    set: '+5.5°C', current: '+5.5°C', min: '+4.9°C', max: '+11.2°C',
-    status: 'breach', breaches: 1, sensor: 'Emerson CT-1850',
-    readings: 5040, etd: '2025-12-02', eta: '2025-12-30',
-    portLoad: 'Mombasa', portDest: 'Felixstowe',
-    breachDetails: 'Suezkanal Stopp · 6h auf +11.2°C (Limit +7°C) · Reklamation CLM-2026-001 eingereicht · Schadensersatz €12.4k geltend',
-  },
-];
+const REEFERS: Reefer[] = [];
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -140,17 +114,34 @@ export const ColdChainView = ({ lang: _lang }: ColdChainViewProps) => {
         </div>
 
         {/* AI summary */}
-        <div className="ai-card" style={{ marginBottom: 12 }}>
-          <div className="head">
-            <span className="pill">Kühlketten-Status</span>
-            <Badge kind="success" dot>2 aktive Reefer auf Spec</Badge>
+        {activeReefers > 0 && (
+          <div className="ai-card" style={{ marginBottom: 12 }}>
+            <div className="head">
+              <span className="pill">Kühlketten-Status</span>
+              <Badge kind={breachHistory > 0 ? 'warning' : 'success'} dot>
+                {okCount}/{activeReefers} Reefer auf Spec
+              </Badge>
+            </div>
+            <div className="tx2" style={{ fontSize: 12, lineHeight: 1.55 }}>
+              {okCount === activeReefers
+                ? 'Alle aktiven Reefer halten die vorgeschriebenen Temperaturfenster ein.'
+                : `${activeReefers - okCount} von ${activeReefers} Reefern weichen vom Sollbereich ab.`}
+              {breachHistory > 0 && <> Historische Temperaturverletzungen ({breachHistory}) wurden dokumentiert.</>}
+              {' '}Sensor-Reports werden automatisch an <span className="fw500">TRACES NT</span> für den EU-Veterinärnachweis übermittelt.
+            </div>
           </div>
-          <div className="tx2" style={{ fontSize: 12, lineHeight: 1.55 }}>
-            Alle aktiven Reefer halten die vorgeschriebenen Temperaturfenster ein.
-            Historischer Breach bei <span className="mono fw500">ORD-2025-0098</span> (Suezkanal Stopp) befindet sich in der Claim-Bearbeitung.
-            Sensor-Reports werden automatisch an <span className="fw500">TRACES NT</span> für den EU-Veterinärnachweis übermittelt.
+        )}
+
+        {/* Empty state */}
+        {REEFERS.length === 0 && (
+          <div className="card" style={{ padding: 48, textAlign: 'center', marginBottom: 12 }}>
+            <Ic name="ship" size={32} color="var(--text-3)" />
+            <div style={{ marginTop: 12, fontWeight: 600, fontSize: 14 }}>Keine aktiven Reefer-Container</div>
+            <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-3)' }}>
+              Sobald Sendungen mit Kühlanforderungen angelegt werden, erscheinen sie hier.
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Reefer cards */}
         {REEFERS.map(r => {

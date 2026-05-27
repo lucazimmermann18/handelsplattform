@@ -6,6 +6,9 @@ import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import { ForwarderWizard } from '@/components/ui/ForwarderWizard';
 import { useData } from '@/lib/data-context';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 interface ForwardersViewProps { lang: Lang; }
 
@@ -24,7 +27,8 @@ const Stars = ({ rating }: { rating: number }) => (
 export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
   const { data: M, refresh } = useData();
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [fwdMenu, setFwdMenu]       = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
@@ -160,23 +164,8 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
                       </td>
 
                       {/* Aktionen */}
-                      <td style={{ padding: '10px 12px', position: 'relative' }}>
-                        <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setFwdMenu(fwdMenu === f.id ? null : f.id); }}>
-                          <Ic name="more" size={11} />
-                        </button>
-                        {fwdMenu === f.id && (
-                          <>
-                            <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setFwdMenu(null)} />
-                            <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 160, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-                              <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }} onClick={() => setFwdMenu(null)}>
-                                <Ic name="info" size={11} /> Details anzeigen
-                              </button>
-                              <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }} onClick={() => { setWizardOpen(true); setFwdMenu(null); }}>
-                                <Ic name="edit" size={11} /> Bearbeiten
-                              </button>
-                            </div>
-                          </>
-                        )}
+                      <td style={{ padding: '10px 12px' }}>
+                        <ActionMenu onEdit={() => setEditId(f.id)} onDelete={() => setDeleteId(f.id)} />
                       </td>
                     </tr>
                   ))}
@@ -193,6 +182,28 @@ export const ForwardersView = ({ lang: _lang }: ForwardersViewProps) => {
         onClose={() => setWizardOpen(false)}
         onSuccess={() => { setWizardOpen(false); refresh(); }}
       />
+      {editId && (() => {
+        const r = forwarders.find(x => x.id === editId);
+        if (!r) return null;
+        const fields: FieldDef[] = [
+          { key: 'name', label: 'Name', type: 'text', required: true, span: 2 },
+          { key: 'country', label: 'Land', type: 'text' },
+          { key: 'city', label: 'Stadt', type: 'text' },
+          { key: 'contact', label: 'Ansprechpartner', type: 'text' },
+          { key: 'email', label: 'E-Mail', type: 'text' },
+          { key: 'phone', label: 'Telefon', type: 'text' },
+          { key: 'rating', label: 'Bewertung (1-5)', type: 'number' },
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'aktiv', label: 'Aktiv' }, { value: 'inaktiv', label: 'Inaktiv' },
+          ] },
+          { key: 'notes', label: 'Notizen', type: 'textarea', span: 2 },
+        ];
+        return <GenericEditModal title="Spediteur bearbeiten" subtitle={r.name} record={r as unknown as Record<string, unknown>} fields={fields} table="forwarders" onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />;
+      })()}
+      {deleteId && (() => {
+        const r = forwarders.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`Spediteur '${r.name}'`} table="forwarders" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => { setDeleteId(null); load(); }} /> : null;
+      })()}
     </div>
   );
 };

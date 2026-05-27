@@ -35,12 +35,12 @@ const REGULATIONS = [
   { code: 'Erwägungsgrund 46', title: 'Rückverfolgbarkeit Lieferkette', deadline: '2025-12-30', readiness: 92, detail: 'Charge-zu-Erzeuger Traceability in EastAfrica Export OS vollständig implementiert.' },
 ];
 
-const TIMELINE = [
-  { date: '2023-06-29', event: 'EUDR in Kraft getreten', status: 'done', detail: 'Verordnung (EU) 2023/1115 im Amtsblatt veröffentlicht.' },
-  { date: '2024-06-29', event: '18-Monate Übergangsfrist', status: 'done', detail: 'Implementierungsfrist für Großunternehmen.' },
-  { date: '2025-12-30', event: 'Anwendungsdatum für alle', status: 'active', detail: 'DDS-Pflicht für alle Unternehmen, inkl. KMU. ⚠ In 219 Tagen.' },
-  { date: '2026-03-01', event: 'Sentinel-2 Hochrisiko-Check', status: 'future', detail: 'Automatisierter Satellitencheck für Hochrisikoländer.' },
-  { date: '2026-06-29', event: 'Erste Überprüfungen erwartet', status: 'future', detail: 'EU-Zollbehörden beginnen aktive Kontrollen bei Einfuhr.' },
+const TIMELINE_ENTRIES = [
+  { date: '2023-06-29', event: 'EUDR in Kraft getreten', detail: 'Verordnung (EU) 2023/1115 im Amtsblatt veröffentlicht.' },
+  { date: '2024-06-29', event: '18-Monate Übergangsfrist', detail: 'Implementierungsfrist für Großunternehmen.' },
+  { date: '2025-12-30', event: 'Anwendungsdatum für alle', detail: 'DDS-Pflicht für alle Unternehmen, inkl. KMU.' },
+  { date: '2026-03-01', event: 'Sentinel-2 Hochrisiko-Check', detail: 'Automatisierter Satellitencheck für Hochrisikoländer.' },
+  { date: '2026-06-29', event: 'Erste Überprüfungen erwartet', detail: 'EU-Zollbehörden beginnen aktive Kontrollen bei Einfuhr.' },
 ];
 
 export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
@@ -93,6 +93,21 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
   };
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+
+  // Dynamic dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const eudrDeadline = new Date('2025-12-30');
+  const daysToDeadline = Math.ceil((eudrDeadline.getTime() - today.getTime()) / 86400000);
+
+  // Compute TIMELINE statuses dynamically
+  let activeSet = false;
+  const TIMELINE = TIMELINE_ENTRIES.map(step => {
+    const stepDate = new Date(step.date);
+    if (stepDate > today && !activeSet) { activeSet = true; return { ...step, status: 'active' as const }; }
+    return { ...step, status: stepDate <= today ? 'done' as const : 'future' as const };
+  });
 
   // EUDR-relevant suppliers (have Coffee or Meat products)
   const eudrSuppliers = M.suppliers.filter(s =>
@@ -212,8 +227,10 @@ export const EUDRView = ({ lang: _lang }: EUDRViewProps) => {
                 </div>
                 <div>
                   <div className="row" style={{ marginBottom: 8, gap: 8 }}>
-                    <span className="pill">EUDR Status · Stand 25.05.2026</span>
-                    <Badge kind="warning" dot>219 Tage bis Deadline</Badge>
+                    <span className="pill">EUDR Status · Stand {todayStr}</span>
+                    <Badge kind={daysToDeadline > 0 ? 'warning' : 'danger'} dot>
+                      {daysToDeadline > 0 ? `${daysToDeadline} Tage bis Deadline` : `Deadline überschritten (${Math.abs(daysToDeadline)}d)`}
+                    </Badge>
                   </div>
                   <div className="fw600" style={{ fontSize: 15, marginBottom: 6 }}>
                     Gut auf Kurs — 3 von 5 Anforderungen weitgehend erfüllt

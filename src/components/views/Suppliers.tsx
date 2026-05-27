@@ -7,6 +7,8 @@ import { t } from '@/lib/i18n';
 import { fmtDate, fmtNum } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars, BarChart, StatusBadge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -24,6 +26,7 @@ interface SuppliersListProps {
 export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
   const { data: M, refresh } = useData();
   const [mapOpen, setMapOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
@@ -91,6 +94,7 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
                   <th>Letzte Lieferung</th>
                   <th>Risiko</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -130,6 +134,9 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
                     <td>
                       <Badge kind={s.status === 'aktiv' ? 'success' : 'warning'} dot>{s.status}</Badge>
                     </td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <ActionMenu onEdit={() => onOpen(s.id)} onDelete={() => setDeleteId(s.id)} editLabel="Details / Bearbeiten" />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -137,6 +144,11 @@ export const SuppliersList = ({ lang, onOpen }: SuppliersListProps) => {
           </div>
         </div>
       </div>
+
+      {deleteId && (() => {
+        const s = M.suppliers.find(x => x.id === deleteId);
+        return s ? <ConfirmDelete label={`Lieferant '${s.name}'`} table="suppliers" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
 
       {/* Map Modal */}
       {mapOpen && (
@@ -213,6 +225,46 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
   const { data: M, refresh } = useData();
   const s = M?.suppliers.find(x => x.id === id);
   const orders = M && s ? M.orders.filter(o => o.supplierId === s.id) : [];
+
+  const [detailTab, setDetailTab] = useState<'overview' | 'comms'>('overview');
+  const [commModalOpen, setCommModalOpen] = useState(false);
+  const [commForm, setCommForm] = useState({
+    type: 'note' as 'email' | 'call' | 'meeting' | 'note' | 'whatsapp',
+    direction: 'out' as 'in' | 'out' | 'internal',
+    date: new Date().toISOString().slice(0, 10),
+    subject: '', body: '', author: 'Admin',
+  });
+  const [commSaving, setCommSaving] = useState(false);
+  const [commError, setCommError] = useState<string | null>(null);
+
+  const handleSaveComm = async () => {
+    setCommSaving(true); setCommError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('communications').insert({
+        contact_id: id, contact_type: 'supplier',
+        type: commForm.type, direction: commForm.direction,
+        date: commForm.date, subject: commForm.subject,
+        body: commForm.body, author: commForm.author,
+      });
+      if (error) throw new Error(error.message);
+      setCommModalOpen(false);
+      setCommForm({ type: 'note', direction: 'out', date: new Date().toISOString().slice(0, 10), subject: '', body: '', author: 'Admin' });
+      refresh();
+    } catch (e) { setCommError((e as Error).message); }
+    finally { setCommSaving(false); }
+  };
+
+  const commTypeIcon = (tp: string) => {
+    if (tp === 'email') return 'mail';
+    if (tp === 'call') return 'phone';
+    if (tp === 'meeting') return 'buyer';
+    if (tp === 'whatsapp') return 'phone';
+    return 'doc';
+  };
+
+  // Delete state
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -336,10 +388,69 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
             <button className="btn primary" onClick={openEdit}>
               <Ic name="edit" size={13} /> Bearbeiten
             </button>
+            <button className="btn" style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }} onClick={() => setDeleteOpen(true)}>
+              <Ic name="trash" size={13} /> Löschen
+            </button>
           </div>
         </div>
 
-        <div className="detail-grid">
+        <div style={{ padding: '0 0 0 16px' }}>
+          <div className="tabs" style={{ marginBottom: 0 }}>
+            <div className={`tab${detailTab === 'overview' ? ' on' : ''}`} onClick={() => setDetailTab('overview')}>
+              <Ic name="supplier" size={12} /> Übersicht
+            </div>
+            <div className={`tab${detailTab === 'comms' ? ' on' : ''}`} onClick={() => setDetailTab('comms')}>
+              <Ic name="mail" size={12} /> Kommunikation
+            </div>
+          </div>
+        </div>
+
+        {detailTab === 'comms' && (
+          <div style={{ padding: '16px 16px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button className="btn primary" onClick={() => setCommModalOpen(true)}>
+                <Ic name="plus" size={13} /> Kommunikation erfassen
+              </button>
+            </div>
+            {(() => {
+              const comms = (M.communications ?? []).filter(c => c.contactId === id && c.contactType === 'supplier')
+                .sort((a, b) => b.date.localeCompare(a.date));
+              if (comms.length === 0) return (
+                <div className="card" style={{ padding: '40px 16px', textAlign: 'center' }}>
+                  <Ic name="mail" size={28} color="var(--text-3)" />
+                  <div className="tx3" style={{ fontSize: 12, marginTop: 8 }}>Noch keine Kommunikation erfasst</div>
+                  <div className="tx3" style={{ fontSize: 11, marginTop: 4 }}>Klicken Sie auf &quot;Kommunikation erfassen&quot; um zu beginnen.</div>
+                </div>
+              );
+              return (
+                <div className="card">
+                  <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {comms.map((c, i) => (
+                      <div key={c.id} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: i < comms.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--surface-2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Ic name={commTypeIcon(c.type)} size={13} color="#34d399" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div className="row" style={{ gap: 6, marginBottom: 3 }}>
+                            <span className="fw600" style={{ fontSize: 12 }}>{c.subject || '(kein Betreff)'}</span>
+                            <Badge kind={c.direction === 'in' ? 'success' : c.direction === 'out' ? 'info' : 'neutral'}>
+                              {c.direction === 'in' ? 'Eingehend' : c.direction === 'out' ? 'Ausgehend' : 'Intern'}
+                            </Badge>
+                            <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 'auto' }}>{fmtDate(c.date)}</span>
+                          </div>
+                          <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.5, marginBottom: 3 }}>{c.body}</div>
+                          <div className="tx3" style={{ fontSize: 10 }}>{c.author}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {detailTab === 'overview' && <div className="detail-grid">
           {/* ---- LEFT COLUMN ---- */}
           <div className="col" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
@@ -624,8 +735,69 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
               )}
             </div>
           </div>
-        </div>
+        </div>}
       </div>
+
+      {commModalOpen && (
+        <div className="overlay" onClick={() => setCommModalOpen(false)}>
+          <div className="modal" style={{ width: 480 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-head">
+              <Ic name="mail" size={15} color="#34d399" />
+              <span style={{ fontWeight: 600, fontSize: 14 }}>Kommunikation erfassen</span>
+              <button className="btn ghost" style={{ marginLeft: 'auto', padding: 4 }} onClick={() => setCommModalOpen(false)}>
+                <Ic name="x" size={13} />
+              </button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Typ</div>
+                  <select style={inputStyle} value={commForm.type} onChange={e => setCommForm(f => ({ ...f, type: e.target.value as typeof commForm.type }))}>
+                    <option value="email">E-Mail</option>
+                    <option value="call">Anruf</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="note">Notiz</option>
+                    <option value="whatsapp">WhatsApp</option>
+                  </select>
+                </div>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Richtung</div>
+                  <select style={inputStyle} value={commForm.direction} onChange={e => setCommForm(f => ({ ...f, direction: e.target.value as typeof commForm.direction }))}>
+                    <option value="in">Eingehend</option>
+                    <option value="out">Ausgehend</option>
+                    <option value="internal">Intern</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Datum</div>
+                  <input type="date" style={inputStyle} value={commForm.date} onChange={e => setCommForm(f => ({ ...f, date: e.target.value }))} />
+                </div>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Autor</div>
+                  <input style={inputStyle} value={commForm.author} onChange={e => setCommForm(f => ({ ...f, author: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Betreff</div>
+                <input style={inputStyle} value={commForm.subject} onChange={e => setCommForm(f => ({ ...f, subject: e.target.value }))} />
+              </div>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Inhalt</div>
+                <textarea rows={4} style={{ ...inputStyle, resize: 'vertical' }} value={commForm.body} onChange={e => setCommForm(f => ({ ...f, body: e.target.value }))} />
+              </div>
+              {commError && <div style={{ color: '#f87171', fontSize: 12 }}>{commError}</div>}
+            </div>
+            <div className="modal-foot">
+              <button className="btn" onClick={() => setCommModalOpen(false)}>Abbrechen</button>
+              <button className="btn primary" onClick={handleSaveComm} disabled={commSaving}>
+                {commSaving ? 'Speichern…' : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editOpen && (
@@ -788,6 +960,7 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
           </div>
         </div>
       )}
+      {deleteOpen && s && <ConfirmDelete label={`Lieferant '${s.name}'`} table="suppliers" id={s.id} onClose={() => setDeleteOpen(false)} onDeleted={onBack} />}
     </>
   );
 };

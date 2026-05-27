@@ -1,12 +1,42 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars, BarChart, StatusBadge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
+import { useDelete } from '@/lib/use-entity-action';
+
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13,
+  padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box',
+};
+
+const BUYER_FIELDS: FieldDef[] = [
+  { key: 'name',      label: 'Name',      type: 'text',   required: true, span: 2 },
+  { key: 'country',   label: 'Land',      type: 'text',   placeholder: 'z.B. DE' },
+  { key: 'city',      label: 'Stadt',     type: 'text' },
+  { key: 'industry',  label: 'Branche',   type: 'text' },
+  { key: 'contact',   label: 'Kontakt',   type: 'text' },
+  { key: 'position',  label: 'Position',  type: 'text' },
+  { key: 'email',     label: 'E-Mail',    type: 'text' },
+  { key: 'phone',     label: 'Telefon',   type: 'text' },
+  { key: 'status',    label: 'Status',    type: 'select', options: [
+      { value: 'active', label: 'Aktiv' }, { value: 'inactive', label: 'Inaktiv' },
+      { value: 'prospect', label: 'Prospect' },
+    ]
+  },
+  { key: 'incoterm',  label: 'Incoterm',  type: 'text' },
+  { key: 'terms',     label: 'Zahlungsbedingungen', type: 'text' },
+  { key: 'moq',       label: 'MOQ',       type: 'text' },
+  { key: 'interests', label: 'Interessen', type: 'chips', span: 2 },
+];
 
 // ────────────────────────────────────────────────────────────
 // Buyers List
@@ -19,8 +49,14 @@ interface BuyersListProps {
 
 export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
   const { data: M } = useData();
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const totalRevenue = M.buyers.reduce((s, b) => s + b.revenue, 0);
+
+  const editRecord = editId ? M.buyers.find(x => x.id === editId) ?? null : null;
+  const deleteRecord = deleteId ? M.buyers.find(x => x.id === deleteId) ?? null : null;
 
   const handleExport = () => {
     const headers = ['ID','Name','Land','Stadt','Branche','Kontakt','Email','Rating','Incoterm','MOQ','Umsatz (€)','Status'];
@@ -47,7 +83,13 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
       <div style={{ padding: '0 16px 12px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           {M.buyers.map(b => (
-            <div key={b.id} className="card" style={{ cursor: 'pointer' }} onClick={() => onOpen(b.id)}>
+            <div key={b.id} className="card" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => onOpen(b.id)}>
+              <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }} onClick={e => e.stopPropagation()}>
+                <ActionMenu
+                  onEdit={() => setEditId(b.id)}
+                  onDelete={() => setDeleteId(b.id)}
+                />
+              </div>
               <div style={{ padding: 14 }}>
                 <div className="row" style={{ marginBottom: 8 }}>
                   <div style={{
@@ -104,6 +146,25 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
           ))}
         </div>
       </div>
+
+      {editRecord && (
+        <GenericEditModal
+          title="Käufer bearbeiten"
+          subtitle={`${editRecord.id}`}
+          record={editRecord as unknown as Record<string, unknown>}
+          fields={BUYER_FIELDS}
+          table="buyers"
+          onClose={() => setEditId(null)}
+        />
+      )}
+      {deleteRecord && (
+        <ConfirmDelete
+          label={`${deleteRecord.name} (${deleteRecord.id})`}
+          table="buyers"
+          id={deleteRecord.id}
+          onClose={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 };
@@ -119,10 +180,49 @@ interface BuyerDetailProps {
 }
 
 export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
-  const { data: M } = useData();
+  const { data: M, refresh } = useData();
   const b = M?.buyers.find(x => x.id === id);
   const buyerOrders = M ? M.orders.filter(o => o.buyerId === id) : [];
   const buyerDeals = M ? M.deals.filter(d => d.buyerId === id) : [];
+  const [detailTab, setDetailTab] = useState<'overview' | 'comms'>('overview');
+  const [commModalOpen, setCommModalOpen] = useState(false);
+  const [commForm, setCommForm] = useState({
+    type: 'note' as 'email' | 'call' | 'meeting' | 'note' | 'whatsapp',
+    direction: 'out' as 'in' | 'out' | 'internal',
+    date: new Date().toISOString().slice(0, 10),
+    subject: '', body: '', author: 'Admin',
+  });
+  const [commSaving, setCommSaving] = useState(false);
+  const [commError, setCommError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const { deleteItem } = useDelete('communications');
+
+  const handleSaveComm = async () => {
+    setCommSaving(true); setCommError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().from('communications').insert({
+        contact_id: id, contact_type: 'buyer',
+        type: commForm.type, direction: commForm.direction,
+        date: commForm.date, subject: commForm.subject,
+        body: commForm.body, author: commForm.author,
+      });
+      if (error) throw new Error(error.message);
+      setCommModalOpen(false);
+      setCommForm({ type: 'note', direction: 'out', date: new Date().toISOString().slice(0, 10), subject: '', body: '', author: 'Admin' });
+      refresh();
+    } catch (e) { setCommError((e as Error).message); }
+    finally { setCommSaving(false); }
+  };
+
+  const commTypeIcon = (tp: string) => {
+    if (tp === 'email') return 'mail';
+    if (tp === 'call') return 'phone';
+    if (tp === 'meeting') return 'buyer';
+    if (tp === 'whatsapp') return 'phone';
+    return 'doc';
+  };
 
   const revHistory = useMemo(() => {
     const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -175,13 +275,81 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
           <button className="btn" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
             <Ic name="star" size={13} /> Angebot
           </button>
+          <button className="btn" onClick={() => setEditOpen(true)}>
+            <Ic name="edit" size={13} /> Bearbeiten
+          </button>
+          <button className="btn" style={{ color: '#f87171' }} onClick={() => setDeleteOpen(true)}>
+            <Ic name="trash" size={13} /> Löschen
+          </button>
           <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}>
             <Ic name="plus" size={13} /> Neuer Auftrag
           </button>
         </div>
       </div>
 
-      <div className="detail-grid">
+      <div style={{ padding: '0 0 0 16px' }}>
+        <div className="tabs" style={{ marginBottom: 0 }}>
+          <div className={`tab${detailTab === 'overview' ? ' on' : ''}`} onClick={() => setDetailTab('overview')}>
+            <Ic name="buyer" size={12} /> Übersicht
+          </div>
+          <div className={`tab${detailTab === 'comms' ? ' on' : ''}`} onClick={() => setDetailTab('comms')}>
+            <Ic name="mail" size={12} /> Kommunikation
+          </div>
+        </div>
+      </div>
+
+      {detailTab === 'comms' && (
+        <div style={{ padding: '16px 16px 12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button className="btn primary" onClick={() => setCommModalOpen(true)}>
+              <Ic name="plus" size={13} /> Kommunikation erfassen
+            </button>
+          </div>
+          {(() => {
+            const comms = (M.communications ?? []).filter(c => c.contactId === id && c.contactType === 'buyer')
+              .sort((a, b) => b.date.localeCompare(a.date));
+            if (comms.length === 0) return (
+              <div className="card" style={{ padding: '40px 16px', textAlign: 'center' }}>
+                <Ic name="mail" size={28} color="var(--text-3)" />
+                <div className="tx3" style={{ fontSize: 12, marginTop: 8 }}>Noch keine Kommunikation erfasst</div>
+                <div className="tx3" style={{ fontSize: 11, marginTop: 4 }}>Klicken Sie auf &quot;Kommunikation erfassen&quot; um zu beginnen.</div>
+              </div>
+            );
+            return (
+              <div className="card">
+                <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {comms.map((c, i) => (
+                    <div key={c.id} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: i < comms.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--surface-2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Ic name={commTypeIcon(c.type)} size={13} color="#60a5fa" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className="row" style={{ gap: 6, marginBottom: 3 }}>
+                          <span className="fw600" style={{ fontSize: 12 }}>{c.subject || '(kein Betreff)'}</span>
+                          <Badge kind={c.direction === 'in' ? 'success' : c.direction === 'out' ? 'info' : 'neutral'}>
+                            {c.direction === 'in' ? 'Eingehend' : c.direction === 'out' ? 'Ausgehend' : 'Intern'}
+                          </Badge>
+                          <span className="tx3 mono" style={{ fontSize: 10, marginLeft: 'auto' }}>{fmtDate(c.date)}</span>
+                          <button
+                            className="btn sm ghost"
+                            style={{ padding: '2px 5px', color: '#f87171' }}
+                            onClick={() => deleteItem(c.id)}
+                            title="Löschen"
+                          >×</button>
+                        </div>
+                        <div className="tx2" style={{ fontSize: 11.5, lineHeight: 1.5, marginBottom: 3 }}>{c.body}</div>
+                        <div className="tx3" style={{ fontSize: 10 }}>{c.author}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {detailTab === 'overview' && <div className="detail-grid">
         {/* ── LEFT ── */}
         <div className="col" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
@@ -351,7 +519,89 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
+
+      {commModalOpen && (
+        <div className="overlay" onClick={() => setCommModalOpen(false)}>
+          <div className="modal" style={{ width: 480 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-head">
+              <Ic name="mail" size={15} color="#60a5fa" />
+              <span style={{ fontWeight: 600, fontSize: 14 }}>Kommunikation erfassen</span>
+              <button className="btn ghost" style={{ marginLeft: 'auto', padding: 4 }} onClick={() => setCommModalOpen(false)}>
+                <Ic name="x" size={13} />
+              </button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Typ</div>
+                  <select style={inputStyle} value={commForm.type} onChange={e => setCommForm(f => ({ ...f, type: e.target.value as typeof commForm.type }))}>
+                    <option value="email">E-Mail</option>
+                    <option value="call">Anruf</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="note">Notiz</option>
+                    <option value="whatsapp">WhatsApp</option>
+                  </select>
+                </div>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Richtung</div>
+                  <select style={inputStyle} value={commForm.direction} onChange={e => setCommForm(f => ({ ...f, direction: e.target.value as typeof commForm.direction }))}>
+                    <option value="in">Eingehend</option>
+                    <option value="out">Ausgehend</option>
+                    <option value="internal">Intern</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Datum</div>
+                  <input type="date" style={inputStyle} value={commForm.date} onChange={e => setCommForm(f => ({ ...f, date: e.target.value }))} />
+                </div>
+                <div>
+                  <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Autor</div>
+                  <input style={inputStyle} value={commForm.author} onChange={e => setCommForm(f => ({ ...f, author: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Betreff</div>
+                <input style={inputStyle} value={commForm.subject} onChange={e => setCommForm(f => ({ ...f, subject: e.target.value }))} />
+              </div>
+              <div>
+                <div className="tx3" style={{ fontSize: 11, marginBottom: 4 }}>Inhalt</div>
+                <textarea rows={4} style={{ ...inputStyle, resize: 'vertical' }} value={commForm.body} onChange={e => setCommForm(f => ({ ...f, body: e.target.value }))} />
+              </div>
+              {commError && <div style={{ color: '#f87171', fontSize: 12 }}>{commError}</div>}
+            </div>
+            <div className="modal-foot">
+              <button className="btn" onClick={() => setCommModalOpen(false)}>Abbrechen</button>
+              <button className="btn primary" onClick={handleSaveComm} disabled={commSaving}>
+                {commSaving ? 'Speichern…' : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editOpen && b && (
+        <GenericEditModal
+          title="Käufer bearbeiten"
+          subtitle={`${b.id}`}
+          record={b as unknown as Record<string, unknown>}
+          fields={BUYER_FIELDS}
+          table="buyers"
+          onClose={() => setEditOpen(false)}
+        />
+      )}
+
+      {deleteOpen && b && (
+        <ConfirmDelete
+          label={`${b.name} (${b.id})`}
+          table="buyers"
+          id={b.id}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={onBack}
+        />
+      )}
     </div>
   );
 };

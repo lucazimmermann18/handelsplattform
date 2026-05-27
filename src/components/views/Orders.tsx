@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/primitives';
 import { useData } from '@/lib/data-context';
 import { OrderComments } from '@/components/ui/OrderComments';
 import { UploadModal } from '@/components/ui/UploadModal';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
@@ -47,6 +50,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const filtered = (statusFilter === 'all' ? M.orders : M.orders.filter((o) => o.status === statusFilter))
@@ -170,6 +174,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
               <th>ETA</th>
               <th>Zahlung</th>
               <th>Status</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -219,12 +224,19 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
                     <div className="tx3 mono" style={{ fontSize: 10, marginTop: 2 }}>{o.paid}%</div>
                   </td>
                   <td><StatusBadge s={o.status} lang={lang} /></td>
+                  <td onClick={e => e.stopPropagation()}>
+                    <ActionMenu onEdit={() => onOpen(o)} onDelete={() => setDeleteId(o.id)} editLabel="Details / Bearbeiten" />
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+      {deleteId && (() => {
+        const r = M.orders.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`Auftrag '${r.id}'`} table="orders" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
     </div>
   );
 };
@@ -246,6 +258,7 @@ const inputStyle: React.CSSProperties = {
 export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
   const { data: M, refresh } = useData();
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [editForm, setEditForm] = useState({ status: o.status, responsible: o.responsible ?? '', eta: o.eta ?? '', etd: o.etd ?? '', paid: String(o.paid) });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -332,6 +345,7 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
           </button>
           <button className="btn" onClick={() => window.print()}><Ic name="download" size={13} /> Auftrag.pdf</button>
           <button className="btn primary" onClick={() => setEditOpen(true)}><Ic name="edit" size={13} /> Bearbeiten</button>
+          <button className="btn" style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }} onClick={() => setDeleteOpen(true)}><Ic name="trash" size={13} /> Löschen</button>
         </div>
       </div>
 
@@ -657,6 +671,24 @@ export const OrderDetail = ({ order: o, lang, onBack }: OrderDetailProps) => {
           </div>
         </div>
       </div>
+      {editOpen && (() => {
+        const fields: FieldDef[] = [
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'confirmed', label: 'Bestätigt' }, { value: 'procurement', label: 'Beschaffung' },
+            { value: 'quality', label: 'Qualitätsprüfung' }, { value: 'ready', label: 'Exportbereit' },
+            { value: 'in_export', label: 'Exportdokumente' }, { value: 'shipped', label: 'Verladen' },
+            { value: 'in_transit', label: 'Auf See' }, { value: 'arrived', label: 'Angekommen' },
+            { value: 'delivered', label: 'Geliefert' }, { value: 'paid', label: 'Bezahlt' },
+          ] },
+          { key: 'responsible', label: 'Verantwortlich', type: 'text' },
+          { key: 'incoterm', label: 'Incoterm', type: 'text' },
+          { key: 'paid', label: 'Zahlung (%)', type: 'number' },
+          { key: 'etd', label: 'ETD', type: 'date' },
+          { key: 'eta', label: 'ETA', type: 'date' },
+        ];
+        return <GenericEditModal title="Auftrag bearbeiten" subtitle={o.id} record={o as unknown as Record<string, unknown>} fields={fields} table="orders" onClose={() => setEditOpen(false)} onSaved={() => setEditOpen(false)} />;
+      })()}
+      {deleteOpen && <ConfirmDelete label={`Auftrag '${o.id}'`} table="orders" id={o.id} onClose={() => setDeleteOpen(false)} onDeleted={onBack} />}
     </div>
 
     {/* Edit Order Modal */}

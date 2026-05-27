@@ -8,6 +8,9 @@ import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
 import type { QualityCheck } from '@/lib/types';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 const inputStyle = {
   background: 'rgba(255,255,255,0.05)',
@@ -37,6 +40,8 @@ export const QualityView = ({ lang }: QualityViewProps) => {
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const resetForm = () => setForm({
     batch: '', product: '', supplierId: '', checkDate: '',
@@ -148,6 +153,7 @@ export const QualityView = ({ lang }: QualityViewProps) => {
                     <th>Labor · Prüfer</th>
                     <th>Grade</th>
                     <th>Status</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -189,6 +195,9 @@ export const QualityView = ({ lang }: QualityViewProps) => {
                           {q.status === 'released' && <Badge kind="success" dot>Freigegeben</Badge>}
                           {q.status === 'in_progress' && <Badge kind="warning" dot>Läuft</Badge>}
                           {q.status === 'blocked' && <Badge kind="danger" dot>Gesperrt</Badge>}
+                        </td>
+                        <td onClick={e => e.stopPropagation()}>
+                          <ActionMenu onEdit={() => setEditId(q.id)} onDelete={() => setDeleteId(q.id)} />
                         </td>
                       </tr>
                     );
@@ -457,6 +466,28 @@ export const QualityView = ({ lang }: QualityViewProps) => {
           </div>
         </div>
       )}
+      {editId && (() => {
+        const r = M.quality.find(x => x.id === editId);
+        if (!r) return null;
+        const fields: FieldDef[] = [
+          { key: 'batch', label: 'Charge', type: 'text', span: 2 },
+          { key: 'product', label: 'Produkt', type: 'text' },
+          { key: 'grade', label: 'Grade', type: 'text' },
+          { key: 'status', label: 'Status', type: 'select', options: [
+            { value: 'in_progress', label: 'In Prüfung' }, { value: 'released', label: 'Freigegeben' }, { value: 'blocked', label: 'Gesperrt' },
+          ] },
+          { key: 'moisture', label: 'Feuchtigkeit', type: 'text' },
+          { key: 'purity', label: 'Reinheit', type: 'text' },
+          { key: 'lab', label: 'Labor', type: 'text' },
+          { key: 'inspector', label: 'Prüfer', type: 'text' },
+          { key: 'notes', label: 'Notizen', type: 'textarea', span: 2 },
+        ];
+        return <GenericEditModal title="Qualitätsprüfung bearbeiten" subtitle={r.id} record={r as unknown as Record<string, unknown>} fields={fields} table="quality_checks" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+      })()}
+      {deleteId && (() => {
+        const r = M.quality.find(x => x.id === deleteId);
+        return r ? <ConfirmDelete label={`QC '${r.batch}'`} table="quality_checks" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+      })()}
     </>
   );
 };

@@ -7,6 +7,9 @@ import { t } from '@/lib/i18n';
 import { fmtDate } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { ActionMenu } from '@/components/ui/ActionMenu';
+import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 
 const PRIO_ORDER: Record<string, number> = { hoch: 0, mittel: 1, niedrig: 2 };
 const STATUS_FILTERS = ['alle', 'offen', 'in_progress', 'wartet'] as const;
@@ -35,6 +38,8 @@ export const TasksView = ({ lang }: TasksViewProps) => {
   const [taskMenu, setTaskMenu] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const handleStatusChange = async (taskId: string, status: string) => {
@@ -208,22 +213,25 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                         : <Badge kind="warning" dot>Wartet</Badge>}
                     </td>
                     <td style={{ position: 'relative' }}>
-                      <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setTaskMenu(taskMenu === tk.id ? null : tk.id); }}>
-                        <Ic name="more" size={11} />
-                      </button>
-                      {taskMenu === tk.id && (
-                        <>
-                          <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setTaskMenu(null)} />
-                          <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-                            {(['offen', 'in_progress', 'wartet'] as const).filter(s => s !== tk.status).map(s => (
-                              <button key={s} className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
-                                onClick={() => handleStatusChange(tk.id, s)}>
-                                → {STATUS_LABEL[s]}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <button className="btn sm ghost" onClick={e => { e.stopPropagation(); setTaskMenu(taskMenu === tk.id ? null : tk.id); }}>
+                          <Ic name="more" size={11} />
+                        </button>
+                        {taskMenu === tk.id && (
+                          <>
+                            <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setTaskMenu(null)} />
+                            <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                              {(['offen', 'in_progress', 'wartet'] as const).filter(s => s !== tk.status).map(s => (
+                                <button key={s} className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
+                                  onClick={() => handleStatusChange(tk.id, s)}>
+                                  → {STATUS_LABEL[s]}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                        <ActionMenu onEdit={() => setEditId(tk.id)} onDelete={() => setDeleteId(tk.id)} />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -289,6 +297,26 @@ export const TasksView = ({ lang }: TasksViewProps) => {
         </div>
       </div>
     )}
+    {editId && (() => {
+      const r = M.tasks.find(x => x.id === editId);
+      if (!r) return null;
+      const fields: FieldDef[] = [
+        { key: 't', label: 'Titel', type: 'text', required: true, dbKey: 'title', span: 2 },
+        { key: 'owner', label: 'Verantwortlich', type: 'text' },
+        { key: 'prio', label: 'Priorität', type: 'select', dbKey: 'priority', options: [
+          { value: 'hoch', label: 'Hoch' }, { value: 'mittel', label: 'Mittel' }, { value: 'niedrig', label: 'Niedrig' },
+        ] },
+        { key: 'due', label: 'Fällig', type: 'date', dbKey: 'due_date' },
+        { key: 'status', label: 'Status', type: 'select', options: [
+          { value: 'offen', label: 'Offen' }, { value: 'in_progress', label: 'In Arbeit' }, { value: 'wartet', label: 'Wartet' },
+        ] },
+      ];
+      return <GenericEditModal title="Aufgabe bearbeiten" subtitle={r.t} record={r as unknown as Record<string, unknown>} fields={fields} table="tasks" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+    })()}
+    {deleteId && (() => {
+      const r = M.tasks.find(x => x.id === deleteId);
+      return r ? <ConfirmDelete label={`'${r.t}'`} table="tasks" id={deleteId} onClose={() => setDeleteId(null)} onDeleted={() => setDeleteId(null)} /> : null;
+    })()}
   </>
   );
 };
