@@ -14,6 +14,14 @@ export interface ProductVariant {
   stock: number;
 }
 
+export interface ProductQcRow {
+  p: string;
+  min: string;
+  tgt: string;
+  max: string;
+  eu: string;
+}
+
 export interface Supplier {
   id: string;
   name: string;
@@ -55,6 +63,7 @@ export interface Product {
   margin: number;
   exportReady: boolean;
   variants: ProductVariant[];
+  qualSpec?: ProductQcRow[] | null;
   certs: string[];
   buyers: number;
   suppliers: number;

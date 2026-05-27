@@ -35,7 +35,8 @@ const mapProduct = (r: any): Product => ({
   hs: r.hs ?? '', unit: r.unit ?? '', packaging: r.packaging ?? '',
   moq: r.moq ?? '', buyPrice: r.buy_price ?? 0, sellPrice: r.sell_price ?? 0,
   margin: r.margin ?? 0, exportReady: r.export_ready ?? false,
-  variants: r.variants ?? [], certs: r.certs ?? [],
+  variants: r.variants ?? [], qualSpec: r.qual_spec ?? null,
+  certs: r.certs ?? [],
   buyers: r.buyers_count ?? 0, suppliers: r.suppliers_count ?? 0,
 });
 

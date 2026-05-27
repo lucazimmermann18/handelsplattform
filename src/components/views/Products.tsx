@@ -7,7 +7,7 @@ import { t } from '@/lib/i18n';
 import { fmtNum, fmtKg } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 import { Badge, Stars } from '@/components/ui/primitives';
-import type { Product } from '@/lib/types';
+import type { Product, ProductVariant, ProductQcRow } from '@/lib/types';
 
 const UNITS = ['kg', 't', 'Stk', 'L'];
 
@@ -19,14 +19,22 @@ const inputStyle: React.CSSProperties = {
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
 
+type EditTab = 'grunddaten' | 'varianten' | 'qualitaet';
+
 interface EditModalProps {
   product: Product;
+  initialTab?: EditTab;
   onClose: () => void;
   onSaved: () => void;
 }
 
-const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
+const emptyVariant = (): ProductVariant => ({ v: '', grade: '', stock: 0 });
+const emptyQcRow  = (): ProductQcRow  => ({ p: '', min: '—', tgt: '—', max: '—', eu: '—' });
+
+const EditModal = ({ product, initialTab = 'grunddaten', onClose, onSaved }: EditModalProps) => {
   const { refresh } = useData();
+  const [tab, setTab] = useState<EditTab>(initialTab);
+
   const [form, setForm] = useState({
     name:        product.name,
     cat:         product.cat,
@@ -40,8 +48,14 @@ const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
     certs:       product.certs.join(', '),
     exportReady: product.exportReady,
   });
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [variants,  setVariants]  = useState<ProductVariant[]>(
+    product.variants.length > 0 ? product.variants : [emptyVariant()]
+  );
+  const [qualSpec,  setQualSpec]  = useState<ProductQcRow[]>(
+    product.qualSpec ?? getQcRows(product.cat)
+  );
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState<string | null>(null);
 
   const set = (key: keyof typeof form, val: string | number | boolean) =>
     setForm(prev => ({ ...prev, [key]: val }));
@@ -50,13 +64,33 @@ const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
     ? Math.round((form.sellPrice - form.buyPrice) / form.sellPrice * 100)
     : 0;
 
+  // ── variant helpers ──────────────────────────────────────────────────────────
+
+  const setVariant = (i: number, key: keyof ProductVariant, val: string | number) =>
+    setVariants(prev => prev.map((v, idx) => idx === i ? { ...v, [key]: val } : v));
+  const addVariant    = () => setVariants(prev => [...prev, emptyVariant()]);
+  const removeVariant = (i: number) => setVariants(prev => prev.filter((_, idx) => idx !== i));
+
+  // ── qualSpec helpers ─────────────────────────────────────────────────────────
+
+  const setQcCell = (i: number, key: keyof ProductQcRow, val: string) =>
+    setQualSpec(prev => prev.map((r, idx) => idx === i ? { ...r, [key]: val } : r));
+  const addQcRow    = () => setQualSpec(prev => [...prev, emptyQcRow()]);
+  const removeQcRow = (i: number) => setQualSpec(prev => prev.filter((_, idx) => idx !== i));
+
+  // ── save ─────────────────────────────────────────────────────────────────────
+
   const handleSave = async () => {
-    if (!form.name.trim()) { setError('Name ist erforderlich.'); return; }
+    if (!form.name.trim()) { setError('Name ist erforderlich.'); setTab('grunddaten'); return; }
     setSaving(true); setError(null);
     try {
       const { createClient } = await import('@/lib/supabase/client');
+      const sb = createClient();
       const certsArr = form.certs.split(',').map(s => s.trim()).filter(Boolean);
-      const { error: sbErr } = await createClient().from('products').update({
+      const cleanVariants = variants.filter(v => v.v.trim() || v.grade.trim() || v.stock > 0);
+      const cleanQc = qualSpec.filter(r => r.p.trim());
+
+      const payload: Record<string, unknown> = {
         name:         form.name,
         cat:          form.cat,
         origin:       form.origin,
@@ -69,8 +103,20 @@ const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
         margin,
         export_ready: form.exportReady,
         certs:        certsArr,
-      }).eq('id', product.id);
-      if (sbErr) throw new Error(sbErr.message);
+        variants:     cleanVariants,
+      };
+
+      // qual_spec stored separately — safe to attempt, ignored if column missing
+      const { error: sbErr } = await sb.from('products').update({ ...payload, qual_spec: cleanQc }).eq('id', product.id);
+      if (sbErr) {
+        // retry without qual_spec if column doesn't exist yet
+        if (sbErr.code === '42703' || sbErr.message.includes('qual_spec')) {
+          const { error: sbErr2 } = await sb.from('products').update(payload).eq('id', product.id);
+          if (sbErr2) throw new Error(sbErr2.message);
+        } else {
+          throw new Error(sbErr.message);
+        }
+      }
       refresh();
       onSaved();
     } catch (e) {
@@ -80,13 +126,25 @@ const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
     }
   };
 
+  // ── shared cell style ────────────────────────────────────────────────────────
+  const cellInput: React.CSSProperties = {
+    ...inputStyle, padding: '5px 7px', fontSize: 12,
+  };
+
+  const TABS: { key: EditTab; label: string }[] = [
+    { key: 'grunddaten', label: 'Grunddaten' },
+    { key: 'varianten',  label: `Varianten (${variants.filter(v => v.v).length})` },
+    { key: 'qualitaet',  label: `Qualität (${qualSpec.filter(r => r.p).length})` },
+  ];
+
   return (
-    <div className="overlay" onClick={onClose} style={{ alignItems: 'flex-start', paddingTop: '5vh' }}>
+    <div className="overlay" onClick={onClose} style={{ alignItems: 'flex-start', paddingTop: '4vh' }}>
       <div
         className="modal"
         onClick={e => e.stopPropagation()}
-        style={{ width: '92vw', maxWidth: 520, maxHeight: '88vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}
+        style={{ width: '92vw', maxWidth: 640, maxHeight: '90vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}
       >
+        {/* Header */}
         <div className="modal-head">
           <Ic name="product" size={14} />
           <span style={{ fontWeight: 700 }}>Produkt bearbeiten</span>
@@ -96,100 +154,221 @@ const EditModal = ({ product, onClose, onSaved }: EditModalProps) => {
           </button>
         </div>
 
-        <div className="modal-body" style={{ overflowY: 'auto' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-            {/* Name */}
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
-              <input autoFocus type="text" value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
-            </div>
-
-            {/* Cat + Origin */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kategorie</div>
-                <input type="text" value={form.cat} onChange={e => set('cat', e.target.value)} placeholder="z.B. Kaffee" style={inputStyle} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Herkunft</div>
-                <input type="text" value={form.origin} onChange={e => set('origin', e.target.value)} placeholder="z.B. TZ" style={inputStyle} />
-              </div>
-            </div>
-
-            {/* HS + Einheit */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>HS-Code</div>
-                <input type="text" value={form.hs} onChange={e => set('hs', e.target.value)} placeholder="z.B. 0901.11" style={inputStyle} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Einheit</div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {UNITS.map(u => (
-                    <span key={u} className={`chip${form.unit === u ? ' on' : ''}`} onClick={() => set('unit', u)} style={{ cursor: 'pointer' }}>{u}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Packaging + MOQ */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verpackung</div>
-                <input type="text" value={form.packaging} onChange={e => set('packaging', e.target.value)} placeholder="z.B. 60 kg Jutesack" style={inputStyle} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>MOQ</div>
-                <input type="text" value={form.moq} onChange={e => set('moq', e.target.value)} placeholder="z.B. 1000 kg" style={inputStyle} />
-              </div>
-            </div>
-
-            {/* Prices */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€)</div>
-                <input type="number" min={0} step={0.01} value={form.buyPrice || ''} onChange={e => set('buyPrice', parseFloat(e.target.value) || 0)} placeholder="0.00" style={inputStyle} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€)</div>
-                <input type="number" min={0} step={0.01} value={form.sellPrice || ''} onChange={e => set('sellPrice', parseFloat(e.target.value) || 0)} placeholder="0.00" style={inputStyle} />
-              </div>
-            </div>
-
-            {/* Margin pill */}
-            <div style={{ padding: '7px 12px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 12.5 }}>
-              <span style={{ color: 'var(--text-3)' }}>Marge: </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-3)' }}>
-                {margin}%
-              </span>
-            </div>
-
-            {/* Certs */}
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
-              <input type="text" value={form.certs} onChange={e => set('certs', e.target.value)} placeholder="z.B. Fairtrade, Organic" style={inputStyle} />
-              <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
-            </div>
-
-            {/* Export ready */}
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Exportstatus</div>
-              <span className={`chip${form.exportReady ? ' on' : ''}`} onClick={() => set('exportReady', !form.exportReady)} style={{ cursor: 'pointer' }}>Export bereit</span>
-            </div>
-
-            {error && (
-              <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11.5, color: '#f87171' }}>
-                {error}
-              </div>
-            )}
-          </div>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 18px', gap: 2 }}>
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '9px 14px', fontSize: 12.5, fontWeight: tab === t.key ? 600 : 400,
+                color: tab === t.key ? 'var(--text)' : 'var(--text-3)',
+                borderBottom: tab === t.key ? '2px solid #60a5fa' : '2px solid transparent',
+                marginBottom: -1, transition: 'color 0.15s',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
+        {/* Body */}
+        <div className="modal-body" style={{ overflowY: 'auto' }}>
+
+          {/* ── Tab: Grunddaten ── */}
+          {tab === 'grunddaten' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Name *</div>
+                <input autoFocus type="text" value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kategorie</div>
+                  <input type="text" value={form.cat} onChange={e => set('cat', e.target.value)} placeholder="z.B. Kaffee" style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Herkunft</div>
+                  <input type="text" value={form.origin} onChange={e => set('origin', e.target.value)} placeholder="z.B. TZ" style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>HS-Code</div>
+                  <input type="text" value={form.hs} onChange={e => set('hs', e.target.value)} placeholder="z.B. 0901.11" style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Einheit</div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {UNITS.map(u => (
+                      <span key={u} className={`chip${form.unit === u ? ' on' : ''}`} onClick={() => set('unit', u)} style={{ cursor: 'pointer' }}>{u}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verpackung</div>
+                  <input type="text" value={form.packaging} onChange={e => set('packaging', e.target.value)} placeholder="z.B. 60 kg Jutesack" style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>MOQ</div>
+                  <input type="text" value={form.moq} onChange={e => set('moq', e.target.value)} placeholder="z.B. 1000 kg" style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€)</div>
+                  <input type="number" min={0} step={0.01} value={form.buyPrice || ''} onChange={e => set('buyPrice', parseFloat(e.target.value) || 0)} placeholder="0.00" style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€)</div>
+                  <input type="number" min={0} step={0.01} value={form.sellPrice || ''} onChange={e => set('sellPrice', parseFloat(e.target.value) || 0)} placeholder="0.00" style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ padding: '7px 12px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 12.5 }}>
+                <span style={{ color: 'var(--text-3)' }}>Marge: </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-3)' }}>
+                  {margin}%
+                </span>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate <span style={{ fontWeight: 400 }}>(kommagetrennt)</span></div>
+                <input type="text" value={form.certs} onChange={e => set('certs', e.target.value)} placeholder="z.B. Fairtrade, Organic EU" style={inputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Exportstatus</div>
+                <span className={`chip${form.exportReady ? ' on' : ''}`} onClick={() => set('exportReady', !form.exportReady)} style={{ cursor: 'pointer' }}>Export bereit</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── Tab: Varianten ── */}
+          {tab === 'varianten' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="tx3" style={{ fontSize: 11.5 }}>
+                Jede Variante steht für eine Qualitätsstufe oder Aufbereitungsform dieses Produkts (z.B. „Specialty SCA 87+", „Bio Hulled").
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    {['Variante / Name', 'Grade', `Bestand (${form.unit})`, ''].map(h => (
+                      <th key={h} style={{ padding: '6px 8px', textAlign: 'left', fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {variants.map((v, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '6px 4px' }}>
+                        <input
+                          type="text" value={v.v}
+                          onChange={e => setVariant(i, 'v', e.target.value)}
+                          placeholder="z.B. Specialty SCA 87+"
+                          style={cellInput}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 4px' }}>
+                        <input
+                          type="text" value={v.grade}
+                          onChange={e => setVariant(i, 'grade', e.target.value)}
+                          placeholder="z.B. A / Bio / Specialty"
+                          style={cellInput}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 4px' }}>
+                        <input
+                          type="number" min={0} step={1} value={v.stock || ''}
+                          onChange={e => setVariant(i, 'stock', parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                          style={{ ...cellInput, width: 90 }}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 4px', textAlign: 'right' }}>
+                        <button
+                          className="btn sm ghost"
+                          onClick={() => removeVariant(i)}
+                          style={{ color: '#f87171', padding: '3px 6px' }}
+                          title="Variante entfernen"
+                        >
+                          <Ic name="trash" size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={addVariant}>
+                <Ic name="plus" size={12} /> Variante hinzufügen
+              </button>
+            </div>
+          )}
+
+          {/* ── Tab: Qualitäts-Spezifikation ── */}
+          {tab === 'qualitaet' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="tx3" style={{ fontSize: 11.5, flex: 1 }}>
+                  Qualitätsparameter für dieses Produkt — werden im Produktdatenblatt und in der QS-Prüfung verwendet.
+                </span>
+                <button className="btn sm ghost" onClick={() => setQualSpec(getQcRows(form.cat || product.cat))} title="Standard-Vorlage für Kategorie laden">
+                  <Ic name="refresh" size={12} /> Vorlage ({form.cat || product.cat})
+                </button>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    {['Parameter', 'Min', 'Ziel', 'Max', 'EU-Grenzwert', ''].map(h => (
+                      <th key={h} style={{ padding: '6px 4px', textAlign: 'left', fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {qualSpec.map((row, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      {(['p', 'min', 'tgt', 'max', 'eu'] as (keyof ProductQcRow)[]).map(key => (
+                        <td key={key} style={{ padding: '5px 4px' }}>
+                          <input
+                            type="text" value={row[key]}
+                            onChange={e => setQcCell(i, key, e.target.value)}
+                            placeholder={key === 'p' ? 'Parameter' : '—'}
+                            style={{ ...cellInput, width: key === 'p' ? 140 : 80 }}
+                          />
+                        </td>
+                      ))}
+                      <td style={{ padding: '5px 4px', textAlign: 'right' }}>
+                        <button
+                          className="btn sm ghost"
+                          onClick={() => removeQcRow(i)}
+                          style={{ color: '#f87171', padding: '3px 6px' }}
+                          title="Parameter entfernen"
+                        >
+                          <Ic name="trash" size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={addQcRow}>
+                <Ic name="plus" size={12} /> Parameter hinzufügen
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11.5, color: '#f87171' }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
         <div className="modal-foot">
           <button className="btn ghost" onClick={onClose}>Abbrechen</button>
           <div style={{ flex: 1 }} />
-          <button className="btn primary" onClick={handleSave} disabled={saving} style={{ minWidth: 110 }}>
+          <button className="btn primary" onClick={handleSave} disabled={saving} style={{ minWidth: 120 }}>
             {saving
               ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 11, height: 11, border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
@@ -281,9 +460,8 @@ export const ProductsList = ({ lang, onOpen }: ProductsListProps) => {
 // ── Product Detail ────────────────────────────────────────────────────────────
 
 interface ProductDetailProps { id: string; lang: Lang; onBack: () => void; }
-interface QcRow { p: string; min: string; tgt: string; max: string; eu: string; }
 
-function getQcRows(cat: string): QcRow[] {
+function getQcRows(cat: string): ProductQcRow[] {
   if (cat === 'Kaffee') return [
     { p: 'Feuchtigkeit', min: '10%',       tgt: '11.5%',    max: '12.5%', eu: '12.5%' },
     { p: 'Defects (Specialty)', min: '—',  tgt: '4',        max: '8',     eu: '—' },
@@ -309,9 +487,12 @@ function getQcRows(cat: string): QcRow[] {
 export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
   const { data: M, refresh } = useData();
   const [editOpen, setEditOpen]         = useState(false);
+  const [editInitTab, setEditInitTab]   = useState<EditTab>('grunddaten');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting]         = useState(false);
   const [deleteError, setDeleteError]   = useState<string | null>(null);
+
+  const openEdit = (tab: EditTab = 'grunddaten') => { setEditInitTab(tab); setEditOpen(true); };
 
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
   const p = M.products.find(x => x.id === id);
@@ -321,7 +502,7 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
   const buyersForProduct = M.buyers.filter(b =>
     b.interests.some(i => i.toLowerCase().includes(p.name.split(' ')[0].toLowerCase()))
   );
-  const qcRows  = getQcRows(p.cat);
+  const qcRows  = (p.qualSpec && p.qualSpec.length > 0) ? p.qualSpec : getQcRows(p.cat);
   const iconName = p.cat === 'Kaffee' ? 'coffee' : 'leaf';
 
   const handleDelete = async () => {
@@ -352,7 +533,7 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
           : <Badge kind="danger" dot>blockiert</Badge>}
         <div className="right">
           <button className="btn" onClick={() => window.print()}><Ic name="download" size={13} /> Datenblatt PDF</button>
-          <button className="btn" onClick={() => setEditOpen(true)}>
+          <button className="btn" onClick={() => openEdit('grunddaten')}>
             <Ic name="edit" size={13} /> Bearbeiten
           </button>
           <button className="btn" style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }} onClick={() => setDeleteConfirm(true)}>
@@ -425,6 +606,9 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
               <Ic name="layers" size={14} />
               <span className="title">Varianten</span>
               <span className="meta">{fmtKg(totalStock)} verfügbar</span>
+              <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => openEdit('varianten')}>
+                <Ic name="edit" size={12} /> Bearbeiten
+              </button>
             </div>
             <table className="table">
               <thead>
@@ -453,6 +637,9 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
             <div className="card-head">
               <Ic name="quality" size={14} />
               <span className="title">Qualitäts-Spezifikation</span>
+              <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => openEdit('qualitaet')}>
+                <Ic name="edit" size={12} /> Bearbeiten
+              </button>
             </div>
             <div className="card-body">
               <table className="table">
@@ -527,6 +714,7 @@ export const ProductDetail = ({ id, lang, onBack }: ProductDetailProps) => {
       {editOpen && (
         <EditModal
           product={p}
+          initialTab={editInitTab}
           onClose={() => setEditOpen(false)}
           onSaved={() => setEditOpen(false)}
         />
