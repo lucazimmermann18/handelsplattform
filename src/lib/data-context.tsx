@@ -38,6 +38,18 @@ const mapProduct = (r: any): Product => ({
   variants: r.variants ?? [], qualSpec: r.qual_spec ?? null,
   certs: r.certs ?? [],
   buyers: r.buyers_count ?? 0, suppliers: r.suppliers_count ?? 0,
+  eudrStatus: r.eudr_status ?? null,
+  eudrCategory: r.eudr_category ?? null,
+  productCerts: r.product_certs ?? null,
+  importRestrictions: r.import_restrictions ?? null,
+  packagingSpec: r.packaging_spec ?? null,
+  storageConditions: r.storage_conditions ?? null,
+  originRegions: r.origin_regions ?? null,
+  harvestSeason: r.harvest_season ?? null,
+  linkedSupplierIds: r.linked_supplier_ids ?? null,
+  marketPrices: r.market_prices ?? null,
+  defaultIncoterms: r.default_incoterms ?? null,
+  requiredDocs: r.required_docs ?? null,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

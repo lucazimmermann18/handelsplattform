@@ -22,6 +22,55 @@ export interface ProductQcRow {
   eu: string;
 }
 
+export interface ProductCert {
+  name: string;
+  issuer: string;
+  certNo: string;
+  validUntil: string;
+}
+
+export interface ImportRestriction {
+  country: string;
+  requirement: string;
+  mandatory: boolean;
+}
+
+export interface ProductPackaging {
+  bagType: string;
+  fillWeight: string;
+  palletizing: string;
+  fcl20: string;
+  fcl40: string;
+}
+
+export interface ProductStorage {
+  tempRange: string;
+  humidity: string;
+  shelfLife: string;
+  notes: string;
+}
+
+export interface OriginRegion {
+  country: string;
+  region: string;
+  share: string;
+}
+
+export interface MarketPrice {
+  market: string;
+  price: string;
+  currency: string;
+  incoterm: string;
+  validUntil: string;
+}
+
+export interface RequiredDoc {
+  docType: string;
+  markets: string;
+  mandatory: boolean;
+  notes: string;
+}
+
 export interface Supplier {
   id: string;
   name: string;
@@ -67,6 +116,23 @@ export interface Product {
   certs: string[];
   buyers: number;
   suppliers: number;
+  // Zoll & Regulatorik
+  eudrStatus?: 'relevant' | 'nicht_relevant' | 'unklar' | null;
+  eudrCategory?: string | null;
+  productCerts?: ProductCert[] | null;
+  importRestrictions?: ImportRestriction[] | null;
+  // Logistik & Verpackung
+  packagingSpec?: ProductPackaging | null;
+  storageConditions?: ProductStorage | null;
+  // Herkunft & Beschaffung
+  originRegions?: OriginRegion[] | null;
+  harvestSeason?: string | null;
+  linkedSupplierIds?: string[] | null;
+  // Preise & Konditionen
+  marketPrices?: MarketPrice[] | null;
+  defaultIncoterms?: string[] | null;
+  // Pflichtdokumente
+  requiredDocs?: RequiredDoc[] | null;
 }
 
 export interface Buyer {
