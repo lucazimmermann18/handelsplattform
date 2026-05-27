@@ -17,6 +17,7 @@ const mapSupplier = (r: any): Supplier => ({
   comm: r.comm ?? 0, price: r.price ?? 0, docs: r.docs ?? 0,
   risk: r.risk ?? 'niedrig', certs: r.certs ?? [], products: r.products ?? [],
   lastDelivery: r.last_delivery ?? '', status: r.status ?? 'aktiv',
+  ...((r.supplier_master ? { supplier_master: r.supplier_master } : {})),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

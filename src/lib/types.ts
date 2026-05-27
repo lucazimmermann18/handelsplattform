@@ -96,6 +96,7 @@ export interface Supplier {
   products: string[];
   lastDelivery: string;
   status: string;
+  supplier_master?: Record<string, unknown>;
 }
 
 export interface Product {
