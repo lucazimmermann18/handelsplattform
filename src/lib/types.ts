@@ -378,6 +378,20 @@ export interface Communication {
   author: string;
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  endDate?: string;
+  type: string;
+  color?: string;
+  description?: string;
+  owner: string;
+  linkedId?: string;
+  linkedType?: string;
+  allDay: boolean;
+}
+
 export interface ServiceProvider {
   id: string;
   companyName: string;
@@ -427,4 +441,5 @@ export interface MockData {
   lots: Lot[];
   communications: Communication[];
   serviceProviders: ServiceProvider[];
+  calendarEvents: CalendarEvent[];
 }
