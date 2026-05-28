@@ -296,7 +296,7 @@ const mapCompanyProfile = (r: any): CompanyProfile => ({
 const mapCommunication = (r: any): Communication => ({
   id: r.id, contactId: r.contact_id ?? '', contactType: r.contact_type ?? 'buyer',
   type: r.type ?? 'note', direction: r.direction ?? 'internal',
-  date: r.date ?? r.created_at?.slice(0,10) ?? '', subject: r.subject ?? '',
+  date: r.date ?? '', subject: r.subject ?? '',
   body: r.body ?? '', author: r.author ?? '',
 });
 

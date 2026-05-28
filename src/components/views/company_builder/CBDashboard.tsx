@@ -79,6 +79,7 @@ export const CBDashboard = ({ onSection, onGoLive }: CBDashboardProps) => {
         external_advisor: t.externalAdvisor ?? null,
         doc_quality: 'ungeprüft',
         sort_order: t.sortOrder,
+        created_at: new Date().toISOString(),
       }));
       await sb.from('setup_tasks').insert(rows);
       refresh();

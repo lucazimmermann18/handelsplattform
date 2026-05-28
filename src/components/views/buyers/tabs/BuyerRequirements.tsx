@@ -109,7 +109,7 @@ const RequirementModal = ({ initial, buyerId, onSaved, onClose }: RequirementMod
       if (initial?.id) {
         await sb.from('buyer_requirements').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', initial.id);
       } else {
-        await sb.from('buyer_requirements').insert(payload);
+        await sb.from('buyer_requirements').insert({ ...payload, updated_at: new Date().toISOString() });
       }
       onSaved();
       onClose();

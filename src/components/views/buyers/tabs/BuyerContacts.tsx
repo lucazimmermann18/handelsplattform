@@ -67,7 +67,7 @@ const ContactModal = ({ initial, buyerId, onSaved, onClose }: ContactModalProps)
       if (initial?.id) {
         await sb.from('buyer_contacts').update(payload).eq('id', initial.id);
       } else {
-        await sb.from('buyer_contacts').insert(payload);
+        await sb.from('buyer_contacts').insert({ ...payload, created_at: new Date().toISOString() });
       }
       onSaved();
       onClose();

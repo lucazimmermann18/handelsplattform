@@ -185,6 +185,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
           title: form.title, date: form.date,
           end_date: form.endDate || null, type: form.type,
           description: form.description || null, owner: form.owner,
+          all_day: true,
         }).eq('id', form.id);
         if (error) throw new Error(error.message);
       } else {
@@ -192,6 +193,7 @@ export const CalendarView = ({ lang: _lang }: CalendarViewProps) => {
           title: form.title, date: form.date,
           end_date: form.endDate || null, type: form.type,
           description: form.description || null, owner: form.owner,
+          all_day: true,
         });
         if (error) throw new Error(error.message);
       }
