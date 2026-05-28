@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 const NAV = [
   { group: 'group_overview', items: [
     { id: 'dashboard',          icon: 'dashboard', label: 'nav_dashboard' },
+    { id: 'company_builder',    icon: 'flag',      label: 'Company Builder' },
     { id: 'cockpit',            icon: 'activity',  label: 'Cockpit' },
     { id: 'intelligence',       icon: 'sparkle',   label: 'Intelligence' },
     { id: 'strategy',           icon: 'flag',      label: 'Strategie' },

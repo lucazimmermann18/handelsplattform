@@ -43,6 +43,7 @@ import { LotsView } from '@/components/views/Lots';
 import { PayablesView } from '@/components/views/Payables';
 import { CBAMView } from '@/components/views/CBAM';
 import { ServiceProvidersView } from '@/components/views/ServiceProviders';
+import { CompanyBuilderView } from '@/components/views/CompanyBuilder';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -139,6 +140,7 @@ export const App = () => {
       cold_chain: 'Cold Chain Monitor', insurance: 'Versicherungs-Tracker',
       db_health: 'Datenbank-Diagnose',
       lots: 'Lots & Chargen', payables: 'AR / AP', cbam: 'CBAM / CO₂',
+      company_builder: 'Company Builder',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (labelMap[route.view]) return [...base, labelMap[route.view]];
@@ -251,6 +253,7 @@ export const App = () => {
       case 'lots': return <LotsView lang={lang} />;
       case 'payables': return <PayablesView lang={lang} />;
       case 'cbam': return <CBAMView lang={lang} />;
+      case 'company_builder': return <CompanyBuilderView />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }

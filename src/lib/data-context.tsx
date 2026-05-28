@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -216,6 +216,33 @@ const mapServiceProvider = (r: any): ServiceProvider => ({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapSetupTask = (r: any): SetupTask => ({
+  id: r.id, section: r.section ?? '', title: r.title ?? '',
+  description: r.description ?? undefined, whyImportant: r.why_important ?? undefined,
+  required: r.required ?? false,
+  priority: r.priority ?? 'mittel',
+  phase: r.phase ?? 'setup', status: r.status ?? 'open',
+  owner: r.owner ?? undefined, dueDate: r.due_date ?? undefined,
+  blockerGoLive: r.blocker_go_live ?? false, blockerFirstDeal: r.blocker_first_deal ?? false,
+  evidenceRequired: r.evidence_required ?? undefined, evidenceNotes: r.evidence_notes ?? undefined,
+  docQuality: r.doc_quality ?? 'ungeprüft', externalAdvisor: r.external_advisor ?? undefined,
+  notes: r.notes ?? undefined, sortOrder: r.sort_order ?? 0,
+  createdAt: r.created_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapCompanyProfile = (r: any): CompanyProfile => ({
+  id: r.id, legalName: r.legal_name ?? undefined, tradeName: r.trade_name ?? undefined,
+  legalForm: r.legal_form ?? undefined, businessModel: r.business_model ?? undefined,
+  businessPurpose: r.business_purpose ?? undefined, currentPhase: r.current_phase ?? 'idee',
+  eoriNumber: r.eori_number ?? undefined, taxNumber: r.tax_number ?? undefined,
+  vatId: r.vat_id ?? undefined, commercialRegisterNumber: r.commercial_register_number ?? undefined,
+  foundingDate: r.founding_date ?? undefined, managingDirectors: r.managing_directors ?? undefined,
+  website: r.website ?? undefined, notes: r.notes ?? undefined,
+  profileData: r.profile_data ?? undefined,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapCommunication = (r: any): Communication => ({
   id: r.id, contactId: r.contact_id ?? '', contactType: r.contact_type ?? 'buyer',
   type: r.type ?? 'note', direction: r.direction ?? 'internal',
@@ -273,6 +300,8 @@ async function fetchAllData(): Promise<MockData> {
     { data: commsRaw },
     { data: serviceProvidersRaw },
     { data: calendarEventsRaw },
+    { data: setupTasksRaw },
+    { data: companyProfileRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -301,6 +330,8 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('communications').select('*').order('date', { ascending: false }),
     sb.from('service_providers').select('*').order('company_name'),
     sb.from('calendar_events').select('*').order('date'),
+    sb.from('setup_tasks').select('*').order('sort_order, created_at'),
+    sb.from('company_profile').select('*').limit(1),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -346,6 +377,8 @@ async function fetchAllData(): Promise<MockData> {
     fieldVisits:      (visitsRaw           ?? []).map(mapFieldVisit),
     serviceProviders:  (serviceProvidersRaw ?? []).map(mapServiceProvider),
     calendarEvents:    (calendarEventsRaw   ?? []).map(mapCalendarEvent),
+    setupTasks:        (setupTasksRaw       ?? []).map(mapSetupTask),
+    companyProfile:    companyProfileRaw?.[0] ? mapCompanyProfile(companyProfileRaw[0]) : null,
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,

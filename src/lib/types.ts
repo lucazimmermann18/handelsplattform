@@ -412,6 +412,48 @@ export interface ServiceProvider {
   provider_master?: Record<string, unknown>;
 }
 
+export interface SetupTask {
+  id: string;
+  section: string;
+  title: string;
+  description?: string;
+  whyImportant?: string;
+  required: boolean;
+  priority: 'kritisch' | 'hoch' | 'mittel' | 'niedrig';
+  phase: string;
+  status: 'open' | 'in_progress' | 'submitted' | 'waiting' | 'done' | 'not_relevant';
+  owner?: string;
+  dueDate?: string;
+  blockerGoLive: boolean;
+  blockerFirstDeal: boolean;
+  evidenceRequired?: string;
+  evidenceNotes?: string;
+  docQuality: string;
+  externalAdvisor?: string;
+  notes?: string;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface CompanyProfile {
+  id: string;
+  legalName?: string;
+  tradeName?: string;
+  legalForm?: string;
+  businessModel?: string;
+  businessPurpose?: string;
+  currentPhase: string;
+  eoriNumber?: string;
+  taxNumber?: string;
+  vatId?: string;
+  commercialRegisterNumber?: string;
+  foundingDate?: string;
+  managingDirectors?: string;
+  website?: string;
+  notes?: string;
+  profileData?: Record<string, unknown>;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -442,4 +484,6 @@ export interface MockData {
   communications: Communication[];
   serviceProviders: ServiceProvider[];
   calendarEvents: CalendarEvent[];
+  setupTasks: SetupTask[];
+  companyProfile: CompanyProfile | null;
 }
