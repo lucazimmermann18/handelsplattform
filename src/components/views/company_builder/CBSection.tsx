@@ -8,10 +8,12 @@ import type { SetupTask } from '@/lib/types';
 import { CB_SECTIONS, STATUS_MAP, calcSectionScore } from './types';
 import type { CBStatus, CBPriority, CBDocQuality } from './types';
 import { StatusBadge, PriorityBadge, DocQualityBadge, BlockerTag, StatusDot, StatusSelect, SectionProgress, inputStyle, textareaStyle } from './shared';
+import type { Lang } from '@/lib/i18n';
 
 interface CBSectionProps {
   sectionKey: string;
   onBack: () => void;
+  lang: Lang;
 }
 
 // ── Task modal ─────────────────────────────────────────────────────────────────
@@ -201,7 +203,7 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBSection = ({ sectionKey, onBack }: CBSectionProps) => {
+export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) => {
   const { data: M, refresh } = useData();
   const [modal, setModal] = useState<Partial<SetupTask> | null>(null);
   const [saving, setSaving] = useState(false);

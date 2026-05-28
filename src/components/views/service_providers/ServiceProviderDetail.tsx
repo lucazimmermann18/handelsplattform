@@ -21,10 +21,12 @@ import { TabPerformance } from './tabs/Performance';
 import { TabKommunikation } from './tabs/Kommunikation';
 import { TabAufgaben } from './tabs/Aufgaben';
 
+import type { Lang } from '@/lib/i18n';
 interface Props {
   provider: ServiceProvider;
   onBack: () => void;
   onDeleted: () => void;
+  lang: Lang;
 }
 
 type TabId = 'uebersicht' | 'stammdaten' | 'leistungen' | 'kontakte' | 'preise' | 'vertraege' | 'dokumente' | 'risiko' | 'performance' | 'komm' | 'aufgaben';
@@ -43,7 +45,7 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: 'aufgaben',    label: 'Aufgaben',    icon: 'task'      },
 ];
 
-export const ServiceProviderDetail = ({ provider, onBack, onDeleted }: Props) => {
+export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang }: Props) => {
   const { refresh } = useData();
   const [tab, setTab] = useState<TabId>('uebersicht');
   const [editOpen, setEditOpen] = useState(false);

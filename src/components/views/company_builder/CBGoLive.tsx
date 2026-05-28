@@ -6,10 +6,12 @@ import { Ic } from '@/components/ui/icons';
 import { CB_SECTIONS, CB_PHASES, STATUS_MAP, calcReadiness, calcSectionScore, calcPhase } from './types';
 import type { CBStatus } from './types';
 import { StatusBadge, PriorityBadge, BlockerTag, SectionProgress } from './shared';
+import type { Lang } from '@/lib/i18n';
 
 interface CBGoLiveProps {
   onBack: () => void;
   onSection: (key: string) => void;
+  lang: Lang;
 }
 
 // ── Phase timeline ─────────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ const PhaseTimeline = ({ readiness }: { readiness: number }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBGoLive = ({ onBack, onSection }: CBGoLiveProps) => {
+export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
   const { data: M } = useData();
 
   if (!M) return null;

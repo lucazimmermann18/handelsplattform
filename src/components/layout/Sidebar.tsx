@@ -9,51 +9,51 @@ import { t } from '@/lib/i18n';
 const NAV = [
   { group: 'group_overview', items: [
     { id: 'dashboard',          icon: 'dashboard', label: 'nav_dashboard' },
-    { id: 'company_builder',    icon: 'flag',      label: 'Company Builder' },
-    { id: 'cockpit',            icon: 'activity',  label: 'Cockpit' },
-    { id: 'intelligence',       icon: 'sparkle',   label: 'Intelligence' },
-    { id: 'strategy',           icon: 'flag',      label: 'Strategie' },
-    { id: 'compliance_roadmap', icon: 'leaf',      label: 'Compliance-Roadmap' },
-    { id: 'capital',            icon: 'finance',   label: 'Capital' },
+    { id: 'company_builder',    icon: 'flag',      label: 'nav_company_builder' },
+    { id: 'cockpit',            icon: 'activity',  label: 'nav_cockpit' },
+    { id: 'intelligence',       icon: 'sparkle',   label: 'nav_intelligence' },
+    { id: 'strategy',           icon: 'flag',      label: 'nav_strategy' },
+    { id: 'compliance_roadmap', icon: 'leaf',      label: 'nav_compliance_roadmap' },
+    { id: 'capital',            icon: 'finance',   label: 'nav_capital' },
   ]},
   { group: 'group_sales', items: [
     { id: 'deals',    icon: 'deals',   label: 'nav_deals',   countKey: 'deals' },
     { id: 'offers',   icon: 'offer',   label: 'nav_offers',  countKey: 'offers' },
-    { id: 'samples',  icon: 'pkg',     label: 'Muster' },
+    { id: 'samples',  icon: 'pkg',     label: 'nav_samples' },
     { id: 'buyers',   icon: 'buyer',   label: 'nav_buyers',  countKey: 'buyers' },
-    { id: 'matching', icon: 'sparkle', label: 'Matching' },
+    { id: 'matching', icon: 'sparkle', label: 'nav_matching' },
   ]},
   { group: 'group_ops', items: [
-    { id: 'orders',     icon: 'box',      label: 'nav_orders',    countKey: 'orders_active' },
-    { id: 'shipments',  icon: 'ship',     label: 'nav_shipments', countKey: 'shipments' },
-    { id: 'forwarders',        icon: 'layers',   label: 'Spediteure' },
-    { id: 'service_providers', icon: 'building', label: 'Dienstleister' },
-    { id: 'calendar',   icon: 'clock',    label: 'Kalender' },
-    { id: 'suppliers',  icon: 'supplier', label: 'nav_suppliers', countKey: 'suppliers' },
-    { id: 'products',   icon: 'product',  label: 'nav_products',  countKey: 'products' },
-    { id: 'quality',    icon: 'quality',  label: 'nav_quality' },
-    { id: 'inventory',  icon: 'inv',      label: 'nav_inventory' },
-    { id: 'tasks',      icon: 'task',     label: 'nav_tasks',     countKey: 'tasks' },
-    { id: 'lots',           icon: 'layers',   label: 'Lots & Chargen' },
+    { id: 'orders',            icon: 'box',      label: 'nav_orders',           countKey: 'orders_active' },
+    { id: 'shipments',         icon: 'ship',     label: 'nav_shipments',        countKey: 'shipments' },
+    { id: 'forwarders',        icon: 'layers',   label: 'nav_forwarders' },
+    { id: 'service_providers', icon: 'building', label: 'nav_service_providers' },
+    { id: 'calendar',          icon: 'clock',    label: 'nav_calendar' },
+    { id: 'suppliers',         icon: 'supplier', label: 'nav_suppliers',        countKey: 'suppliers' },
+    { id: 'products',          icon: 'product',  label: 'nav_products',         countKey: 'products' },
+    { id: 'quality',           icon: 'quality',  label: 'nav_quality' },
+    { id: 'inventory',         icon: 'inv',      label: 'nav_inventory' },
+    { id: 'tasks',             icon: 'task',     label: 'nav_tasks',            countKey: 'tasks' },
+    { id: 'lots',              icon: 'layers',   label: 'nav_lots' },
   ]},
   { group: 'group_finance', items: [
-    { id: 'compliance',  icon: 'customs', label: 'nav_compliance' },
-    { id: 'eudr',        icon: 'leaf',    label: 'EUDR' },
-    { id: 'documents',   icon: 'doc',     label: 'nav_documents',   countKey: 'documents' },
-    { id: 'finance',     icon: 'finance', label: 'nav_finance' },
-    { id: 'tradefinance',icon: 'finance', label: 'Trade Finance' },
-    { id: 'payables',    icon: 'finance', label: 'AR / AP' },
-    { id: 'cbam',        icon: 'leaf',    label: 'CBAM / CO₂' },
-    { id: 'cashflow',    icon: 'finance', label: 'Cashflow' },
-    { id: 'insurance',   icon: 'doc',     label: 'Versicherung' },
-    { id: 'cold_chain',  icon: 'ship',    label: 'Cold Chain' },
-    { id: 'market',      icon: 'chart',   label: 'Marktdaten' },
-    { id: 'complaints',  icon: 'bug',     label: 'nav_complaints', countKey: 'complaints_open' },
-    { id: 'reports',     icon: 'chart',   label: 'nav_reports' },
-    { id: 'heatmap',     icon: 'layers',  label: 'Heatmap' },
+    { id: 'compliance',   icon: 'customs', label: 'nav_compliance' },
+    { id: 'eudr',         icon: 'leaf',    label: 'nav_eudr' },
+    { id: 'documents',    icon: 'doc',     label: 'nav_documents',  countKey: 'documents' },
+    { id: 'finance',      icon: 'finance', label: 'nav_finance' },
+    { id: 'tradefinance', icon: 'finance', label: 'nav_tradefinance' },
+    { id: 'payables',     icon: 'finance', label: 'nav_payables' },
+    { id: 'cbam',         icon: 'leaf',    label: 'nav_cbam' },
+    { id: 'cashflow',     icon: 'finance', label: 'nav_cashflow' },
+    { id: 'insurance',    icon: 'doc',     label: 'nav_insurance' },
+    { id: 'cold_chain',   icon: 'ship',    label: 'nav_cold_chain' },
+    { id: 'market',       icon: 'chart',   label: 'nav_market' },
+    { id: 'complaints',   icon: 'bug',     label: 'nav_complaints', countKey: 'complaints_open' },
+    { id: 'reports',      icon: 'chart',   label: 'nav_reports' },
+    { id: 'heatmap',      icon: 'layers',  label: 'nav_heatmap' },
   ]},
   { group: 'group_admin', items: [
-    { id: 'import',   icon: 'upload',   label: 'Daten-Import' },
+    { id: 'import',   icon: 'upload',   label: 'nav_import' },
     { id: 'settings', icon: 'settings', label: 'nav_settings' },
   ]},
 ];
@@ -88,7 +88,7 @@ export const Sidebar = ({ active, onNav, lang }: SidebarProps) => {
     <nav className="side">
       {NAV.map((group) => (
         <div key={group.group} style={{ marginBottom: 6 }}>
-          <div className="side-group">{t(lang, group.group) !== group.group ? t(lang, group.group) : group.group}</div>
+          <div className="side-group">{t(lang, group.group)}</div>
           {group.items.map((it) => {
             const count = getCount((it as { countKey?: string }).countKey);
             return (
@@ -96,10 +96,10 @@ export const Sidebar = ({ active, onNav, lang }: SidebarProps) => {
                 key={it.id}
                 className={`side-item ${active === it.id ? 'active' : ''}`}
                 onClick={() => onNav(it.id)}
-                title={t(lang, it.label) !== it.label ? t(lang, it.label) : it.label}
+                title={t(lang, it.label)}
               >
                 <span className="ico"><Ic name={it.icon} /></span>
-                <span className="label">{t(lang, it.label) !== it.label ? t(lang, it.label) : it.label}</span>
+                <span className="label">{t(lang, it.label)}</span>
                 {count !== undefined && <span className="count">{count}</span>}
               </div>
             );

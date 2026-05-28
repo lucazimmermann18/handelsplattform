@@ -65,7 +65,17 @@ interface Route {
 
 export const App = () => {
   const { user, loading: authLoading, isConfigured } = useAuth();
-  const [lang, setLang] = useState<Lang>('de');
+  const [lang, setLang] = useState<Lang>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('lang');
+      if (stored === 'de' || stored === 'en') return stored;
+    }
+    return 'de';
+  });
+  const handleSetLang = (l: Lang) => {
+    setLang(l);
+    if (typeof window !== 'undefined') localStorage.setItem('lang', l);
+  };
   const [route, setRoute] = useState<Route>({ view: 'dashboard' });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -133,19 +143,20 @@ export const App = () => {
       finance: 'nav_finance', tasks: 'nav_tasks', complaints: 'nav_complaints', reports: 'nav_reports',
       settings: 'nav_settings',
     };
-    const labelMap: Record<string, string> = {
-      eudr: 'EUDR Compliance', matching: 'Matching', market: 'Marktdaten', tradefinance: 'Trade Finance',
-      calendar: 'Kalender', samples: 'Muster', forwarders: 'Spediteure', heatmap: 'Heatmap',
-      intelligence: 'Intelligence', cockpit: 'Operations Cockpit', cashflow: 'Cashflow',
-      strategy: 'Strategie', compliance_roadmap: 'Compliance-Roadmap', capital: 'Capital', import: 'Daten-Import',
-      cold_chain: 'Cold Chain Monitor', insurance: 'Versicherungs-Tracker',
-      db_health: 'Datenbank-Diagnose',
-      lots: 'Lots & Chargen', payables: 'AR / AP', cbam: 'CBAM / CO₂',
-      company_builder: 'Company Builder',
+    // Extended modules with dedicated nav_ keys
+    const extNav: Record<string, string> = {
+      eudr: 'nav_eudr', matching: 'nav_matching', market: 'nav_market',
+      tradefinance: 'nav_tradefinance', calendar: 'nav_calendar', samples: 'nav_samples',
+      forwarders: 'nav_forwarders', heatmap: 'nav_heatmap', intelligence: 'nav_intelligence',
+      cockpit: 'bc_cockpit', cashflow: 'nav_cashflow', strategy: 'nav_strategy',
+      compliance_roadmap: 'nav_compliance_roadmap', capital: 'nav_capital', import: 'nav_import',
+      cold_chain: 'bc_cold_chain', insurance: 'bc_insurance', db_health: 'bc_db_health',
+      lots: 'nav_lots', payables: 'nav_payables', cbam: 'nav_cbam',
+      company_builder: 'nav_company_builder', service_providers: 'nav_service_providers',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
-    if (labelMap[route.view]) return [...base, labelMap[route.view]];
-    return [...base, 'Modul'];
+    if (extNav[route.view]) return [...base, t(lang, extNav[route.view])];
+    return [...base, t(lang, 'module')];
   }, [route, lang]);
 
   const activeNav = useMemo(() => {
@@ -238,7 +249,7 @@ export const App = () => {
       case 'forwarders':
         return <ForwardersView lang={lang} />;
       case 'service_providers':
-        return <ServiceProvidersView />;
+        return <ServiceProvidersView lang={lang} />;
       case 'intelligence':
         return <IntelligenceView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cockpit':
@@ -254,7 +265,7 @@ export const App = () => {
       case 'lots': return <LotsView lang={lang} />;
       case 'payables': return <PayablesView lang={lang} />;
       case 'cbam': return <CBAMView lang={lang} />;
-      case 'company_builder': return <CompanyBuilderView />;
+      case 'company_builder': return <CompanyBuilderView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }
@@ -280,7 +291,7 @@ export const App = () => {
 
         <Topbar
           lang={lang}
-          setLang={setLang}
+          setLang={handleSetLang}
           breadcrumbs={crumbs}
           onPalette={() => setPaletteOpen(true)}
           onBell={() => setNotifOpen(true)}
@@ -305,11 +316,11 @@ export const App = () => {
         <div className="overlay" onClick={() => setNotifOpen(false)}>
           <div className="drawer" style={{ top: 44 }} onClick={(e) => e.stopPropagation()}>
             <div className="drawer-head">
-              <span style={{ fontWeight: 600 }}>Benachrichtigungen</span>
+              <span style={{ fontWeight: 600 }}>{t(lang, 'notifications')}</span>
               <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNotifOpen(false)}>✕</button>
             </div>
             <div className="drawer-body">
-              <div className="tx3 empty">Keine neuen Benachrichtigungen</div>
+              <div className="tx3 empty">{t(lang, 'no_notifications')}</div>
             </div>
           </div>
         </div>

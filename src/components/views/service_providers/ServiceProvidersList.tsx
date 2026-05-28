@@ -11,7 +11,8 @@ import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster } from './types';
 import { PROVIDER_CATEGORIES, STATUS_MAP, RISK_MAP } from './types';
 
-interface Props { onSelect: (p: ServiceProvider) => void; }
+import type { Lang } from '@/lib/i18n';
+interface Props { onSelect: (p: ServiceProvider) => void; lang: Lang; }
 
 const Stars = ({ rating }: { rating: number }) => (
   <span>{Array.from({ length: 5 }, (_, i) => (
@@ -43,7 +44,7 @@ const newProviderFields: FieldDef[] = [
   { key: 'notes',         label: 'Notizen',       type: 'textarea', span: 2 },
 ];
 
-export const ServiceProvidersList = ({ onSelect }: Props) => {
+export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
   const { data: M, refresh } = useData();
   const [search, setSearch]         = useState('');
   const [catFilter, setCatFilter]   = useState('');

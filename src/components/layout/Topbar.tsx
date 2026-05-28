@@ -73,7 +73,7 @@ export const Topbar = ({ lang, setLang, breadcrumbs, onPalette, onBell, onCopilo
       >
         <Ic name="sparkle" size={14} color="#c4b5fd" />
       </button>
-      <button className="iconbtn" title="Benachrichtigungen" onClick={onBell}>
+      <button className="iconbtn" title={t(lang, 'notifications')} onClick={onBell}>
         <Ic name="bell" size={15} /><span className="dot" />
       </button>
       <button className="iconbtn" title="Help"><Ic name="help" size={15} /></button>
@@ -120,7 +120,7 @@ export const Topbar = ({ lang, setLang, breadcrumbs, onPalette, onBell, onCopilo
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
               >
                 <Ic name="x" size={13} color="#f87171" />
-                <span style={{ color: '#f87171' }}>Abmelden</span>
+                <span style={{ color: '#f87171' }}>{t(lang, 'logout')}</span>
               </button>
             </div>
           </>

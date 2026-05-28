@@ -6,10 +6,12 @@ import { Ic } from '@/components/ui/icons';
 import { CB_SECTIONS, PRIORITY_MAP, calcReadiness, calcSectionScore, calcPhase } from './types';
 import { StatusBadge, SectionProgress } from './shared';
 import { DEFAULT_TASKS } from './defaultTasks';
+import type { Lang } from '@/lib/i18n';
 
 interface CBDashboardProps {
   onSection: (key: string) => void;
   onGoLive: () => void;
+  lang: Lang;
 }
 
 // ── Readiness ring ─────────────────────────────────────────────────────────────
@@ -36,7 +38,7 @@ const ReadinessRing = ({ pct }: { pct: number }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBDashboard = ({ onSection, onGoLive }: CBDashboardProps) => {
+export const CBDashboard = ({ onSection, onGoLive, lang: _lang }: CBDashboardProps) => {
   const { data: M, refresh } = useData();
   const [seeding, setSeeding] = useState(false);
 
