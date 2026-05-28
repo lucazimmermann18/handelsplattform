@@ -41,7 +41,6 @@ import { EUDRView } from '@/components/views/EUDR';
 import { DbHealthView } from '@/components/views/DbHealth';
 import { LotsView } from '@/components/views/Lots';
 import { PayablesView } from '@/components/views/Payables';
-import { VesselTrackingView } from '@/components/views/VesselTracking';
 import { CBAMView } from '@/components/views/CBAM';
 import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
@@ -139,7 +138,7 @@ export const App = () => {
       strategy: 'Strategie', compliance_roadmap: 'Compliance-Roadmap', capital: 'Capital', import: 'Daten-Import',
       cold_chain: 'Cold Chain Monitor', insurance: 'Versicherungs-Tracker',
       db_health: 'Datenbank-Diagnose',
-      lots: 'Lots & Chargen', payables: 'AR / AP', vessel_tracking: 'Vessel Tracking', cbam: 'CBAM / CO₂',
+      lots: 'Lots & Chargen', payables: 'AR / AP', cbam: 'CBAM / CO₂',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (labelMap[route.view]) return [...base, labelMap[route.view]];
@@ -251,7 +250,6 @@ export const App = () => {
         return <CapitalView lang={lang} />;
       case 'lots': return <LotsView lang={lang} />;
       case 'payables': return <PayablesView lang={lang} />;
-      case 'vessel_tracking': return <VesselTrackingView lang={lang} />;
       case 'cbam': return <CBAMView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;

@@ -34,7 +34,6 @@ const NAV = [
     { id: 'inventory',  icon: 'inv',      label: 'nav_inventory' },
     { id: 'tasks',      icon: 'task',     label: 'nav_tasks',     countKey: 'tasks' },
     { id: 'lots',           icon: 'layers',   label: 'Lots & Chargen' },
-    { id: 'vessel_tracking', icon: 'ship',    label: 'Vessel Tracking' },
   ]},
   { group: 'group_finance', items: [
     { id: 'compliance',  icon: 'customs', label: 'nav_compliance' },
