@@ -4,6 +4,7 @@ import type {
   Document, QualityCheck, InventoryItem, Offer, Complaint,
   Vessel, Port, RevTrendEntry, StatusBadgeMap, MockData, Lot, Communication,
   ServiceProvider, CalendarEvent, SetupTask, CompanyProfile,
+  BuyerContact, BuyerRequirement,
 } from './types';
 
 const todayBase = new Date('2026-05-24T10:00:00Z');
@@ -280,4 +281,6 @@ export const MOCK: MockData = {
   calendarEvents: [] as CalendarEvent[],
   setupTasks: [] as SetupTask[],
   companyProfile: null as CompanyProfile | null,
+  buyerContacts: [] as BuyerContact[],
+  buyerRequirements: [] as BuyerRequirement[],
 };

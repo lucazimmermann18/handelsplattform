@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -28,6 +28,56 @@ const mapBuyer = (r: any): Buyer => ({
   interests: r.interests ?? [], moq: r.moq ?? '', certs: r.certs ?? [],
   terms: r.terms ?? '', incoterm: r.incoterm ?? '', rating: r.rating ?? 0,
   status: r.status ?? 'aktiv', revenue: r.revenue ?? 0,
+  // Buyer Finder
+  pipelineStage: r.pipeline_stage ?? 'recherchiert',
+  priority: r.priority ?? 'mittel',
+  source: r.source ?? undefined,
+  buyerType: r.buyer_type ?? undefined,
+  companySize: r.company_size ?? undefined,
+  nextFollowUp: r.next_follow_up ?? undefined,
+  nextAction: r.next_action ?? undefined,
+  fitScore: r.fit_score ?? 0,
+  commercialScore: r.commercial_score ?? 0,
+  engagementScore: r.engagement_score ?? 0,
+  riskScore: r.risk_score ?? 0,
+  estimatedVolume: r.estimated_volume ?? undefined,
+  ...((r.buyer_master ? { buyerMaster: r.buyer_master } : {})),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapBuyerContact = (r: any): BuyerContact => ({
+  id: r.id, buyerId: r.buyer_id ?? '',
+  firstName: r.first_name ?? undefined, lastName: r.last_name ?? '',
+  role: r.role ?? undefined, department: r.department ?? undefined,
+  email: r.email ?? undefined, phone: r.phone ?? undefined,
+  linkedin: r.linkedin ?? undefined, language: r.language ?? undefined,
+  decisionPower: r.decision_power ?? 'niedrig',
+  preferredChannel: r.preferred_channel ?? 'email',
+  contactQuality: r.contact_quality ?? 'unbekannt',
+  lastContactedAt: r.last_contacted_at ?? undefined,
+  notes: r.notes ?? undefined, createdAt: r.created_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapBuyerRequirement = (r: any): BuyerRequirement => ({
+  id: r.id, buyerId: r.buyer_id ?? '',
+  productCategory: r.product_category ?? undefined, productId: r.product_id ?? undefined,
+  qualityNotes: r.quality_notes ?? undefined,
+  quantitySample: r.quantity_sample ?? undefined,
+  quantityFirst: r.quantity_first ?? undefined,
+  quantityMonthly: r.quantity_monthly ?? undefined,
+  targetPriceMin: r.target_price_min ?? undefined,
+  targetPriceMax: r.target_price_max ?? undefined,
+  currency: r.currency ?? 'EUR',
+  incotermPref: r.incoterm_pref ?? undefined,
+  deliveryLocation: r.delivery_location ?? undefined,
+  paymentTerms: r.payment_terms ?? undefined,
+  certRequirements: r.cert_requirements ?? [],
+  docRequirements: r.doc_requirements ?? [],
+  packagingNotes: r.packaging_notes ?? undefined,
+  otherNotes: r.other_notes ?? undefined,
+  status: r.status ?? 'offen',
+  createdAt: r.created_at ?? '', updatedAt: r.updated_at ?? '',
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -302,6 +352,8 @@ async function fetchAllData(): Promise<MockData> {
     { data: calendarEventsRaw },
     { data: setupTasksRaw },
     { data: companyProfileRaw },
+    { data: buyerContactsRaw },
+    { data: buyerRequirementsRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -332,6 +384,8 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('calendar_events').select('*').order('date'),
     sb.from('setup_tasks').select('*').order('sort_order, created_at'),
     sb.from('company_profile').select('*').limit(1),
+    sb.from('buyer_contacts').select('*').order('last_name'),
+    sb.from('buyer_requirements').select('*').order('created_at', { ascending: false }),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -379,6 +433,8 @@ async function fetchAllData(): Promise<MockData> {
     calendarEvents:    (calendarEventsRaw   ?? []).map(mapCalendarEvent),
     setupTasks:        (setupTasksRaw       ?? []).map(mapSetupTask),
     companyProfile:    companyProfileRaw?.[0] ? mapCompanyProfile(companyProfileRaw[0]) : null,
+    buyerContacts:     (buyerContactsRaw     ?? []).map(mapBuyerContact),
+    buyerRequirements: (buyerRequirementsRaw ?? []).map(mapBuyerRequirement),
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,

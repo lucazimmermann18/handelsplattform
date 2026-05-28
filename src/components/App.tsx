@@ -44,6 +44,7 @@ import { PayablesView } from '@/components/views/Payables';
 import { CBAMView } from '@/components/views/CBAM';
 import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { CompanyBuilderView } from '@/components/views/CompanyBuilder';
+import { BuyerFinderView } from '@/components/views/BuyerFinder';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -173,7 +174,7 @@ export const App = () => {
       case 'offers':
         return <OffersView lang={lang} />;
       case 'buyers':
-        return <BuyersList lang={lang} onOpen={(id) => navigate('buyer_detail', { id })} />;
+        return <BuyerFinderView lang={lang} />;
       case 'suppliers':
         return <SuppliersList lang={lang} onOpen={(id) => navigate('supplier_detail', { id })} />;
       case 'products':

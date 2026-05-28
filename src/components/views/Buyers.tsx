@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useData } from '@/lib/data-context';
+import { createClient } from '@/lib/supabase/client';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { fmtCur, fmtNum, fmtDate } from '@/lib/utils';
@@ -11,6 +12,9 @@ import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
 import { useDelete } from '@/lib/use-entity-action';
+import { TabBuyerContacts } from './buyers/tabs/BuyerContacts';
+import { TabBuyerRequirements } from './buyers/tabs/BuyerRequirements';
+import { PIPELINE_STAGES, PRIORITY_MAP, getStageInfo, calcTotalScore, getScoreColor, BUYER_TYPES, SOURCES } from './buyers/types';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -184,7 +188,14 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
   const b = M?.buyers.find(x => x.id === id);
   const buyerOrders = M ? M.orders.filter(o => o.buyerId === id) : [];
   const buyerDeals = M ? M.deals.filter(d => d.buyerId === id) : [];
-  const [detailTab, setDetailTab] = useState<'overview' | 'comms'>('overview');
+  const [detailTab, setDetailTab] = useState<'overview' | 'pipeline' | 'contacts' | 'requirements' | 'comms'>('overview');
+  const [pipelineForm, setPipelineForm] = useState<{
+    pipelineStage: string; priority: string; source: string; buyerType: string;
+    nextFollowUp: string; nextAction: string;
+    fitScore: string; commercialScore: string; engagementScore: string; riskScore: string;
+    estimatedVolume: string;
+  } | null>(null);
+  const [pipelineSaving, setPipelineSaving] = useState(false);
   const [commModalOpen, setCommModalOpen] = useState(false);
   const [commForm, setCommForm] = useState({
     type: 'note' as 'email' | 'call' | 'meeting' | 'note' | 'whatsapp',
@@ -214,6 +225,46 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
       refresh();
     } catch (e) { setCommError((e as Error).message); }
     finally { setCommSaving(false); }
+  };
+
+  const openPipelineForm = () => {
+    if (!b) return;
+    setPipelineForm({
+      pipelineStage: b.pipelineStage ?? 'recherchiert',
+      priority: b.priority ?? 'mittel',
+      source: b.source ?? '',
+      buyerType: b.buyerType ?? '',
+      nextFollowUp: b.nextFollowUp ?? '',
+      nextAction: b.nextAction ?? '',
+      fitScore: String(b.fitScore ?? 0),
+      commercialScore: String(b.commercialScore ?? 0),
+      engagementScore: String(b.engagementScore ?? 0),
+      riskScore: String(b.riskScore ?? 0),
+      estimatedVolume: b.estimatedVolume ?? '',
+    });
+  };
+
+  const savePipelineForm = async () => {
+    if (!pipelineForm || !b) return;
+    setPipelineSaving(true);
+    try {
+      await createClient().from('buyers').update({
+        pipeline_stage: pipelineForm.pipelineStage,
+        priority: pipelineForm.priority,
+        source: pipelineForm.source || null,
+        buyer_type: pipelineForm.buyerType || null,
+        next_follow_up: pipelineForm.nextFollowUp || null,
+        next_action: pipelineForm.nextAction || null,
+        fit_score: parseInt(pipelineForm.fitScore) || 0,
+        commercial_score: parseInt(pipelineForm.commercialScore) || 0,
+        engagement_score: parseInt(pipelineForm.engagementScore) || 0,
+        risk_score: parseInt(pipelineForm.riskScore) || 0,
+        estimated_volume: pipelineForm.estimatedVolume || null,
+      }).eq('id', b.id);
+      refresh();
+    } finally {
+      setPipelineSaving(false);
+    }
   };
 
   const commTypeIcon = (tp: string) => {
@@ -260,6 +311,14 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
           <div className="tx3" style={{ fontSize: 12 }}>{b.id} · {b.industry} · {b.city}, {b.country}</div>
         </div>
         <Badge kind={b.status === 'aktiv' ? 'success' : 'warning'} dot>{b.status}</Badge>
+        {(() => {
+          const si = getStageInfo(b.pipelineStage ?? 'recherchiert');
+          return (
+            <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, color: si.color, background: `${si.color}18`, border: `1px solid ${si.color}30` }}>
+              {si.emoji} {si.label}
+            </span>
+          );
+        })()}
         <Stars value={b.rating} />
         <div className="right">
           <button
@@ -292,11 +351,131 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
           <div className={`tab${detailTab === 'overview' ? ' on' : ''}`} onClick={() => setDetailTab('overview')}>
             <Ic name="buyer" size={12} /> Übersicht
           </div>
+          <div className={`tab${detailTab === 'pipeline' ? ' on' : ''}`} onClick={() => { setDetailTab('pipeline'); if (!pipelineForm) openPipelineForm(); }}>
+            <Ic name="deals" size={12} /> Akquise
+          </div>
+          <div className={`tab${detailTab === 'contacts' ? ' on' : ''}`} onClick={() => setDetailTab('contacts')}>
+            <Ic name="buyer" size={12} /> Kontakte {M.buyerContacts.filter(c => c.buyerId === id).length > 0 ? `(${M.buyerContacts.filter(c => c.buyerId === id).length})` : ''}
+          </div>
+          <div className={`tab${detailTab === 'requirements' ? ' on' : ''}`} onClick={() => setDetailTab('requirements')}>
+            <Ic name="doc" size={12} /> Anforderungen {M.buyerRequirements.filter(r => r.buyerId === id).length > 0 ? `(${M.buyerRequirements.filter(r => r.buyerId === id).length})` : ''}
+          </div>
           <div className={`tab${detailTab === 'comms' ? ' on' : ''}`} onClick={() => setDetailTab('comms')}>
             <Ic name="mail" size={12} /> Kommunikation
           </div>
         </div>
       </div>
+
+      {detailTab === 'pipeline' && pipelineForm && (
+        <div style={{ padding: '20px 16px 24px' }}>
+          <div style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {/* Stage visual */}
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 24, paddingBottom: 6 }}>
+              {PIPELINE_STAGES.map(s => (
+                <div key={s.key} onClick={() => setPipelineForm(f => f ? { ...f, pipelineStage: s.key } : f)}
+                  style={{ flexShrink: 0, padding: '6px 10px', borderRadius: 6, cursor: 'pointer', textAlign: 'center', minWidth: 90,
+                    background: pipelineForm.pipelineStage === s.key ? `${s.color}22` : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${pipelineForm.pipelineStage === s.key ? s.color : 'rgba(255,255,255,0.08)'}`,
+                  }}>
+                  <div style={{ fontSize: 18 }}>{s.emoji}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: pipelineForm.pipelineStage === s.key ? 700 : 400, color: pipelineForm.pipelineStage === s.key ? s.color : 'var(--text-3)' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Priorität</div>
+                <select style={inputStyle} value={pipelineForm.priority} onChange={e => setPipelineForm(f => f ? { ...f, priority: e.target.value } : f)}>
+                  {Object.entries(PRIORITY_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Käufer-Typ</div>
+                <select style={inputStyle} value={pipelineForm.buyerType} onChange={e => setPipelineForm(f => f ? { ...f, buyerType: e.target.value } : f)}>
+                  <option value="">— wählen —</option>
+                  {BUYER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Quelle</div>
+                <select style={inputStyle} value={pipelineForm.source} onChange={e => setPipelineForm(f => f ? { ...f, source: e.target.value } : f)}>
+                  <option value="">— wählen —</option>
+                  {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Follow-up Datum</div>
+                <input type="date" style={inputStyle} value={pipelineForm.nextFollowUp} onChange={e => setPipelineForm(f => f ? { ...f, nextFollowUp: e.target.value } : f)} />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Nächste Aktion</div>
+                <input style={inputStyle} value={pipelineForm.nextAction} onChange={e => setPipelineForm(f => f ? { ...f, nextAction: e.target.value } : f)} placeholder="Was ist als nächstes zu tun?" />
+              </div>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Geschätztes Volumen</div>
+                <input style={inputStyle} value={pipelineForm.estimatedVolume} onChange={e => setPipelineForm(f => f ? { ...f, estimatedVolume: e.target.value } : f)} placeholder="z.B. 20t/Jahr" />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16, padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: 10 }}>Scores (0–100)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                  { key: 'fitScore', label: 'Fit', color: '#60a5fa' },
+                  { key: 'commercialScore', label: 'Commercial', color: '#34d399' },
+                  { key: 'engagementScore', label: 'Engagement', color: '#fb923c' },
+                  { key: 'riskScore', label: 'Risiko', color: '#f87171' },
+                ].map(sc => (
+                  <div key={sc.key}>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginBottom: 4 }}>{sc.label}</div>
+                    <input type="number" min={0} max={100} style={{ ...inputStyle, fontFamily: 'Geist Mono', color: sc.color }}
+                      value={pipelineForm[sc.key as keyof typeof pipelineForm]}
+                      onChange={e => setPipelineForm(f => f ? { ...f, [sc.key]: e.target.value } : f)} />
+                  </div>
+                ))}
+              </div>
+              {(() => {
+                const total = calcTotalScore(
+                  parseInt(pipelineForm.fitScore) || 0,
+                  parseInt(pipelineForm.commercialScore) || 0,
+                  parseInt(pipelineForm.engagementScore) || 0,
+                  parseInt(pipelineForm.riskScore) || 0,
+                );
+                return total > 0 ? (
+                  <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Buyer Score:</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, fontFamily: 'Geist Mono', color: getScoreColor(total) }}>{total}</span>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+              <button onClick={savePipelineForm} disabled={pipelineSaving}
+                style={{ padding: '8px 20px', borderRadius: 6, background: '#60a5fa', border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: pipelineSaving ? 0.6 : 1 }}>
+                {pipelineSaving ? 'Speichern…' : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailTab === 'contacts' && (
+        <TabBuyerContacts
+          buyerId={id}
+          contacts={M.buyerContacts.filter(c => c.buyerId === id)}
+          onRefresh={refresh}
+        />
+      )}
+
+      {detailTab === 'requirements' && (
+        <TabBuyerRequirements
+          buyerId={id}
+          requirements={M.buyerRequirements.filter(r => r.buyerId === id)}
+          onRefresh={refresh}
+        />
+      )}
 
       {detailTab === 'comms' && (
         <div style={{ padding: '16px 16px 12px' }}>

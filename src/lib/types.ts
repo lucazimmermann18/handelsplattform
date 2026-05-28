@@ -155,6 +155,63 @@ export interface Buyer {
   rating: number;
   status: string;
   revenue: number;
+  // Buyer Finder fields
+  pipelineStage?: string;
+  priority?: string;
+  source?: string;
+  buyerType?: string;
+  companySize?: string;
+  nextFollowUp?: string;
+  nextAction?: string;
+  fitScore?: number;
+  commercialScore?: number;
+  engagementScore?: number;
+  riskScore?: number;
+  estimatedVolume?: string;
+  buyerMaster?: Record<string, unknown>;
+}
+
+export interface BuyerContact {
+  id: string;
+  buyerId: string;
+  firstName?: string;
+  lastName: string;
+  role?: string;
+  department?: string;
+  email?: string;
+  phone?: string;
+  linkedin?: string;
+  language?: string;
+  decisionPower: 'niedrig' | 'mittel' | 'hoch' | 'entscheidend';
+  preferredChannel: string;
+  contactQuality: 'sicher' | 'wahrscheinlich' | 'unklar' | 'ungültig' | 'unbekannt';
+  lastContactedAt?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BuyerRequirement {
+  id: string;
+  buyerId: string;
+  productCategory?: string;
+  productId?: string;
+  qualityNotes?: string;
+  quantitySample?: string;
+  quantityFirst?: string;
+  quantityMonthly?: string;
+  targetPriceMin?: number;
+  targetPriceMax?: number;
+  currency: string;
+  incotermPref?: string;
+  deliveryLocation?: string;
+  paymentTerms?: string;
+  certRequirements: string[];
+  docRequirements: string[];
+  packagingNotes?: string;
+  otherNotes?: string;
+  status: 'offen' | 'teilweise' | 'vollständig';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Vessel {
@@ -486,4 +543,6 @@ export interface MockData {
   calendarEvents: CalendarEvent[];
   setupTasks: SetupTask[];
   companyProfile: CompanyProfile | null;
+  buyerContacts: BuyerContact[];
+  buyerRequirements: BuyerRequirement[];
 }
