@@ -1,3 +1,28 @@
+// ── Export Readiness ──────────────────────────────────────────────────────────
+export type ExportReadiness =
+  | 'not_ready' | 'in_prep' | 'sample_ready'
+  | 'deal_ready' | 'fully_ready' | 'strategic';
+
+export interface ScorecardEntry { score: number; notes?: string; }
+
+export interface OnboardingItem {
+  id: string;
+  label: string;
+  category: string;
+  done: boolean;
+  notes?: string;
+}
+
+export interface DevStep {
+  id: string;
+  title: string;
+  owner?: string;
+  due?: string;
+  status: 'open' | 'in_progress' | 'done';
+  priority?: 'hoch' | 'mittel' | 'niedrig';
+  notes?: string;
+}
+
 // ── Supplier type taxonomy ─────────────────────────────────────────────────────
 export type SupplierType =
   | 'Einzelbauer' | 'Kooperative' | 'Sammelstelle'
@@ -98,6 +123,13 @@ export interface SupplierMaster {
   avgBeanSize?: string;
   qualityConsistency?: QualityConsistency;
   qualityNotes?: string;
+
+  // Sourcing & Supplier Development
+  exportReadiness?: ExportReadiness;
+  scorecard?: Record<string, ScorecardEntry>;
+  onboardingItems?: OnboardingItem[];
+  devSteps?: DevStep[];
+  developmentNotes?: string;
 }
 
 // ── Lookup maps ────────────────────────────────────────────────────────────────
@@ -131,6 +163,67 @@ export const RISK_CATEGORIES = [
   'Ernte & Produktion', 'Qualität', 'Logistik & Transport',
   'Währung & Preise', 'Compliance & Dokumente', 'Kommunikation',
   'Politik & Sicherheit', 'Klima & Natur', 'Reputation',
+];
+
+// ── Export Readiness constants ─────────────────────────────────────────────────
+export const EXPORT_READINESS_STAGES: {
+  key: ExportReadiness; label: string; shortLabel: string; desc: string; color: string;
+}[] = [
+  { key: 'not_ready',    label: 'Nicht bereit',        shortLabel: 'Nicht bereit',  desc: 'Lieferant erfüllt noch keine Mindestanforderungen für den Export.', color: '#f87171' },
+  { key: 'in_prep',      label: 'In Vorbereitung',     shortLabel: 'Vorbereitung',  desc: 'Aktiver Aufbau läuft — Daten, Dokumente und Kapazitäten werden aufgebaut.', color: '#fb923c' },
+  { key: 'sample_ready', label: 'Musterfähig',         shortLabel: 'Musterfähig',   desc: 'Kann Muster in Exportqualität liefern. Prozesse und QC etabliert.', color: '#fbbf24' },
+  { key: 'deal_ready',   label: 'Deal-fähig',          shortLabel: 'Deal-fähig',    desc: 'Kann erste Exportaufträge abwickeln. Dokumente, Mengen und Qualität vorhanden.', color: '#a3e635' },
+  { key: 'fully_ready',  label: 'Voll exportfähig',    shortLabel: 'Exportfähig',   desc: 'Vollständig zertifiziert, verlässlich, skalierbar. Jederzeit exportbereit.', color: '#34d399' },
+  { key: 'strategic',    label: 'Strategischer Partner',shortLabel: 'Strategisch',  desc: 'Kernanker der Lieferkette. Langfristige Partnerschaft mit bevorzugten Konditionen.', color: '#60a5fa' },
+];
+
+export const READINESS_MAP: Record<ExportReadiness, { label: string; color: string; kind: string }> = {
+  not_ready:    { label: 'Nicht bereit',         color: '#f87171', kind: 'danger'  },
+  in_prep:      { label: 'In Vorbereitung',      color: '#fb923c', kind: 'warning' },
+  sample_ready: { label: 'Musterfähig',          color: '#fbbf24', kind: 'warning' },
+  deal_ready:   { label: 'Deal-fähig',           color: '#a3e635', kind: 'success' },
+  fully_ready:  { label: 'Voll exportfähig',     color: '#34d399', kind: 'success' },
+  strategic:    { label: 'Strategischer Partner',color: '#60a5fa', kind: 'info'    },
+};
+
+export const SCORECARD_CRITERIA: {
+  key: string; label: string; desc: string; icon: string;
+}[] = [
+  { key: 'quality',       label: 'Produktqualität',       desc: 'Konsistenz, Sortierung, Feuchte, Sortierung, Defekte', icon: 'star'    },
+  { key: 'reliability',   label: 'Zuverlässigkeit',       desc: 'Liefertreue, Mengeneinhaltung, Pünktlichkeit',         icon: 'clock'   },
+  { key: 'documentation', label: 'Dokumentationsfähigkeit',desc: 'Vollständigkeit, Qualität, Aktualität von Dokumenten', icon: 'doc'     },
+  { key: 'delivery',      label: 'Lieferfähigkeit',       desc: 'Kapazität, Logistik, Verfügbarkeit zu Erntezeiten',    icon: 'box'     },
+  { key: 'pricing',       label: 'Preisniveau',           desc: 'Wettbewerbsfähigkeit, Transparenz, Stabilität',        icon: 'finance' },
+  { key: 'communication', label: 'Kommunikation',         desc: 'Erreichbarkeit, Reaktionszeit, Klarheit',               icon: 'mail'    },
+  { key: 'sustainability',label: 'Nachhaltigkeit',        desc: 'Umweltpraktiken, Fairness, soziale Verantwortung',      icon: 'leaf'    },
+  { key: 'compliance',    label: 'Compliance-Risiko',     desc: 'Regulatorik, Zertifikate, EUDR, Exportrecht',           icon: 'shield'  },
+  { key: 'eudr',          label: 'EUDR-Datenqualität',    desc: 'GPS-Daten, Landzuordnung, Deforestationsnachweis',      icon: 'map'     },
+  { key: 'fraud',         label: 'Zahlung & Betrugsrisiko',desc: 'Bank-Verifikation, Identität, Referenzen, Reputation', icon: 'alert'   },
+];
+
+export const DEFAULT_ONBOARDING_ITEMS: { id: string; label: string; category: string }[] = [
+  // Stammdaten
+  { id: 'ob_masterdata',   label: 'Stammdaten vollständig erfasst',              category: 'Stammdaten' },
+  { id: 'ob_identity',     label: 'Identität verifiziert (Ausweis / Pass)',       category: 'Stammdaten' },
+  { id: 'ob_bank',         label: 'Bankdaten verifiziert',                        category: 'Stammdaten' },
+  { id: 'ob_taxid',        label: 'Steuer-ID / Registrierung geprüft',            category: 'Stammdaten' },
+  // Farm & Kapazität
+  { id: 'ob_gps',          label: 'Farm-GPS koordinaten erfasst',                 category: 'Farm & Kapazität' },
+  { id: 'ob_farmsize',     label: 'Farmgröße dokumentiert',                       category: 'Farm & Kapazität' },
+  { id: 'ob_capacity',     label: 'Produktionskapazität plausibel geprüft',       category: 'Farm & Kapazität' },
+  { id: 'ob_photos',       label: 'Fotos der Farm / des Betriebs vorhanden',      category: 'Farm & Kapazität' },
+  // Qualität
+  { id: 'ob_sample',       label: 'Qualitätsmuster gesendet und bewertet',        category: 'Qualität' },
+  { id: 'ob_qstandard',    label: 'Qualitätsstandards erklärt und bestätigt',     category: 'Qualität' },
+  { id: 'ob_packaging',    label: 'Verpackungsvorgaben abgestimmt',               category: 'Qualität' },
+  // Export & Compliance
+  { id: 'ob_exportexp',    label: 'Exporterfahrung dokumentiert / abgefragt',     category: 'Export & Compliance' },
+  { id: 'ob_certs',        label: 'Zertifizierungen geprüft (Bio, FT, EUDR…)',    category: 'Export & Compliance' },
+  { id: 'ob_exportlic',    label: 'Exportlizenz vorhanden / nicht erforderlich',  category: 'Export & Compliance' },
+  // Partnerschaft
+  { id: 'ob_moq',          label: 'Mindestmengen bestätigt',                      category: 'Partnerschaft' },
+  { id: 'ob_references',   label: 'Referenzen eingeholt',                         category: 'Partnerschaft' },
+  { id: 'ob_contract',     label: 'Rahmenvertrag / LOI unterzeichnet',            category: 'Partnerschaft' },
 ];
 
 // ── Trust Score ────────────────────────────────────────────────────────────────

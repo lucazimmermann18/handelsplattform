@@ -17,17 +17,22 @@ import { TabCompliance }   from './tabs/Compliance';
 import { TabVertrauen }    from './tabs/Vertrauen';
 import { TabRisiko }       from './tabs/Risiko';
 import { TabKommunikation } from './tabs/Kommunikation';
+import { TabScorecard }    from './tabs/Scorecard';
+import { TabEntwicklung }  from './tabs/Entwicklung';
+import { READINESS_MAP }   from './types';
 
-type Tab = 'uebersicht' | 'farm' | 'geo' | 'compliance' | 'vertrauen' | 'risiko' | 'komm';
+type Tab = 'uebersicht' | 'farm' | 'geo' | 'compliance' | 'vertrauen' | 'risiko' | 'komm' | 'scorecard' | 'entwicklung';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'uebersicht', label: 'Übersicht',        icon: 'info'    },
-  { key: 'farm',       label: 'Farm & Betrieb',   icon: 'leaf'    },
-  { key: 'geo',        label: 'Geo & EUDR',        icon: 'map'     },
-  { key: 'compliance', label: 'Compliance',        icon: 'shield'  },
-  { key: 'vertrauen',  label: 'Vertrauen',         icon: 'star'    },
-  { key: 'risiko',     label: 'Risiko',            icon: 'alert'   },
-  { key: 'komm',       label: 'Kommunikation',     icon: 'mail'    },
+  { key: 'uebersicht',  label: 'Übersicht',        icon: 'info'    },
+  { key: 'farm',        label: 'Farm & Betrieb',   icon: 'leaf'    },
+  { key: 'geo',         label: 'Geo & EUDR',       icon: 'map'     },
+  { key: 'compliance',  label: 'Compliance',       icon: 'shield'  },
+  { key: 'vertrauen',   label: 'Vertrauen',        icon: 'star'    },
+  { key: 'risiko',      label: 'Risiko',           icon: 'alert'   },
+  { key: 'komm',        label: 'Kommunikation',    icon: 'mail'    },
+  { key: 'scorecard',   label: 'Scorecard',        icon: 'star'    },
+  { key: 'entwicklung', label: 'Entwicklung',      icon: 'clock'   },
 ];
 
 const inputStyle: React.CSSProperties = {
@@ -56,6 +61,7 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
   const scoreColor = score >= 70 ? '#34d399' : score >= 40 ? '#fbbf24' : '#f87171';
   const tl = master.trustLevel;
   const trustInfo = tl ? TRUST_LEVEL_MAP[tl] : null;
+  const readinessInfo = master.exportReadiness ? READINESS_MAP[master.exportReadiness] : null;
 
   const openEdit = () => {
     setEditForm({
@@ -103,6 +109,11 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
           </div>
           <Badge kind={s.status === 'aktiv' ? 'success' : 'neutral'} dot>{s.status}</Badge>
           {trustInfo && <Badge kind={trustInfo.kind}>{trustInfo.label}</Badge>}
+          {readinessInfo && (
+            <span style={{ padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600, color: readinessInfo.color, background: `${readinessInfo.color}15`, border: `1px solid ${readinessInfo.color}30` }}>
+              {readinessInfo.label}
+            </span>
+          )}
           <Badge kind={s.risk === 'niedrig' ? 'success' : s.risk === 'mittel' ? 'warning' : 'danger'}>Risiko {s.risk}</Badge>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 20, background: `${scoreColor}15`, border: `1px solid ${scoreColor}40` }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: scoreColor }}>{score}</span>
@@ -147,13 +158,15 @@ export const SupplierDetail = ({ id, lang, onBack }: SupplierDetailProps) => {
 
         {/* ── Tab Content ─────────────────────────────────────────────────── */}
         <div style={{ padding: '0 16px 32px' }}>
-          {tab === 'uebersicht' && <TabUebersicht  {...tabProps} />}
-          {tab === 'farm'       && <TabFarmBetrieb {...tabProps} />}
-          {tab === 'geo'        && <TabGeoEUDR     {...tabProps} />}
-          {tab === 'compliance' && <TabCompliance  {...tabProps} />}
-          {tab === 'vertrauen'  && <TabVertrauen   {...tabProps} />}
-          {tab === 'risiko'     && <TabRisiko      {...tabProps} />}
-          {tab === 'komm'       && <TabKommunikation {...tabProps} />}
+          {tab === 'uebersicht'  && <TabUebersicht    {...tabProps} />}
+          {tab === 'farm'        && <TabFarmBetrieb  {...tabProps} />}
+          {tab === 'geo'         && <TabGeoEUDR      {...tabProps} />}
+          {tab === 'compliance'  && <TabCompliance   {...tabProps} />}
+          {tab === 'vertrauen'   && <TabVertrauen    {...tabProps} />}
+          {tab === 'risiko'      && <TabRisiko       {...tabProps} />}
+          {tab === 'komm'        && <TabKommunikation {...tabProps} />}
+          {tab === 'scorecard'   && <TabScorecard    {...tabProps} />}
+          {tab === 'entwicklung' && <TabEntwicklung  {...tabProps} />}
         </div>
       </div>
 
