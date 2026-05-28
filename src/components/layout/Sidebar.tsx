@@ -25,7 +25,8 @@ const NAV = [
   { group: 'group_ops', items: [
     { id: 'orders',     icon: 'box',      label: 'nav_orders',    countKey: 'orders_active' },
     { id: 'shipments',  icon: 'ship',     label: 'nav_shipments', countKey: 'shipments' },
-    { id: 'forwarders', icon: 'layers',   label: 'Spediteure' },
+    { id: 'forwarders',        icon: 'layers',   label: 'Spediteure' },
+    { id: 'service_providers', icon: 'building', label: 'Dienstleister' },
     { id: 'calendar',   icon: 'clock',    label: 'Kalender' },
     { id: 'suppliers',  icon: 'supplier', label: 'nav_suppliers', countKey: 'suppliers' },
     { id: 'products',   icon: 'product',  label: 'nav_products',  countKey: 'products' },

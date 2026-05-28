@@ -43,6 +43,7 @@ import { LotsView } from '@/components/views/Lots';
 import { PayablesView } from '@/components/views/Payables';
 import { VesselTrackingView } from '@/components/views/VesselTracking';
 import { CBAMView } from '@/components/views/CBAM';
+import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -234,6 +235,8 @@ export const App = () => {
         return <SamplesView lang={lang} />;
       case 'forwarders':
         return <ForwardersView lang={lang} />;
+      case 'service_providers':
+        return <ServiceProvidersView />;
       case 'intelligence':
         return <IntelligenceView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cockpit':

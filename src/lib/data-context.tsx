@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -195,6 +195,18 @@ const mapLot = (r: any): Lot => ({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapServiceProvider = (r: any): ServiceProvider => ({
+  id: r.id, companyName: r.company_name ?? '', displayName: r.display_name,
+  category: r.category ?? '', subcategory: r.subcategory,
+  country: r.country ?? '', city: r.city, region: r.region,
+  status: r.status ?? 'lead', riskLevel: r.risk_level ?? 'niedrig',
+  criticality: r.criticality ?? 'mittel', website: r.website,
+  taxId: r.tax_id, registrationNumber: r.registration_number,
+  overallRating: r.overall_rating ?? undefined, notes: r.notes,
+  ...((r.provider_master ? { provider_master: r.provider_master } : {})),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapCommunication = (r: any): Communication => ({
   id: r.id, contactId: r.contact_id ?? '', contactType: r.contact_type ?? 'buyer',
   type: r.type ?? 'note', direction: r.direction ?? 'internal',
@@ -250,6 +262,7 @@ async function fetchAllData(): Promise<MockData> {
     { data: visitsRaw },
     { data: lotsRaw },
     { data: commsRaw },
+    { data: serviceProvidersRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -276,6 +289,7 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('field_visits').select('*').order('visit_date', { ascending: false }),
     sb.from('lots').select('*').order('harvest_date', { ascending: false }),
     sb.from('communications').select('*').order('date', { ascending: false }),
+    sb.from('service_providers').select('*').order('company_name'),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -317,8 +331,9 @@ async function fetchAllData(): Promise<MockData> {
           target: Number(kr.target), unit: kr.unit ?? '%',
         })),
     } satisfies Objective)),
-    supplierNotes: (notesRaw   ?? []).map(mapSupplierNote),
-    fieldVisits:   (visitsRaw  ?? []).map(mapFieldVisit),
+    supplierNotes:    (notesRaw            ?? []).map(mapSupplierNote),
+    fieldVisits:      (visitsRaw           ?? []).map(mapFieldVisit),
+    serviceProviders: (serviceProvidersRaw ?? []).map(mapServiceProvider),
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,

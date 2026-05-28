@@ -378,6 +378,26 @@ export interface Communication {
   author: string;
 }
 
+export interface ServiceProvider {
+  id: string;
+  companyName: string;
+  displayName?: string;
+  category: string;
+  subcategory?: string;
+  country: string;
+  city?: string;
+  region?: string;
+  status: string;
+  riskLevel: string;
+  criticality: string;
+  website?: string;
+  taxId?: string;
+  registrationNumber?: string;
+  overallRating?: number;
+  notes?: string;
+  provider_master?: Record<string, unknown>;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -406,4 +426,5 @@ export interface MockData {
   todayBase: Date;
   lots: Lot[];
   communications: Communication[];
+  serviceProviders: ServiceProvider[];
 }
