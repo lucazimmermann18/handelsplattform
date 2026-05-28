@@ -4,17 +4,19 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useData } from '@/lib/data-context';
 import { Ic } from '@/components/ui/icons';
 import { fmtCur } from '@/lib/utils';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 // ── Types & constants ─────────────────────────────────────────────────────────
 
 type Step = 'buyer' | 'product' | 'qty' | 'logistics' | 'review';
 
-const STEPS: { key: Step; label: string; icon: string }[] = [
-  { key: 'buyer',     label: 'Käufer',        icon: 'buyer'   },
-  { key: 'product',   label: 'Produkt',       icon: 'product' },
-  { key: 'qty',       label: 'Menge & Preis', icon: 'finance' },
-  { key: 'logistics', label: 'Logistik',      icon: 'ship'    },
-  { key: 'review',    label: 'Abschluss',     icon: 'flag'    },
+const STEPS: { key: Step; labelKey: string; icon: string }[] = [
+  { key: 'buyer',     labelKey: 'wiz_step_buyer',     icon: 'buyer'   },
+  { key: 'product',   labelKey: 'wiz_step_product',   icon: 'product' },
+  { key: 'qty',       labelKey: 'wiz_step_qty',       icon: 'finance' },
+  { key: 'logistics', labelKey: 'wiz_step_logistics', icon: 'ship'    },
+  { key: 'review',    labelKey: 'wiz_step_finish',    icon: 'flag'    },
 ];
 
 const INCOTERMS = ['FOB', 'CFR', 'CIF', 'EXW', 'DDP', 'FCA', 'DAP'];
@@ -93,6 +95,7 @@ interface OrderWizardProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
+  const lang = useLang();
   const { data: M, refresh } = useData();
   const [step, setStep]     = useState<Step>('buyer');
   const [state, setState]   = useState<WizardState>(initState);
@@ -186,7 +189,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         <input
           autoFocus
           value={buyerQ} onChange={e => setBuyerQ(e.target.value)}
-          placeholder="Käufer suchen… Name, Land, Stadt"
+          placeholder={t(lang, 'wiz_buyer_search')}
           style={inputStyle}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -238,7 +241,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           })}
           {filtered.length === 0 && (
             <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>
-              Keine Käufer gefunden
+              {t(lang, 'wiz_no_buyers')}
             </div>
           )}
         </div>
@@ -259,7 +262,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <input
           value={prodQ} onChange={e => setProdQ(e.target.value)}
-          placeholder="Produkt suchen…"
+          placeholder={t(lang, 'wiz_product_search')}
           style={inputStyle}
         />
         {/* Variant picker for selected product */}
@@ -340,7 +343,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Qty */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Menge ({state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_qty_label')} ({state.unit})</div>
             <input
               type="number" min={0} value={state.qty || ''}
               onChange={e => update('qty', parseFloat(e.target.value) || 0)}
@@ -350,7 +353,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Buy price */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€ / {state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_buy')} (€ / {state.unit})</div>
             <input
               type="number" min={0} step={0.01} value={state.buyPrice || ''}
               onChange={e => update('buyPrice', parseFloat(e.target.value) || 0)}
@@ -359,7 +362,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Sell price */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€ / {state.unit})</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_sell')} (€ / {state.unit})</div>
             <input
               type="number" min={0} step={0.01} value={state.sellPrice || ''}
               onChange={e => update('sellPrice', parseFloat(e.target.value) || 0)}
@@ -368,7 +371,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           </div>
           {/* Supplier */}
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Lieferant</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_supplier')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
               {displaySuppliers.map(s => {
                 const sel = s.id === state.supplierId;
@@ -409,10 +412,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           <div style={{ padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', position: 'sticky', top: 0 }}>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10, fontWeight: 600 }}>Live P&L</div>
             {[
-              { l: 'Umsatz', v: revenue, pos: true },
-              { l: 'Einkauf', v: -costGoods },
-              { l: 'Logistik*', v: -state.costLogistics },
-              { l: 'Dokumente*', v: -state.costDocs },
+              { l: t(lang, 'wiz_row_revenue'), v: revenue, pos: true },
+              { l: t(lang, 'wiz_row_buy'), v: -costGoods },
+              { l: t(lang, 'wiz_row_logistics'), v: -state.costLogistics },
+              { l: t(lang, 'wiz_row_docs'), v: -state.costDocs },
             ].map((r, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <span style={{ color: 'var(--text-3)' }}>{r.l}</span>
@@ -422,14 +425,14 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
               </div>
             ))}
             <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-              <span style={{ fontWeight: 600 }}>Gewinn</span>
+              <span style={{ fontWeight: 600 }}>{t(lang, 'profit')}</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: profit > 0 ? '#34d399' : '#f87171' }}>{fmtCur(profit)}</span>
             </div>
             <div style={{ marginTop: 4, display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
-              <span style={{ color: 'var(--text-3)' }}>Marge</span>
+              <span style={{ color: 'var(--text-3)' }}>{t(lang, 'margin')}</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: marginPct >= 20 ? '#34d399' : marginPct >= 10 ? '#fbbf24' : '#f87171' }}>{marginPct}%</span>
             </div>
-            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-3)', opacity: 0.7 }}>*Schätzwerte anpassbar</div>
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-3)', opacity: 0.7 }}>{t(lang, 'wiz_estimates')}</div>
           </div>
         </div>
       </div>
@@ -460,7 +463,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Ports */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Ladehafen</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_load_port')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {LOAD_PORTS.map(p => {
               const sel = state.portLoad === p.key;
@@ -488,7 +491,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Zielhafen</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_dest_port')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {DEST_PORTS.map(p => {
               const sel = state.portDest === p.key;
@@ -519,11 +522,11 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Dates */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>ETD (geplant)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_etd_planned')}</div>
           <input type="date" value={state.etd} onChange={e => update('etd', e.target.value)} style={inputStyle} />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>ETA (geplant)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_eta_planned')}</div>
           <input type="date" value={state.eta} onChange={e => update('eta', e.target.value)} style={inputStyle} />
         </div>
       </div>
@@ -531,7 +534,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
       {/* Costs + responsible */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Logistikkosten (€)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_logistics_cost')}</div>
           <input
             type="number" min={0} value={state.costLogistics}
             onChange={e => update('costLogistics', parseFloat(e.target.value) || 0)}
@@ -539,7 +542,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Dokumentenkosten (€)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_doc_costs')}</div>
           <input
             type="number" min={0} value={state.costDocs}
             onChange={e => update('costDocs', parseFloat(e.target.value) || 0)}
@@ -547,7 +550,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verantwortlich</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_responsible')}</div>
           <input
             type="text" value={state.responsible}
             onChange={e => update('responsible', e.target.value)}
@@ -576,16 +579,16 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
             <Ic name="check" size={26} color="#34d399" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Auftrag angelegt!</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{t(lang, 'wiz_order_done')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newOrderId}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
               {product?.name} · {state.qty.toLocaleString('de-DE')} {state.unit} → {buyer?.name}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button className="btn ghost" onClick={handleClose}>Schließen</button>
+            <button className="btn ghost" onClick={handleClose}>{t(lang, 'close')}</button>
             <button className="btn primary" onClick={() => { onSuccess(); handleClose(); }}>
-              <Ic name="eye" size={13} /> Auftrag ansehen
+              <Ic name="eye" size={13} /> {t(lang, 'wiz_order_view')}
             </button>
           </div>
         </div>
@@ -593,22 +596,22 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
     }
 
     const rows = [
-      { l: 'Käufer',      v: buyer?.name,                      sub: `${buyer?.city} · ${buyer?.country}` },
-      { l: 'Produkt',     v: product?.name,                    sub: state.productVariant },
-      { l: 'Lieferant',   v: supplier?.name,                   sub: `${supplier?.region} · Tier ${supplier?.tier}` },
-      { l: 'Menge',       v: `${state.qty.toLocaleString('de-DE')} ${state.unit}` },
-      { l: 'Einkauf',     v: `${state.buyPrice.toFixed(2)} €/${state.unit}` },
-      { l: 'Verkauf',     v: `${state.sellPrice.toFixed(2)} €/${state.unit}` },
-      { l: 'Incoterm',    v: state.incoterm },
-      { l: 'Route',       v: `${loadPort?.label} → ${destPort?.label}` },
-      { l: 'ETD / ETA',  v: `${state.etd} → ${state.eta}` },
-      { l: 'Verantwortl.',v: state.responsible || 'Admin' },
+      { l: t(lang, 'wiz_row_buyer'),       v: buyer?.name,                      sub: `${buyer?.city} · ${buyer?.country}` },
+      { l: t(lang, 'wiz_row_product'),     v: product?.name,                    sub: state.productVariant },
+      { l: t(lang, 'wiz_row_supplier'),    v: supplier?.name,                   sub: `${supplier?.region} · Tier ${supplier?.tier}` },
+      { l: t(lang, 'wiz_row_qty'),         v: `${state.qty.toLocaleString('de-DE')} ${state.unit}` },
+      { l: t(lang, 'wiz_row_buy'),         v: `${state.buyPrice.toFixed(2)} €/${state.unit}` },
+      { l: t(lang, 'wiz_row_sell'),        v: `${state.sellPrice.toFixed(2)} €/${state.unit}` },
+      { l: t(lang, 'wiz_row_incoterm'),    v: state.incoterm },
+      { l: t(lang, 'wiz_row_route'),       v: `${loadPort?.label} → ${destPort?.label}` },
+      { l: t(lang, 'wiz_row_etd'),         v: `${state.etd} → ${state.eta}` },
+      { l: t(lang, 'wiz_row_responsible'), v: state.responsible || 'Admin' },
     ];
 
     return (
       <div style={{ display: 'flex', gap: 16 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Auftragsübersicht</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{t(lang, 'wiz_order_summary')}</div>
           {rows.map((r, i) => (
             <div key={i} style={{ display: 'flex', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
               <span style={{ color: 'var(--text-3)', width: 110, flexShrink: 0 }}>{r.l}</span>
@@ -623,12 +626,12 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         {/* P&L summary */}
         <div style={{ width: 190, flexShrink: 0 }}>
           <div style={{ padding: 14, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)' }}>
-            <div style={{ fontSize: 10, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, marginBottom: 12 }}>Kalkulation</div>
+            <div style={{ fontSize: 10, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, marginBottom: 12 }}>{t(lang, 'wiz_calc')}</div>
             {[
-              { l: 'Umsatz',     v: revenue,              pos: true },
-              { l: 'Einkauf',    v: -costGoods },
-              { l: 'Logistik',   v: -state.costLogistics },
-              { l: 'Dokumente',  v: -state.costDocs },
+              { l: t(lang, 'wiz_row_revenue'), v: revenue,              pos: true },
+              { l: t(lang, 'wiz_row_buy'),     v: -costGoods },
+              { l: t(lang, 'wiz_row_logistics').replace('*', ''), v: -state.costLogistics },
+              { l: t(lang, 'wiz_row_docs').replace('*', ''),      v: -state.costDocs },
             ].map((r, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <span style={{ color: 'var(--text-3)' }}>{r.l}</span>
@@ -639,11 +642,11 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
             ))}
             <div style={{ marginTop: 10, padding: '8px 0', borderTop: '1px solid rgba(52,211,153,0.2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700 }}>
-                <span>Gewinn</span>
+                <span>{t(lang, 'profit')}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', color: profit > 0 ? '#34d399' : '#f87171' }}>{fmtCur(profit)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
-                <span style={{ color: 'var(--text-3)' }}>Marge</span>
+                <span style={{ color: 'var(--text-3)' }}>{t(lang, 'margin')}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: marginPct >= 20 ? '#34d399' : '#fbbf24' }}>{marginPct}%</span>
               </div>
             </div>
@@ -676,7 +679,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Ic name="box" size={14} color="#a78bfa" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neuer Auftrag</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'wiz_new_order')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={handleClose}>
               <Ic name="x" size={13} />
             </button>
@@ -705,7 +708,7 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                         {done ? '✓' : i + 1}
                       </div>
                       <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                        {s.label}
+                        {t(lang, s.labelKey)}
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
@@ -730,16 +733,16 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
         {/* Footer */}
         {!isSuccess && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>Abbrechen</button>
+            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>{t(lang, 'cancel')}</button>
             {stepIdx > 0 && (
               <button className="btn" onClick={goBack} style={{ fontSize: 12 }}>
-                <Ic name="chevL" size={12} /> Zurück
+                <Ic name="chevL" size={12} /> {t(lang, 'back')}
               </button>
             )}
             <div style={{ flex: 1 }} />
             {step !== 'review' ? (
               <button className="btn primary" onClick={goNext} disabled={!canNext}>
-                Weiter <Ic name="chevR" size={12} />
+                {t(lang, 'next')} <Ic name="chevR" size={12} />
               </button>
             ) : (
               <button
@@ -751,10 +754,10 @@ export function OrderWizard({ open, onClose, onSuccess }: OrderWizardProps) {
                 {submitting ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                    Wird angelegt…
+                    {t(lang, 'creating')}
                   </span>
                 ) : (
-                  <><Ic name="plus" size={13} /> Auftrag anlegen</>
+                  <><Ic name="plus" size={13} /> {t(lang, 'wiz_order_create')}</>
                 )}
               </button>
             )}

@@ -56,7 +56,7 @@ export const BuyersList = ({ lang, onOpen }: BuyersListProps) => {
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>{t(lang, 'loading')}</div>;
   const totalRevenue = M.buyers.reduce((s, b) => s + b.revenue, 0);
 
   const editRecord = editId ? M.buyers.find(x => x.id === editId) ?? null : null;
@@ -285,8 +285,8 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
     return months.map((m, i) => ({ m, v: parseFloat(byMonth[i].toFixed(1)) }));
   }, [buyerOrders]);
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
-  if (!b) return <div className="empty">Käufer nicht gefunden</div>;
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>{t(lang, 'loading')}</div>;
+  if (!b) return <div className="empty">{t(lang, 'no_data')}</div>;
 
   const creditLimit = b.revenue * 1.5 + 50000;
   const creditUsed = b.revenue * 0.3;
@@ -349,19 +349,19 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
       <div style={{ padding: '0 0 0 16px' }}>
         <div className="tabs" style={{ marginBottom: 0 }}>
           <div className={`tab${detailTab === 'overview' ? ' on' : ''}`} onClick={() => setDetailTab('overview')}>
-            <Ic name="buyer" size={12} /> Übersicht
+            <Ic name="buyer" size={12} /> {t(lang, 'tab_overview')}
           </div>
           <div className={`tab${detailTab === 'pipeline' ? ' on' : ''}`} onClick={() => { setDetailTab('pipeline'); if (!pipelineForm) openPipelineForm(); }}>
-            <Ic name="deals" size={12} /> Akquise
+            <Ic name="deals" size={12} /> {t(lang, 'tab_pipeline')}
           </div>
           <div className={`tab${detailTab === 'contacts' ? ' on' : ''}`} onClick={() => setDetailTab('contacts')}>
-            <Ic name="buyer" size={12} /> Kontakte {M.buyerContacts.filter(c => c.buyerId === id).length > 0 ? `(${M.buyerContacts.filter(c => c.buyerId === id).length})` : ''}
+            <Ic name="buyer" size={12} /> {t(lang, 'tab_contacts')}{M.buyerContacts.filter(c => c.buyerId === id).length > 0 ? ` (${M.buyerContacts.filter(c => c.buyerId === id).length})` : ''}
           </div>
           <div className={`tab${detailTab === 'requirements' ? ' on' : ''}`} onClick={() => setDetailTab('requirements')}>
-            <Ic name="doc" size={12} /> Anforderungen {M.buyerRequirements.filter(r => r.buyerId === id).length > 0 ? `(${M.buyerRequirements.filter(r => r.buyerId === id).length})` : ''}
+            <Ic name="doc" size={12} /> {t(lang, 'tab_requirements')}{M.buyerRequirements.filter(r => r.buyerId === id).length > 0 ? ` (${M.buyerRequirements.filter(r => r.buyerId === id).length})` : ''}
           </div>
           <div className={`tab${detailTab === 'comms' ? ' on' : ''}`} onClick={() => setDetailTab('comms')}>
-            <Ic name="mail" size={12} /> Kommunikation
+            <Ic name="mail" size={12} /> {t(lang, 'tab_communications')}
           </div>
         </div>
       </div>
@@ -481,7 +481,7 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
         <div style={{ padding: '16px 16px 12px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
             <button className="btn primary" onClick={() => setCommModalOpen(true)}>
-              <Ic name="plus" size={13} /> Kommunikation erfassen
+              <Ic name="plus" size={13} /> {t(lang, 'log_communication')}
             </button>
           </div>
           {(() => {
@@ -490,8 +490,8 @@ export const BuyerDetail = ({ id, lang, onBack }: BuyerDetailProps) => {
             if (comms.length === 0) return (
               <div className="card" style={{ padding: '40px 16px', textAlign: 'center' }}>
                 <Ic name="mail" size={28} color="var(--text-3)" />
-                <div className="tx3" style={{ fontSize: 12, marginTop: 8 }}>Noch keine Kommunikation erfasst</div>
-                <div className="tx3" style={{ fontSize: 11, marginTop: 4 }}>Klicken Sie auf &quot;Kommunikation erfassen&quot; um zu beginnen.</div>
+                <div className="tx3" style={{ fontSize: 12, marginTop: 8 }}>{t(lang, 'no_communications')}</div>
+                <div className="tx3" style={{ fontSize: 11, marginTop: 4 }}>{t(lang, 'no_comms_hint')}</div>
               </div>
             );
             return (

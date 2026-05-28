@@ -8,7 +8,9 @@ import type { SetupTask } from '@/lib/types';
 import { CB_SECTIONS, STATUS_MAP, calcSectionScore } from './types';
 import type { CBStatus, CBPriority, CBDocQuality } from './types';
 import { StatusBadge, PriorityBadge, DocQualityBadge, BlockerTag, StatusDot, StatusSelect, SectionProgress, inputStyle, textareaStyle } from './shared';
+import { t as tr } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 interface CBSectionProps {
   sectionKey: string;
@@ -26,6 +28,7 @@ interface TaskModalProps {
 }
 
 const TaskModal = ({ task, onSave, onClose, saving }: TaskModalProps) => {
+  const lang = useLang();
   const [form, setForm] = useState<Partial<SetupTask>>({ ...task });
   const set = (k: keyof SetupTask, v: unknown) => setForm(p => ({ ...p, [k]: v }));
 
@@ -36,99 +39,99 @@ const TaskModal = ({ task, onSave, onClose, saving }: TaskModalProps) => {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: 'var(--bg-2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, width: '100%', maxWidth: 620, maxHeight: '90vh', overflow: 'auto', padding: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <span style={{ fontWeight: 700, fontSize: 16 }}>{task.id ? 'Aufgabe bearbeiten' : 'Neue Aufgabe'}</span>
+          <span style={{ fontWeight: 700, fontSize: 16 }}>{task.id ? tr(lang, 'cb_edit_task') : tr(lang, 'cb_new_task')}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 18 }}>✕</button>
         </div>
 
         <div style={{ display: 'grid', gap: 16 }}>
           <div>
-            <label style={labelStyle}>Titel *</label>
-            <input style={inputStyle} value={form.title ?? ''} onChange={e => set('title', e.target.value)} placeholder="Aufgabentitel" />
+            <label style={labelStyle}>{tr(lang, 'title')} *</label>
+            <input style={inputStyle} value={form.title ?? ''} onChange={e => set('title', e.target.value)} />
           </div>
           <div>
-            <label style={labelStyle}>Beschreibung</label>
-            <textarea style={textareaStyle} value={form.description ?? ''} onChange={e => set('description', e.target.value)} placeholder="Was ist zu tun?" />
+            <label style={labelStyle}>{tr(lang, 'description')}</label>
+            <textarea style={textareaStyle} value={form.description ?? ''} onChange={e => set('description', e.target.value)} />
           </div>
           <div>
-            <label style={labelStyle}>Warum wichtig?</label>
-            <textarea style={{ ...textareaStyle, minHeight: 56 }} value={form.whyImportant ?? ''} onChange={e => set('whyImportant', e.target.value)} placeholder="Begründung / Kontext" />
+            <label style={labelStyle}>{tr(lang, 'why_important')}</label>
+            <textarea style={{ ...textareaStyle, minHeight: 56 }} value={form.whyImportant ?? ''} onChange={e => set('whyImportant', e.target.value)} placeholder={tr(lang, 'context_reason')} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Status</label>
+              <label style={labelStyle}>{tr(lang, 'status')}</label>
               <StatusSelect value={form.status ?? 'open'} onChange={v => set('status', v)} />
             </div>
             <div>
-              <label style={labelStyle}>Priorität</label>
+              <label style={labelStyle}>{tr(lang, 'priority')}</label>
               <select style={{ ...inputStyle, fontSize: 12 }} value={form.priority ?? 'mittel'} onChange={e => set('priority', e.target.value as CBPriority)}>
-                <option value="kritisch">Kritisch</option>
-                <option value="hoch">Hoch</option>
-                <option value="mittel">Mittel</option>
-                <option value="niedrig">Niedrig</option>
+                <option value="kritisch">{tr(lang, 'cb_priority_k')}</option>
+                <option value="hoch">{tr(lang, 'cb_priority_h')}</option>
+                <option value="mittel">{tr(lang, 'cb_priority_m')}</option>
+                <option value="niedrig">{tr(lang, 'cb_priority_l')}</option>
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Dokumentqualität</label>
+              <label style={labelStyle}>{tr(lang, 'doc_quality')}</label>
               <select style={{ ...inputStyle, fontSize: 12 }} value={form.docQuality ?? 'ungeprüft'} onChange={e => set('docQuality', e.target.value as CBDocQuality)}>
-                <option value="ungeprüft">Ungeprüft</option>
-                <option value="teilweise">Teilweise</option>
-                <option value="vollständig">Vollständig</option>
-                <option value="extern_geprüft">Extern geprüft</option>
-                <option value="veraltet">Veraltet</option>
+                <option value="ungeprüft">{tr(lang, 'dq_unchecked')}</option>
+                <option value="teilweise">{tr(lang, 'dq_partial')}</option>
+                <option value="vollständig">{tr(lang, 'dq_complete')}</option>
+                <option value="extern_geprüft">{tr(lang, 'dq_extern')}</option>
+                <option value="veraltet">{tr(lang, 'dq_outdated')}</option>
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Fällig am</label>
+              <label style={labelStyle}>{tr(lang, 'cb_due_date')}</label>
               <input type="date" style={{ ...inputStyle, fontSize: 12 }} value={form.dueDate ?? ''} onChange={e => set('dueDate', e.target.value)} />
             </div>
             <div>
-              <label style={labelStyle}>Verantwortlich</label>
+              <label style={labelStyle}>{tr(lang, 'cb_owner')}</label>
               <input style={inputStyle} value={form.owner ?? ''} onChange={e => set('owner', e.target.value)} placeholder="Name" />
             </div>
             <div>
-              <label style={labelStyle}>Externer Berater</label>
-              <input style={inputStyle} value={form.externalAdvisor ?? ''} onChange={e => set('externalAdvisor', e.target.value)} placeholder="Anwalt / Steuerberater" />
+              <label style={labelStyle}>{tr(lang, 'cb_advisor')}</label>
+              <input style={inputStyle} value={form.externalAdvisor ?? ''} onChange={e => set('externalAdvisor', e.target.value)} placeholder={tr(lang, 'advisor_hint')} />
             </div>
           </div>
 
           <div>
-            <label style={labelStyle}>Nachweis erforderlich</label>
-            <input style={inputStyle} value={form.evidenceRequired ?? ''} onChange={e => set('evidenceRequired', e.target.value)} placeholder="z.B. Scan Gewerbeschein" />
+            <label style={labelStyle}>{tr(lang, 'evidence_required')}</label>
+            <input style={inputStyle} value={form.evidenceRequired ?? ''} onChange={e => set('evidenceRequired', e.target.value)} />
           </div>
           <div>
-            <label style={labelStyle}>Nachweis-Notizen</label>
-            <textarea style={{ ...textareaStyle, minHeight: 56 }} value={form.evidenceNotes ?? ''} onChange={e => set('evidenceNotes', e.target.value)} placeholder="Wo liegt das Dokument?" />
+            <label style={labelStyle}>{tr(lang, 'evidence_notes')}</label>
+            <textarea style={{ ...textareaStyle, minHeight: 56 }} value={form.evidenceNotes ?? ''} onChange={e => set('evidenceNotes', e.target.value)} placeholder={tr(lang, 'where_is_doc')} />
           </div>
           <div>
-            <label style={labelStyle}>Interne Notizen</label>
+            <label style={labelStyle}>{tr(lang, 'internal_notes')}</label>
             <textarea style={textareaStyle} value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
               <input type="checkbox" checked={form.blockerGoLive ?? false} onChange={e => set('blockerGoLive', e.target.checked)} />
-              Blocker Go-Live
+              {tr(lang, 'cb_blocker_go')}
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
               <input type="checkbox" checked={form.blockerFirstDeal ?? false} onChange={e => set('blockerFirstDeal', e.target.checked)} />
-              Blocker Erster Deal
+              {tr(lang, 'cb_blocker_deal')}
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
               <input type="checkbox" checked={form.required ?? false} onChange={e => set('required', e.target.checked)} />
-              Pflichtaufgabe
+              {tr(lang, 'required_task')}
             </label>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>Abbrechen</button>
+          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>{tr(lang, 'cancel')}</button>
           <button
             onClick={() => onSave(form)}
             disabled={saving || !form.title?.trim()}
             style={{ padding: '8px 18px', borderRadius: 6, background: '#60a5fa', border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: saving ? 0.6 : 1 }}
           >
-            {saving ? 'Speichern…' : 'Speichern'}
+            {saving ? `${tr(lang, 'save')}…` : tr(lang, 'save')}
           </button>
         </div>
       </div>
@@ -144,6 +147,7 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
   onStatusCycle: (t: SetupTask) => void;
   onDelete: (id: string) => void;
 }) => {
+  const lang = useLang();
   const STATUS_CYCLE: CBStatus[] = ['open', 'in_progress', 'submitted', 'waiting', 'done', 'not_relevant'];
   const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(task.status as CBStatus) + 1) % STATUS_CYCLE.length];
   const isDone = task.status === 'done';
@@ -183,7 +187,7 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
         </div>
         {task.evidenceRequired && (
           <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-3)', padding: '4px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 4, border: '1px dashed rgba(255,255,255,0.1)' }}>
-            Nachweis: {task.evidenceRequired}
+            {tr(lang, 'cb_evidence')}: {task.evidenceRequired}
             {task.evidenceNotes && <span style={{ color: 'var(--text-4)' }}> — {task.evidenceNotes}</span>}
           </div>
         )}
@@ -192,10 +196,10 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
         )}
       </div>
 
-      <button onClick={() => onEdit(task)} title="Bearbeiten"
+      <button onClick={() => onEdit(task)} title={tr(lang, 'edit')}
         style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>✏️</button>
       <div />
-      <button onClick={() => onDelete(task.id)} title="Löschen"
+      <button onClick={() => onDelete(task.id)} title={tr(lang, 'delete')}
         style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,0.5)', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>🗑</button>
     </div>
   );
@@ -203,7 +207,7 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) => {
+export const CBSection = ({ sectionKey, onBack, lang }: CBSectionProps) => {
   const { data: M, refresh } = useData();
   const [modal, setModal] = useState<Partial<SetupTask> | null>(null);
   const [saving, setSaving] = useState(false);
@@ -288,14 +292,14 @@ export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) =
     <div style={{ padding: '24px 28px', maxWidth: 860, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-        <button onClick={onBack} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 13 }}>← Zurück</button>
+        <button onClick={onBack} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 13 }}>← {tr(lang, 'back')}</button>
         <div style={{ width: 36, height: 36, borderRadius: 8, background: `${section.color}22`, border: `1px solid ${section.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Ic name={section.icon} size={16} color={section.color} />
         </div>
         <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{section.label}</h2>
           <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
-            {tasks.length} Aufgaben · {statusCounts['done'] ?? 0} erledigt
+            {tasks.length} {tr(lang, 'tasks')} · {statusCounts['done'] ?? 0} {tr(lang, 'cb_done').toLowerCase()}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -306,7 +310,7 @@ export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) =
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
-        <button style={filterBtnStyle(filter === 'all')} onClick={() => setFilter('all')}>Alle ({tasks.length})</button>
+        <button style={filterBtnStyle(filter === 'all')} onClick={() => setFilter('all')}>{tr(lang, 'all')} ({tasks.length})</button>
         {(Object.entries(STATUS_MAP) as [CBStatus, typeof STATUS_MAP[CBStatus]][]).map(([k, v]) => {
           const cnt = statusCounts[k] ?? 0;
           if (!cnt) return null;
@@ -314,14 +318,14 @@ export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) =
         })}
         <div style={{ flex: 1 }} />
         <button onClick={openNew} style={{ padding: '5px 14px', borderRadius: 6, background: section.color, border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>
-          + Aufgabe
+          {tr(lang, 'cb_new_task')}
         </button>
       </div>
 
       {/* Task list */}
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-3)' }}>
-          {filter === 'all' ? 'Noch keine Aufgaben. Klicke "+ Aufgabe" um zu beginnen.' : 'Keine Aufgaben mit diesem Filter.'}
+          {filter === 'all' ? tr(lang, 'cb_no_tasks') : tr(lang, 'cb_no_tasks_filter')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -351,10 +355,10 @@ export const CBSection = ({ sectionKey, onBack, lang: _lang }: CBSectionProps) =
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--bg-2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 28, maxWidth: 360, width: '100%' }}>
-            <p style={{ margin: '0 0 20px', fontSize: 14 }}>Aufgabe wirklich löschen?</p>
+            <p style={{ margin: '0 0 20px', fontSize: 14 }}>{tr(lang, 'confirm_delete')}</p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setConfirmDelete(null)} style={{ padding: '7px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>Abbrechen</button>
-              <button onClick={() => handleDelete(confirmDelete)} style={{ padding: '7px 16px', borderRadius: 6, background: '#f87171', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Löschen</button>
+              <button onClick={() => setConfirmDelete(null)} style={{ padding: '7px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>{tr(lang, 'cancel')}</button>
+              <button onClick={() => handleDelete(confirmDelete)} style={{ padding: '7px 16px', borderRadius: 6, background: '#f87171', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>{tr(lang, 'delete')}</button>
             </div>
           </div>
         </div>

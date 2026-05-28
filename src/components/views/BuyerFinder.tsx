@@ -5,6 +5,7 @@ import { BuyerFinderDashboard } from './buyers/BuyerFinderDashboard';
 import { BuyerPipeline } from './buyers/BuyerPipeline';
 import { BuyersList, BuyerDetail } from './Buyers';
 import type { Lang } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { useData } from '@/lib/data-context';
 
 type BFView =
@@ -37,11 +38,11 @@ export const BuyerFinderView = ({ lang }: Props) => {
         <div style={{ padding: '12px 16px 0', display: 'flex', gap: 8 }}>
           <button onClick={() => setView({ kind: 'dashboard' })}
             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 12 }}>
-            ← Dashboard
+            {t(lang, 'bf_back_dash')}
           </button>
           <button onClick={() => setView({ kind: 'pipeline' })}
             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.2)', color: '#60a5fa', cursor: 'pointer', fontSize: 12 }}>
-            Pipeline
+            {t(lang, 'bf_pipeline')}
           </button>
         </div>
         <BuyersList lang={lang} onOpen={(id) => setView({ kind: 'detail', id })} />
@@ -55,11 +56,11 @@ export const BuyerFinderView = ({ lang }: Props) => {
         <div style={{ padding: '12px 24px 0', display: 'flex', gap: 8 }}>
           <button onClick={() => setView({ kind: 'dashboard' })}
             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 12 }}>
-            ← Dashboard
+            {t(lang, 'bf_back_dash')}
           </button>
           <button onClick={() => setView({ kind: 'list' })}
             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 12 }}>
-            Alle Käufer
+            {t(lang, 'bf_all_buyers')}
           </button>
         </div>
         <BuyerPipeline onBuyer={(id) => setView({ kind: 'detail', id })} onRefresh={refresh} />

@@ -4,6 +4,8 @@ import React, { useMemo } from 'react';
 import { useData } from '@/lib/data-context';
 import type { Buyer } from '@/lib/types';
 import { PIPELINE_STAGES, ACTIVE_STAGES, PRIORITY_MAP, getStageInfo, calcTotalScore, getScoreColor } from './types';
+import { useLang } from '@/lib/lang-context';
+import { t } from '@/lib/i18n';
 
 interface Props {
   onSection: (view: 'pipeline' | 'list') => void;
@@ -24,6 +26,7 @@ const Tile = ({ label, value, color, sub }: { label: string; value: string | num
 
 export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
   const { data: M } = useData();
+  const lang = useLang();
 
   const buyers: Buyer[] = useMemo(() => M?.buyers ?? [], [M]);
 
@@ -74,7 +77,7 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
 
   const maxStage = ACTIVE_STAGES.reduce((max, s) => Math.max(max, stageCounts[s.key] ?? 0), 0) || 1;
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>{t(lang, 'loading')}</div>;
 
   const qualified  = stageCounts['qualifiziert'] ?? 0;
   const contacted  = stageCounts['kontaktiert'] ?? 0;
@@ -87,32 +90,32 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
         <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Buyer Finder</h2>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-3)' }}>Akquise-Dashboard — Käufer von Recherche bis Deal</p>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-3)' }}>{t(lang, 'bf_subtitle')}</p>
         </div>
         <button onClick={() => onSection('pipeline')}
           style={{ padding: '7px 16px', borderRadius: 6, background: '#60a5fa', border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>
-          Pipeline-Kanban
+          {t(lang, 'bf_pipeline')}
         </button>
         <button onClick={() => onSection('list')}
           style={{ padding: '7px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--text)', cursor: 'pointer', fontSize: 12.5 }}>
-          Alle Käufer
+          {t(lang, 'bf_all_buyers')}
         </button>
       </div>
 
       {/* KPI row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 18 }}>
-        <Tile label="Käufer gesamt" value={buyers.length} color="var(--text)" />
-        <Tile label="Qualifiziert" value={qualified} color="#60a5fa" />
-        <Tile label="Kontaktiert" value={contacted} color="#a78bfa" />
-        <Tile label="Interessiert" value={interested} color="#fb923c" />
-        <Tile label="Gewonnen" value={won} color="#34d399" />
-        <Tile label="Follow-ups fällig" value={followUpsToday.length} color={followUpsToday.length > 0 ? '#f87171' : '#34d399'} />
+        <Tile label={t(lang, 'bf_total')} value={buyers.length} color="var(--text)" />
+        <Tile label={t(lang, 'qualified')} value={qualified} color="#60a5fa" />
+        <Tile label={t(lang, 'contacted')} value={contacted} color="#a78bfa" />
+        <Tile label={t(lang, 'interested')} value={interested} color="#fb923c" />
+        <Tile label={t(lang, 'won')} value={won} color="#34d399" />
+        <Tile label={t(lang, 'bf_followups')} value={followUpsToday.length} color={followUpsToday.length > 0 ? '#f87171' : '#34d399'} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Funnel */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Akquise-Funnel</div>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{t(lang, 'bf_funnel')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {ACTIVE_STAGES.map(stage => {
               const count = stageCounts[stage.key] ?? 0;
@@ -138,10 +141,10 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
           {/* Follow-ups today */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${followUpsToday.length > 0 ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 10, padding: 16 }}>
             <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 10, color: followUpsToday.length > 0 ? '#f87171' : 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🔔</span> Follow-ups fällig ({followUpsToday.length})
+              <span>🔔</span> {t(lang, 'bf_followups')} ({followUpsToday.length})
             </div>
             {followUpsToday.length === 0 ? (
-              <div style={{ fontSize: 12, color: '#34d399' }}>✅ Alle Follow-ups erledigt</div>
+              <div style={{ fontSize: 12, color: '#34d399' }}>✅ {t(lang, 'bf_all_followups_done')}</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {followUpsToday.slice(0, 5).map(b => {
@@ -167,7 +170,7 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
           {hotBuyers.length > 0 && (
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(251,146,60,0.2)', borderRadius: 10, padding: 16 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 10, color: '#fb923c', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>⭐</span> Heiße Kontakte ({hotBuyers.length})
+                <span>⭐</span> {t(lang, 'bf_hot_contacts')} ({hotBuyers.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {hotBuyers.map(b => {
@@ -196,7 +199,7 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
           {/* Missing follow-up hint */}
           {missingFollowUp.length > 0 && (
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: '#fbbf24' }}>⚠ Kein Follow-up-Datum gesetzt</div>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: '#fbbf24' }}>⚠ {t(lang, 'bf_no_followup')}</div>
               {missingFollowUp.map(b => (
                 <div key={b.id} onClick={() => onBuyer(b.id)}
                   style={{ fontSize: 12, color: 'var(--text-3)', padding: '3px 0', cursor: 'pointer' }}>
@@ -211,16 +214,16 @@ export const BuyerFinderDashboard = ({ onSection, onBuyer }: Props) => {
       {/* Segment breakdown */}
       {segmentData.length > 0 && (
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Käufer nach Segment</div>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>{t(lang, 'bf_by_segment')}</div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
             <thead>
               <tr style={{ color: 'var(--text-3)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <th style={{ textAlign: 'left', padding: '4px 8px', fontWeight: 600 }}>Segment</th>
-                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>Gesamt</th>
-                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>Qualifiziert</th>
-                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>Interessiert</th>
-                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>Gewonnen</th>
-                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>Konversion</th>
+                <th style={{ textAlign: 'left', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'segment')}</th>
+                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'total')}</th>
+                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'qualified')}</th>
+                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'interested')}</th>
+                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'won')}</th>
+                <th style={{ textAlign: 'right', padding: '4px 8px', fontWeight: 600 }}>{t(lang, 'conversion')}</th>
               </tr>
             </thead>
             <tbody>

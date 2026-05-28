@@ -6,6 +6,7 @@ import { Ic } from '@/components/ui/icons';
 import { CB_SECTIONS, CB_PHASES, STATUS_MAP, calcReadiness, calcSectionScore, calcPhase } from './types';
 import type { CBStatus } from './types';
 import { StatusBadge, PriorityBadge, BlockerTag, SectionProgress } from './shared';
+import { t as tr } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
 
 interface CBGoLiveProps {
@@ -54,7 +55,7 @@ const PhaseTimeline = ({ readiness }: { readiness: number }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
+export const CBGoLive = ({ onBack, onSection, lang }: CBGoLiveProps) => {
   const { data: M } = useData();
 
   if (!M) return null;
@@ -91,10 +92,10 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
     <div style={{ padding: '24px 28px', maxWidth: 1000, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-        <button onClick={onBack} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 13 }}>← Zurück</button>
+        <button onClick={onBack} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 13 }}>← {tr(lang, 'back')}</button>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Go-Live Readiness Center</h2>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-3)' }}>Vollständige Übersicht aller Anforderungen für den ersten Exportdeal</p>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-3)' }}>{tr(lang, 'cb_golive_subtitle')}</p>
         </div>
       </div>
 
@@ -102,7 +103,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
       <div style={{ ...cardStyle, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div>
-            <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 4 }}>Aktuelle Phase</div>
+            <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 4 }}>{tr(lang, 'cb_current_phase')}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 24 }}>{phase.emoji}</span>
               <span style={{ fontSize: 20, fontWeight: 700 }}>{phase.label}</span>
@@ -111,7 +112,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 36, fontWeight: 800, fontFamily: 'Geist Mono', color: readiness >= 80 ? '#34d399' : readiness >= 50 ? '#60a5fa' : '#fbbf24' }}>{readiness}%</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Gesamtbereitschaft</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{tr(lang, 'cb_total_readiness')}</div>
           </div>
         </div>
         <PhaseTimeline readiness={readiness} />
@@ -120,10 +121,10 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Gesamt', value: tasks.length, color: 'var(--text-2)' },
-          { label: 'Erledigt', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
-          { label: 'Go-Live Blocker', value: criticalBlockers.length, color: criticalBlockers.length > 0 ? '#f87171' : '#34d399' },
-          { label: 'Deal Blocker', value: dealBlockers.length, color: dealBlockers.length > 0 ? '#fb923c' : '#34d399' },
+          { label: tr(lang, 'total'), value: tasks.length, color: 'var(--text-2)' },
+          { label: tr(lang, 'cb_done'), value: tasks.filter(task => task.status === 'done').length, color: '#34d399' },
+          { label: tr(lang, 'cb_go_live_blockers'), value: criticalBlockers.length, color: criticalBlockers.length > 0 ? '#f87171' : '#34d399' },
+          { label: tr(lang, 'cb_deal_blockers'), value: dealBlockers.length, color: dealBlockers.length > 0 ? '#fb923c' : '#34d399' },
         ].map(s => (
           <div key={s.label} style={{ ...cardStyle, textAlign: 'center' }}>
             <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'Geist Mono', color: s.color }}>{s.value}</div>
@@ -139,7 +140,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
             <span>🚫</span> Go-Live Blocker ({criticalBlockers.length})
           </div>
           {criticalBlockers.length === 0 ? (
-            <div style={{ color: '#34d399', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>✅ Alle Go-Live Blocker erledigt!</div>
+            <div style={{ color: '#34d399', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>✅ {tr(lang, 'cb_all_golive_done')}</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {criticalBlockers.map(t => (
@@ -166,7 +167,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
             <span>🤝</span> Erster-Deal Blocker ({dealBlockers.length})
           </div>
           {dealBlockers.length === 0 ? (
-            <div style={{ color: '#34d399', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>✅ Alle Deal-Blocker erledigt!</div>
+            <div style={{ color: '#34d399', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>✅ {tr(lang, 'cb_all_deal_done')}</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {dealBlockers.map(t => (
@@ -189,7 +190,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
 
       {/* Section scores */}
       <div style={{ ...cardStyle, marginBottom: 20 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>Fortschritt nach Bereich</div>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>{tr(lang, 'cb_section_progress')}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
           {sectionScores.map(s => (
             <div key={s.key} style={{ cursor: 'pointer' }} onClick={() => onSection(s.key)}>
@@ -211,7 +212,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
       {criticalOpen.length > 0 && (
         <div style={cardStyle}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ color: '#f87171' }}>⚡</span> Kritische offene Aufgaben ({criticalOpen.length})
+            <span style={{ color: '#f87171' }}>⚡</span> {tr(lang, 'cb_critical_open')} ({criticalOpen.length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {criticalOpen.map(t => (
@@ -243,7 +244,7 @@ export const CBGoLive = ({ onBack, onSection, lang: _lang }: CBGoLiveProps) => {
 
       {/* Status distribution */}
       <div style={{ ...cardStyle, marginTop: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Status-Übersicht</div>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>{tr(lang, 'cb_status_overview')}</div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {statusGroups.map(([status, count]) => {
             const info = STATUS_MAP[status as CBStatus];

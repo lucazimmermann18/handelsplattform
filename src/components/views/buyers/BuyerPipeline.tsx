@@ -6,6 +6,8 @@ import { useData } from '@/lib/data-context';
 import type { Buyer } from '@/lib/types';
 import { PIPELINE_STAGES, getStageInfo, getScoreColor, calcTotalScore } from './types';
 import type { BuyerPipelineStage } from './types';
+import { useLang } from '@/lib/lang-context';
+import { t } from '@/lib/i18n';
 
 interface Props {
   onBuyer: (id: string) => void;
@@ -14,11 +16,12 @@ interface Props {
 
 // ── Buyer card ─────────────────────────────────────────────────────────────────
 
-const BuyerCard = ({ buyer, onOpen, onMove, stages }: {
+const BuyerCard = ({ buyer, onOpen, onMove, stages, lang }: {
   buyer: Buyer;
   onOpen: (id: string) => void;
   onMove: (id: string, stage: BuyerPipelineStage) => void;
   stages: typeof PIPELINE_STAGES;
+  lang: ReturnType<typeof useLang>;
 }) => {
   const [showMove, setShowMove] = useState(false);
   const score = calcTotalScore(buyer.fitScore ?? 0, buyer.commercialScore ?? 0, buyer.engagementScore ?? 0, buyer.riskScore ?? 0);
@@ -65,7 +68,7 @@ const BuyerCard = ({ buyer, onOpen, onMove, stages }: {
 
         <div onClick={e => { e.stopPropagation(); setShowMove(s => !s); }}
           style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: `${stageInfo.color}18`, color: stageInfo.color, cursor: 'pointer', fontWeight: 600, border: `1px solid ${stageInfo.color}30` }}>
-          Stufe ▾
+          {t(lang, 'bf_stage_menu')} ▾
         </div>
       </div>
 
@@ -93,6 +96,7 @@ const BuyerCard = ({ buyer, onOpen, onMove, stages }: {
 
 export const BuyerPipeline = ({ onBuyer, onRefresh }: Props) => {
   const { data: M } = useData();
+  const lang = useLang();
   const [filter, setFilter] = useState('');
 
   const buyers: Buyer[] = useMemo(() => {
@@ -121,13 +125,13 @@ export const BuyerPipeline = ({ onBuyer, onRefresh }: Props) => {
   return (
     <div style={{ padding: '16px 24px 24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Pipeline-Kanban</h3>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{t(lang, 'bf_pipeline')}</h3>
         <input
           value={filter} onChange={e => setFilter(e.target.value)}
-          placeholder="Käufer filtern…"
+          placeholder={t(lang, 'bf_filter')}
           style={{ padding: '5px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', fontSize: 12.5, outline: 'none', width: 200 }}
         />
-        <div style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 'auto' }}>{buyers.length} Käufer</div>
+        <div style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 'auto' }}>{buyers.length} {t(lang, 'nav_buyers')}</div>
       </div>
 
       <div style={{ overflowX: 'auto', paddingBottom: 8 }}>
@@ -159,7 +163,7 @@ export const BuyerPipeline = ({ onBuyer, onRefresh }: Props) => {
                     <div style={{ fontSize: 11, color: 'var(--text-4)', textAlign: 'center', padding: '14px 0', fontStyle: 'italic' }}>Leer</div>
                   )}
                   {list.map(b => (
-                    <BuyerCard key={b.id} buyer={b} onOpen={onBuyer} onMove={handleMove} stages={PIPELINE_STAGES} />
+                    <BuyerCard key={b.id} buyer={b} onOpen={onBuyer} onMove={handleMove} stages={PIPELINE_STAGES} lang={lang} />
                   ))}
                 </div>
               </div>

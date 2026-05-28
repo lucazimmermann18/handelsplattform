@@ -21,6 +21,7 @@ import { TabPerformance } from './tabs/Performance';
 import { TabKommunikation } from './tabs/Kommunikation';
 import { TabAufgaben } from './tabs/Aufgaben';
 
+import { t } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
 interface Props {
   provider: ServiceProvider;
@@ -31,21 +32,21 @@ interface Props {
 
 type TabId = 'uebersicht' | 'stammdaten' | 'leistungen' | 'kontakte' | 'preise' | 'vertraege' | 'dokumente' | 'risiko' | 'performance' | 'komm' | 'aufgaben';
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'uebersicht',  label: 'Übersicht',   icon: 'dashboard' },
-  { id: 'stammdaten',  label: 'Stammdaten',  icon: 'building'  },
-  { id: 'leistungen',  label: 'Leistungen',  icon: 'layers'    },
-  { id: 'kontakte',    label: 'Kontakte',    icon: 'person'    },
-  { id: 'preise',      label: 'Preise',      icon: 'finance'   },
-  { id: 'vertraege',   label: 'Verträge',    icon: 'doc'       },
-  { id: 'dokumente',   label: 'Dokumente',   icon: 'doc'       },
-  { id: 'risiko',      label: 'Risiko',      icon: 'alert'     },
-  { id: 'performance', label: 'Performance', icon: 'quality'   },
-  { id: 'komm',        label: 'Kommunikation', icon: 'chat'    },
-  { id: 'aufgaben',    label: 'Aufgaben',    icon: 'task'      },
+const TABS: { id: TabId; key: string; icon: string }[] = [
+  { id: 'uebersicht',  key: 'sp_tab_overview',     icon: 'dashboard' },
+  { id: 'stammdaten',  key: 'sp_tab_master',        icon: 'building'  },
+  { id: 'leistungen',  key: 'sp_tab_services',      icon: 'layers'    },
+  { id: 'kontakte',    key: 'sp_tab_contacts',      icon: 'person'    },
+  { id: 'preise',      key: 'sp_tab_prices',        icon: 'finance'   },
+  { id: 'vertraege',   key: 'sp_tab_contracts',     icon: 'doc'       },
+  { id: 'dokumente',   key: 'sp_tab_docs',          icon: 'doc'       },
+  { id: 'risiko',      key: 'sp_tab_risk',          icon: 'alert'     },
+  { id: 'performance', key: 'sp_tab_performance',   icon: 'quality'   },
+  { id: 'komm',        key: 'sp_tab_comms',         icon: 'chat'      },
+  { id: 'aufgaben',    key: 'sp_tab_tasks',         icon: 'task'      },
 ];
 
-export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang }: Props) => {
+export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang }: Props) => {
   const { refresh } = useData();
   const [tab, setTab] = useState<TabId>('uebersicht');
   const [editOpen, setEditOpen] = useState(false);
@@ -59,28 +60,28 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
   const missingDocs = (master.documents ?? []).filter(d => d.status === 'fehlt' || d.status === 'abgelaufen').length;
 
   const editFields: FieldDef[] = [
-    { key: 'company_name',  label: 'Firmenname',    type: 'text',   required: true, span: 2 },
-    { key: 'display_name',  label: 'Anzeigename',   type: 'text',   span: 2 },
-    { key: 'category',      label: 'Kategorie',     type: 'select',
+    { key: 'company_name',  label: t(lang, 'sp_company_name'),    type: 'text',   required: true, span: 2 },
+    { key: 'display_name',  label: t(lang, 'sp_display_name'),    type: 'text',   span: 2 },
+    { key: 'category',      label: t(lang, 'sp_col_category'),    type: 'select',
       options: PROVIDER_CATEGORIES.map(c => ({ value: c, label: c })) },
-    { key: 'subcategory',   label: 'Unterkategorie', type: 'text' },
-    { key: 'country',       label: 'Land',          type: 'text' },
-    { key: 'city',          label: 'Stadt',         type: 'text' },
-    { key: 'region',        label: 'Region',        type: 'text' },
-    { key: 'website',       label: 'Website',       type: 'text' },
-    { key: 'status',        label: 'Status',        type: 'select',
+    { key: 'subcategory',   label: t(lang, 'sp_subcategory'),     type: 'text' },
+    { key: 'country',       label: t(lang, 'sp_country'),         type: 'text' },
+    { key: 'city',          label: t(lang, 'sp_city'),            type: 'text' },
+    { key: 'region',        label: t(lang, 'sp_region'),          type: 'text' },
+    { key: 'website',       label: 'Website',                     type: 'text' },
+    { key: 'status',        label: t(lang, 'status'),             type: 'select',
       options: Object.entries(STATUS_MAP).map(([v, i]) => ({ value: v, label: i.label })) },
-    { key: 'risk_level',    label: 'Risiko',        type: 'select',
+    { key: 'risk_level',    label: t(lang, 'sp_risk_level_label'), type: 'select',
       options: [
-        { value: 'niedrig', label: 'Niedrig' }, { value: 'mittel', label: 'Mittel' },
-        { value: 'hoch', label: 'Hoch' }, { value: 'kritisch', label: 'Kritisch' },
+        { value: 'niedrig', label: t(lang, 'cb_priority_l') }, { value: 'mittel', label: t(lang, 'cb_priority_m') },
+        { value: 'hoch', label: t(lang, 'cb_priority_h') }, { value: 'kritisch', label: t(lang, 'cb_priority_k') },
       ] },
-    { key: 'criticality',   label: 'Kritikalität',  type: 'select',
+    { key: 'criticality',   label: t(lang, 'sp_criticality_label'), type: 'select',
       options: [
-        { value: 'niedrig', label: 'Niedrig' }, { value: 'mittel', label: 'Mittel' },
-        { value: 'hoch', label: 'Hoch' }, { value: 'geschäftskritisch', label: 'Geschäftskritisch' },
+        { value: 'niedrig', label: t(lang, 'cb_priority_l') }, { value: 'mittel', label: t(lang, 'cb_priority_m') },
+        { value: 'hoch', label: t(lang, 'cb_priority_h') }, { value: 'geschäftskritisch', label: lang === 'de' ? 'Geschäftskritisch' : 'Business critical' },
       ] },
-    { key: 'notes',         label: 'Notizen',       type: 'textarea', span: 2 },
+    { key: 'notes',         label: t(lang, 'notes'),              type: 'textarea', span: 2 },
   ];
 
   const tabBadge = (id: TabId): number | undefined => {
@@ -94,7 +95,7 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
       {/* Header */}
       <div className="section-head">
         <button className="btn ghost" onClick={onBack} style={{ marginRight: 6 }}>
-          <Ic name="back" size={13} /> Zurück
+          <Ic name="back" size={13} /> {t(lang, 'back')}
         </button>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 18, marginBottom: 2 }}>{provider.displayName || provider.companyName}</h1>
@@ -106,12 +107,12 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Badge kind={statusInfo.kind} dot>{statusInfo.label}</Badge>
-          <Badge kind={riskInfo.kind}>Risiko: {riskInfo.label}</Badge>
+          <Badge kind={riskInfo.kind}>{t(lang, 'sp_risk_badge')}: {riskInfo.label}</Badge>
           {provider.overallRating && (
             <Badge kind="warning">★ {provider.overallRating.toFixed(1)}</Badge>
           )}
           <button className="btn sm ghost" onClick={() => setEditOpen(true)}>
-            <Ic name="edit" size={12} /> Bearbeiten
+            <Ic name="edit" size={12} /> {t(lang, 'edit')}
           </button>
           <button className="btn sm ghost" onClick={() => setDeleteOpen(true)} style={{ color: '#f87171' }}>
             <Ic name="trash" size={12} />
@@ -122,23 +123,23 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
       {/* Tabs */}
       <div style={{ padding: '0 16px', marginBottom: 0 }}>
         <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto' }}>
-          {TABS.map(t => {
-            const badge = tabBadge(t.id);
+          {TABS.map(tb => {
+            const badge = tabBadge(tb.id);
             return (
               <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
+                key={tb.id}
+                onClick={() => setTab(tb.id)}
                 style={{
                   padding: '9px 14px', background: 'none', border: 'none',
-                  borderBottom: `2px solid ${tab === t.id ? 'var(--accent)' : 'transparent'}`,
-                  color: tab === t.id ? 'var(--text)' : 'var(--text-3)',
-                  cursor: 'pointer', fontSize: 12.5, fontWeight: tab === t.id ? 600 : 400,
+                  borderBottom: `2px solid ${tab === tb.id ? 'var(--accent)' : 'transparent'}`,
+                  color: tab === tb.id ? 'var(--text)' : 'var(--text-3)',
+                  cursor: 'pointer', fontSize: 12.5, fontWeight: tab === tb.id ? 600 : 400,
                   whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5,
                   transition: 'color 0.15s',
                 }}
               >
-                <Ic name={t.icon} size={12} />
-                {t.label}
+                <Ic name={tb.icon} size={12} />
+                {t(lang, tb.key)}
                 {badge !== undefined && (
                   <span style={{ background: '#f87171', color: '#fff', borderRadius: 8, fontSize: 9, padding: '1px 5px', fontWeight: 700 }}>
                     {badge}
@@ -167,7 +168,7 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
 
       {editOpen && (
         <GenericEditModal
-          title="Dienstleister bearbeiten"
+          title={t(lang, 'sp_edit_provider')}
           subtitle={provider.displayName || provider.companyName}
           record={provider as unknown as Record<string, unknown>}
           fields={editFields}
@@ -178,7 +179,7 @@ export const ServiceProviderDetail = ({ provider, onBack, onDeleted, lang: _lang
       )}
       {deleteOpen && (
         <ConfirmDelete
-          label={`Dienstleister '${provider.displayName || provider.companyName}'`}
+          label={`${t(lang, 'sp_col_provider')} '${provider.displayName || provider.companyName}'`}
           table="service_providers"
           id={provider.id}
           onClose={() => setDeleteOpen(false)}

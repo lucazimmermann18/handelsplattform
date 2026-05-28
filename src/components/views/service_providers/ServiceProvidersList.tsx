@@ -11,6 +11,7 @@ import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster } from './types';
 import { PROVIDER_CATEGORIES, STATUS_MAP, RISK_MAP } from './types';
 
+import { t } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
 interface Props { onSelect: (p: ServiceProvider) => void; lang: Lang; }
 
@@ -20,31 +21,7 @@ const Stars = ({ rating }: { rating: number }) => (
   ))}</span>
 );
 
-const newProviderFields: FieldDef[] = [
-  { key: 'company_name',  label: 'Firmenname',    type: 'text',   required: true, span: 2 },
-  { key: 'display_name',  label: 'Anzeigename',   type: 'text',   span: 2 },
-  { key: 'category',      label: 'Kategorie',     type: 'select',
-    options: PROVIDER_CATEGORIES.map(c => ({ value: c, label: c })) },
-  { key: 'subcategory',   label: 'Unterkategorie', type: 'text' },
-  { key: 'country',       label: 'Land',          type: 'text' },
-  { key: 'city',          label: 'Stadt',         type: 'text' },
-  { key: 'status',        label: 'Status',        type: 'select',
-    options: Object.entries(STATUS_MAP).map(([v, i]) => ({ value: v, label: i.label })) },
-  { key: 'risk_level',    label: 'Risiko',        type: 'select',
-    options: [
-      { value: 'niedrig', label: 'Niedrig' }, { value: 'mittel', label: 'Mittel' },
-      { value: 'hoch', label: 'Hoch' }, { value: 'kritisch', label: 'Kritisch' },
-    ] },
-  { key: 'criticality',   label: 'Kritikalität',  type: 'select',
-    options: [
-      { value: 'niedrig', label: 'Niedrig' }, { value: 'mittel', label: 'Mittel' },
-      { value: 'hoch', label: 'Hoch' }, { value: 'geschäftskritisch', label: 'Geschäftskritisch' },
-    ] },
-  { key: 'website',       label: 'Website',       type: 'text',   span: 2 },
-  { key: 'notes',         label: 'Notizen',       type: 'textarea', span: 2 },
-];
-
-export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
+export const ServiceProvidersList = ({ onSelect, lang }: Props) => {
   const { data: M, refresh } = useData();
   const [search, setSearch]         = useState('');
   const [catFilter, setCatFilter]   = useState('');
@@ -53,6 +30,30 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
   const [addOpen, setAddOpen]       = useState(false);
   const [editId, setEditId]         = useState<string | null>(null);
   const [deleteId, setDeleteId]     = useState<string | null>(null);
+
+  const providerFields: FieldDef[] = [
+    { key: 'company_name',  label: t(lang, 'sp_company_name'),    type: 'text',   required: true, span: 2 },
+    { key: 'display_name',  label: t(lang, 'sp_display_name'),    type: 'text',   span: 2 },
+    { key: 'category',      label: t(lang, 'sp_col_category'),    type: 'select',
+      options: PROVIDER_CATEGORIES.map(c => ({ value: c, label: c })) },
+    { key: 'subcategory',   label: t(lang, 'sp_subcategory'),     type: 'text' },
+    { key: 'country',       label: t(lang, 'sp_country'),         type: 'text' },
+    { key: 'city',          label: t(lang, 'sp_city'),            type: 'text' },
+    { key: 'status',        label: t(lang, 'status'),             type: 'select',
+      options: Object.entries(STATUS_MAP).map(([v, i]) => ({ value: v, label: i.label })) },
+    { key: 'risk_level',    label: t(lang, 'sp_risk_level_label'), type: 'select',
+      options: [
+        { value: 'niedrig', label: t(lang, 'cb_priority_l') }, { value: 'mittel', label: t(lang, 'cb_priority_m') },
+        { value: 'hoch', label: t(lang, 'cb_priority_h') }, { value: 'kritisch', label: t(lang, 'cb_priority_k') },
+      ] },
+    { key: 'criticality',   label: t(lang, 'sp_criticality_label'), type: 'select',
+      options: [
+        { value: 'niedrig', label: t(lang, 'cb_priority_l') }, { value: 'mittel', label: t(lang, 'cb_priority_m') },
+        { value: 'hoch', label: t(lang, 'cb_priority_h') }, { value: 'geschäftskritisch', label: lang === 'de' ? 'Geschäftskritisch' : 'Business critical' },
+      ] },
+    { key: 'website',       label: 'Website',                    type: 'text',   span: 2 },
+    { key: 'notes',         label: t(lang, 'notes'),             type: 'textarea', span: 2 },
+  ];
 
   const providers = M?.serviceProviders ?? [];
 
@@ -86,18 +87,18 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
   const notFreigegeben = providers.filter(p => p.status === 'lead' || p.status === 'angefragt' || p.status === 'in_pruefung').length;
 
   const kpis = [
-    { l: 'Dienstleister',   v: providers.length, c: 'var(--text-2)' },
-    { l: 'Aktiv',           v: aktiv,            c: '#34d399' },
-    { l: 'In Prüfung',      v: inPruefung,       c: '#fbbf24' },
-    { l: 'Hochrisiko',      v: hochrisiko,       c: '#f87171' },
-    { l: 'Docs fehlen',     v: missingDocs,      c: hochrisiko > 0 ? '#f87171' : '#fbbf24' },
-    { l: 'Verträge bald ab',v: expiringContracts,c: expiringContracts > 0 ? '#fbbf24' : 'var(--text-3)' },
-    { l: 'Nicht freigegeben',v: notFreigegeben,  c: notFreigegeben > 0 ? '#fbbf24' : 'var(--text-3)' },
+    { l: t(lang, 'sp_col_provider'),       v: providers.length, c: 'var(--text-2)' },
+    { l: t(lang, 'sp_aktiv'),              v: aktiv,            c: '#34d399' },
+    { l: t(lang, 'sp_in_pruefung'),        v: inPruefung,       c: '#fbbf24' },
+    { l: t(lang, 'sp_hochrisiko'),         v: hochrisiko,       c: '#f87171' },
+    { l: t(lang, 'sp_docs_missing'),       v: missingDocs,      c: hochrisiko > 0 ? '#f87171' : '#fbbf24' },
+    { l: t(lang, 'sp_contracts_expiring'), v: expiringContracts,c: expiringContracts > 0 ? '#fbbf24' : 'var(--text-3)' },
+    { l: t(lang, 'sp_not_approved'),       v: notFreigegeben,   c: notFreigegeben > 0 ? '#fbbf24' : 'var(--text-3)' },
   ];
 
   // CSV export
   const exportCSV = () => {
-    const headers = ['ID', 'Firmenname', 'Kategorie', 'Land', 'Stadt', 'Status', 'Risiko', 'Kritikalität', 'Bewertung'];
+    const headers = ['ID', t(lang, 'sp_company_name'), t(lang, 'sp_col_category'), t(lang, 'sp_country'), t(lang, 'sp_city'), t(lang, 'status'), t(lang, 'sp_risk_level_label'), t(lang, 'sp_criticality_label'), t(lang, 'sp_col_rating')];
     const rows = filtered.map(p => [
       p.id, p.companyName, p.category, p.country, p.city ?? '',
       p.status, p.riskLevel, p.criticality, p.overallRating ?? '',
@@ -111,12 +112,12 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
   return (
     <div>
       <div className="section-head">
-        <h1>Dienstleister & Partner</h1>
-        <div className="sub">Service Provider Management · Externe Partner · Operationales Netzwerk</div>
+        <h1>{t(lang, 'sp_heading')}</h1>
+        <div className="sub">{t(lang, 'sp_heading_sub')}</div>
         <div className="right" style={{ display: 'flex', gap: 8 }}>
           <button className="btn ghost" onClick={exportCSV}><Ic name="upload" size={12} /> CSV</button>
           <button className="btn primary" onClick={() => setAddOpen(true)}>
-            <Ic name="plus" size={13} /> Neuer Dienstleister
+            <Ic name="plus" size={13} /> {t(lang, 'sp_new_provider')}
           </button>
         </div>
       </div>
@@ -140,28 +141,28 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
             </span>
             <input
               value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Suche nach Name, Land…"
+              placeholder={t(lang, 'sp_search')}
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 12.5, padding: '7px 10px 7px 32px', width: '100%', boxSizing: 'border-box', outline: 'none' }}
             />
           </div>
           <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 12.5, padding: '7px 10px', outline: 'none' }}>
-            <option value="">Alle Kategorien</option>
+            <option value="">{t(lang, 'sp_all_categories')}</option>
             {PROVIDER_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 12.5, padding: '7px 10px', outline: 'none' }}>
-            <option value="">Alle Status</option>
+            <option value="">{t(lang, 'sp_all_status')}</option>
             {Object.entries(STATUS_MAP).map(([v, i]) => <option key={v} value={v}>{i.label}</option>)}
           </select>
           <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)}
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 12.5, padding: '7px 10px', outline: 'none' }}>
-            <option value="">Alle Risiken</option>
+            <option value="">{t(lang, 'sp_all_risks')}</option>
             {Object.entries(RISK_MAP).map(([v, i]) => <option key={v} value={v}>{i.label}</option>)}
           </select>
           {(search || catFilter || statusFilter || riskFilter) && (
             <button className="btn sm ghost" onClick={() => { setSearch(''); setCatFilter(''); setStatusFilter(''); setRiskFilter(''); }}>
-              Zurücksetzen
+              {t(lang, 'sp_reset_filter')}
             </button>
           )}
         </div>
@@ -171,12 +172,12 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
           <div className="card">
             <div style={{ padding: 48, textAlign: 'center' }}>
               <Ic name="building" size={36} color="var(--text-3)" />
-              <div className="fw600" style={{ fontSize: 14, marginBottom: 6, marginTop: 12 }}>Noch keine Dienstleister angelegt</div>
+              <div className="fw600" style={{ fontSize: 14, marginBottom: 6, marginTop: 12 }}>{t(lang, 'sp_empty_title')}</div>
               <div className="tx3" style={{ fontSize: 12, marginBottom: 16 }}>
-                Spediteure, Zollagenten, Labore, Versicherungen und weitere externe Partner
+                {t(lang, 'sp_empty_sub')}
               </div>
               <button className="btn primary" onClick={() => setAddOpen(true)}>
-                <Ic name="plus" size={13} /> Ersten Dienstleister hinzufügen
+                <Ic name="plus" size={13} /> {t(lang, 'sp_add_first')}
               </button>
             </div>
           </div>
@@ -189,7 +190,7 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                    {['Dienstleister', 'Kategorie', 'Land / Stadt', 'Status', 'Risiko', 'Kritikalität', 'Kontakte', 'Bewertung', 'Offene Aufgaben', 'Aktionen'].map(h => (
+                    {[t(lang,'sp_col_provider'), t(lang,'sp_col_category'), t(lang,'sp_col_location'), t(lang,'status'), t(lang,'sp_risk_level_label'), t(lang,'sp_criticality_label'), t(lang,'sp_col_contacts'), t(lang,'sp_col_rating'), t(lang,'sp_col_tasks'), t(lang,'sp_col_actions')].map(h => (
                       <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
@@ -249,24 +250,24 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
               </table>
             </div>
             <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              {filtered.length} von {providers.length} Dienstleistern
+              {filtered.length} {t(lang, 'sp_of')} {providers.length} {t(lang, 'sp_providers_label')}
             </div>
           </div>
         )}
 
         {providers.length > 0 && filtered.length === 0 && (
           <div className="card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-3)' }}>
-            Keine Dienstleister gefunden. Filter anpassen?
+            {t(lang, 'sp_no_results')}
           </div>
         )}
       </div>
 
       {addOpen && (
         <GenericEditModal
-          title="Neuer Dienstleister"
-          subtitle="Dienstleister & Partner"
+          title={t(lang, 'sp_new_provider')}
+          subtitle={t(lang, 'sp_heading')}
           record={{}}
-          fields={newProviderFields}
+          fields={providerFields}
           table="service_providers"
           onClose={() => setAddOpen(false)}
           onSaved={() => { setAddOpen(false); refresh(); }}
@@ -276,13 +277,12 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
       {editId && (() => {
         const p = providers.find(x => x.id === editId);
         if (!p) return null;
-        const editFields: FieldDef[] = newProviderFields;
         return (
           <GenericEditModal
-            title="Dienstleister bearbeiten"
+            title={t(lang, 'sp_edit_provider')}
             subtitle={p.displayName || p.companyName}
             record={p as unknown as Record<string, unknown>}
-            fields={editFields}
+            fields={providerFields}
             table="service_providers"
             onClose={() => setEditId(null)}
             onSaved={() => { setEditId(null); refresh(); }}
@@ -294,7 +294,7 @@ export const ServiceProvidersList = ({ onSelect, lang: _lang }: Props) => {
         const p = providers.find(x => x.id === deleteId);
         return p ? (
           <ConfirmDelete
-            label={`Dienstleister '${p.displayName || p.companyName}'`}
+            label={`${t(lang, 'sp_col_provider')} '${p.displayName || p.companyName}'`}
             table="service_providers"
             id={deleteId}
             onClose={() => setDeleteId(null)}

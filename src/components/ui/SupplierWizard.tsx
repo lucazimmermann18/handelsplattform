@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Ic } from '@/components/ui/icons';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Step = 'basic' | 'details' | 'review';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'basic',   label: 'Basis' },
-  { key: 'details', label: 'Produkte & Zertifikate' },
-  { key: 'review',  label: 'Prüfen' },
+const STEPS: { key: Step; labelKey: string }[] = [
+  { key: 'basic',   labelKey: 'wiz_step_basic' },
+  { key: 'details', labelKey: 'wiz_step_details' },
+  { key: 'review',  labelKey: 'wiz_step_review' },
 ];
 
 interface BasicState {
@@ -62,6 +64,7 @@ interface SupplierWizardProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps) {
+  const lang = useLang();
   const { data: M, refresh } = useData();
   const [step, setStep] = useState<Step>('basic');
   const [state, setState] = useState<WizardState>(initState);
@@ -150,12 +153,12 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
             type="text"
             value={state.basic.name}
             onChange={e => updateBasic('name', e.target.value)}
-            placeholder="Lieferantenname"
+            placeholder={t(lang, 'wiz_row_supplier')}
             style={inputStyle}
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Typ</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_type')}</div>
           <select
             value={state.basic.type}
             onChange={e => updateBasic('type', e.target.value)}
@@ -167,7 +170,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           </select>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Land</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_country')}</div>
           <input
             type="text"
             value={state.basic.country}
@@ -177,7 +180,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Region</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_region')}</div>
           <input
             type="text"
             value={state.basic.region}
@@ -187,7 +190,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Stadt</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_city')}</div>
           <input
             type="text"
             value={state.basic.city}
@@ -197,7 +200,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kontaktperson</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_contact_person')}</div>
           <input
             type="text"
             value={state.basic.contact}
@@ -207,7 +210,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Telefon</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_phone')}</div>
           <input
             type="text"
             value={state.basic.phone}
@@ -217,7 +220,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>E-Mail</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_email')}</div>
           <input
             type="email"
             value={state.basic.email}
@@ -235,7 +238,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
   const renderDetails = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Produkte</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_products')}</div>
         <input
           type="text"
           value={state.details.products}
@@ -243,10 +246,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           placeholder="z.B. Kaffee, Cashews"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>{t(lang, 'wiz_comma_sep')}</div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_certs')}</div>
         <input
           type="text"
           value={state.details.certs}
@@ -254,10 +257,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
           placeholder="z.B. Fairtrade, Organic"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>{t(lang, 'wiz_comma_sep')}</div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kapazität</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_capacity')}</div>
         <input
           type="text"
           value={state.details.capacity}
@@ -267,7 +270,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
         />
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Tier</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_tier')}</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['A', 'B', 'C'].map(t => (
             <span
@@ -282,7 +285,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Risiko</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_risk')}</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['niedrig', 'mittel', 'hoch'].map(r => (
             <span
@@ -309,14 +312,14 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
             <Ic name="check" size={26} color="#34d399" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Lieferant angelegt!</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{t(lang, 'wiz_supplier_done')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newId}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{state.basic.name} · {state.basic.country}</div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button className="btn ghost" onClick={handleClose}>Schließen</button>
+            <button className="btn ghost" onClick={handleClose}>{t(lang, 'close')}</button>
             <button className="btn primary" onClick={() => { onSuccess(); handleClose(); }}>
-              <Ic name="eye" size={13} /> Lieferant ansehen
+              <Ic name="eye" size={13} /> {t(lang, 'wiz_supplier_view')}
             </button>
           </div>
         </div>
@@ -325,24 +328,24 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
 
     const { basic, details } = state;
     const rows = [
-      { l: 'Name',          v: basic.name || '—' },
-      { l: 'Typ',           v: basic.type || '—' },
-      { l: 'Land',          v: basic.country || '—' },
-      { l: 'Region',        v: basic.region || '—' },
-      { l: 'Stadt',         v: basic.city || '—' },
-      { l: 'Kontakt',       v: basic.contact || '—' },
-      { l: 'Telefon',       v: basic.phone || '—' },
-      { l: 'E-Mail',        v: basic.email || '—' },
-      { l: 'Produkte',      v: details.products || '—' },
-      { l: 'Zertifikate',   v: details.certs || '—' },
-      { l: 'Kapazität',     v: details.capacity || '—' },
-      { l: 'Tier',          v: details.tier },
-      { l: 'Risiko',        v: details.risk },
+      { l: t(lang, 'wiz_row_name'),     v: basic.name || '—' },
+      { l: t(lang, 'wiz_row_type'),     v: basic.type || '—' },
+      { l: t(lang, 'wiz_row_country'),  v: basic.country || '—' },
+      { l: t(lang, 'wiz_row_region'),   v: basic.region || '—' },
+      { l: t(lang, 'wiz_row_city'),     v: basic.city || '—' },
+      { l: t(lang, 'wiz_row_contact'),  v: basic.contact || '—' },
+      { l: t(lang, 'wiz_row_phone'),    v: basic.phone || '—' },
+      { l: t(lang, 'wiz_row_email'),    v: basic.email || '—' },
+      { l: t(lang, 'wiz_row_products'), v: details.products || '—' },
+      { l: t(lang, 'wiz_row_certs'),    v: details.certs || '—' },
+      { l: t(lang, 'wiz_row_capacity'), v: details.capacity || '—' },
+      { l: t(lang, 'wiz_row_tier'),     v: details.tier },
+      { l: t(lang, 'wiz_row_risk'),     v: details.risk },
     ];
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t(lang, 'overview')}</div>
         {rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
             <span style={{ color: 'var(--text-3)', width: 100, flexShrink: 0 }}>{r.l}</span>
@@ -375,7 +378,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Ic name="supplier" size={14} color="#a78bfa" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neuer Lieferant</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'wiz_new_supplier')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={handleClose}>
               <Ic name="x" size={13} />
             </button>
@@ -403,7 +406,7 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
                         {done ? '✓' : i + 1}
                       </div>
                       <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                        {s.label}
+                        {t(lang, s.labelKey)}
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
@@ -426,16 +429,16 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
         {/* Footer */}
         {!isSuccess && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>Abbrechen</button>
+            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>{t(lang, 'cancel')}</button>
             {stepIdx > 0 && (
               <button className="btn" onClick={goBack} style={{ fontSize: 12 }}>
-                <Ic name="chevL" size={12} /> Zurück
+                <Ic name="chevL" size={12} /> {t(lang, 'back')}
               </button>
             )}
             <div style={{ flex: 1 }} />
             {step !== 'review' ? (
               <button className="btn primary" onClick={goNext} disabled={!canNext}>
-                Weiter <Ic name="chevR" size={12} />
+                {t(lang, 'next')} <Ic name="chevR" size={12} />
               </button>
             ) : (
               <button
@@ -447,10 +450,10 @@ export function SupplierWizard({ open, onClose, onSuccess }: SupplierWizardProps
                 {saving ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                    Wird angelegt…
+                    {t(lang, 'creating')}
                   </span>
                 ) : (
-                  <><Ic name="plus" size={13} /> Lieferant anlegen</>
+                  <><Ic name="plus" size={13} /> {t(lang, 'wiz_supplier_create')}</>
                 )}
               </button>
             )}

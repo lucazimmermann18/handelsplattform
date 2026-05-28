@@ -7,6 +7,7 @@ import { CB_SECTIONS, PRIORITY_MAP, calcReadiness, calcSectionScore, calcPhase }
 import { StatusBadge, SectionProgress } from './shared';
 import { DEFAULT_TASKS } from './defaultTasks';
 import type { Lang } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 
 interface CBDashboardProps {
   onSection: (key: string) => void;
@@ -38,11 +39,11 @@ const ReadinessRing = ({ pct }: { pct: number }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBDashboard = ({ onSection, onGoLive, lang: _lang }: CBDashboardProps) => {
+export const CBDashboard = ({ onSection, onGoLive, lang }: CBDashboardProps) => {
   const { data: M, refresh } = useData();
   const [seeding, setSeeding] = useState(false);
 
-  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
+  if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>{t(lang, 'loading')}</div>;
 
   const tasks = M.setupTasks;
   const readiness = calcReadiness(tasks);
@@ -112,21 +113,21 @@ export const CBDashboard = ({ onSection, onGoLive, lang: _lang }: CBDashboardPro
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-2)' }}>
-              {tasks.filter(t => t.status === 'done').length}/{tasks.length} Aufgaben erledigt
+              {tasks.filter(t => t.status === 'done').length}/{tasks.length} {t(lang, 'cb_tasks_done')}
             </span>
             <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-2)' }}>
-              {totalOpen} in Bearbeitung / offen
+              {totalOpen} {t(lang, 'cb_in_work')}
             </span>
             {criticalBlockers.length > 0 && (
               <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', fontWeight: 600 }}>
-                ⚠ {criticalBlockers.length} kritische Blocker
+                ⚠ {criticalBlockers.length} {t(lang, 'cb_go_live_blockers')}
               </span>
             )}
           </div>
         </div>
 
         <button className="btn primary" onClick={onGoLive}>
-          <Ic name="check" size={13} /> Go-Live-Check
+          <Ic name="check" size={13} /> {t(lang, 'cb_go_live')}
         </button>
       </div>
 
@@ -134,12 +135,12 @@ export const CBDashboard = ({ onSection, onGoLive, lang: _lang }: CBDashboardPro
       {isEmpty && (
         <div style={{ padding: '24px 20px', borderRadius: 10, border: '1px dashed rgba(255,255,255,0.15)', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
           <div style={{ fontSize: 28, marginBottom: 10 }}>🗺️</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Company Builder noch nicht initialisiert</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Company Builder</div>
           <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 16, maxWidth: 400, margin: '0 auto 16px' }}>
-            Lade {DEFAULT_TASKS.length} Standard-Aufbaupunkte für ein professionelles Exportgeschäft. Alle Punkte sind anpassbar.
+            {t(lang, 'cb_load_demo')} ({DEFAULT_TASKS.length})
           </div>
           <button className="btn primary" onClick={handleSeed} disabled={seeding}>
-            <Ic name="plus" size={13} /> {seeding ? 'Initialisieren…' : 'Standard-Aufbauplan laden'}
+            <Ic name="plus" size={13} /> {seeding ? `${t(lang, 'loading')}` : t(lang, 'cb_seed')}
           </button>
         </div>
       )}

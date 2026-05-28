@@ -54,6 +54,7 @@ import { BuyerWizard } from '@/components/ui/BuyerWizard';
 import { ProductWizard } from '@/components/ui/ProductWizard';
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
+import { LangContext } from '@/lib/lang-context';
 import type { Order } from '@/lib/types';
 
 interface Route {
@@ -278,6 +279,7 @@ export const App = () => {
   }
 
   return (
+    <LangContext.Provider value={lang}>
     <>
       <div className="app">
         {/* Logo */}
@@ -364,5 +366,6 @@ export const App = () => {
         onSuccess={() => { setProductWizardOpen(false); navigate('products'); }}
       />
     </>
+    </LangContext.Provider>
   );
 };

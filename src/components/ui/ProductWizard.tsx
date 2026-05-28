@@ -4,15 +4,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '@/lib/data-context';
 import { useAiConfig } from '@/lib/ai-config';
 import { Ic } from '@/components/ui/icons';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Step = 'basic' | 'pricing' | 'review';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'basic',   label: 'Basis' },
-  { key: 'pricing', label: 'Preise & Varianten' },
-  { key: 'review',  label: 'Prüfen' },
+const STEPS: { key: Step; labelKey: string }[] = [
+  { key: 'basic',   labelKey: 'wiz_step_basic' },
+  { key: 'pricing', labelKey: 'wiz_step_pricing' },
+  { key: 'review',  labelKey: 'wiz_step_review' },
 ];
 
 const UNITS = ['kg', 't', 'Stk', 'L'];
@@ -154,6 +156,7 @@ interface ProductWizardProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) {
+  const lang = useLang();
   const { data: M, refresh } = useData();
   const { generate, isConfigured } = useAiConfig();
 
@@ -218,8 +221,8 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
 
   // AI autofill
   const handleAiFill = async () => {
-    if (!state.basic.name.trim()) { setAiError('Bitte zuerst den Produktnamen eingeben.'); return; }
-    if (!isConfigured) { setAiError('Kein AI-Key konfiguriert — bitte in den Einstellungen hinterlegen.'); return; }
+    if (!state.basic.name.trim()) { setAiError(t(lang, 'wiz_ai_no_name')); return; }
+    if (!isConfigured) { setAiError(t(lang, 'wiz_ai_no_key')); return; }
     setAiLoading(true); setAiError(null);
     try {
       const { basic } = state;
@@ -311,7 +314,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             type="text"
             value={state.basic.name}
             onChange={e => updateBasic('name', e.target.value)}
-            placeholder="Produktname"
+            placeholder={t(lang, 'wiz_row_product')}
             style={inputStyle}
           />
         </div>
@@ -324,7 +327,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 10.5, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                ✨ Produkt erkannt
+                {t(lang, 'wiz_product_detect')}
               </span>
               <span style={{ fontSize: 11, color: 'var(--text-3)' }}>–</span>
               <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'capitalize' }}>{sugKey}</span>
@@ -366,9 +369,9 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             {/* Suggested field values */}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
               {[
-                { l: 'Einheit', v: sugEntry.unit },
-                { l: 'Verpackung', v: sugEntry.packaging },
-                { l: 'MOQ', v: sugEntry.moq },
+                { l: t(lang, 'wiz_row_unit'),      v: sugEntry.unit },
+                { l: t(lang, 'wiz_row_packaging'),  v: sugEntry.packaging },
+                { l: 'MOQ',                         v: sugEntry.moq },
               ].map(item => (
                 <span key={item.l} style={{
                   fontSize: 10.5, padding: '2px 7px', borderRadius: 4,
@@ -385,7 +388,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
               style={{ fontSize: 11, height: 26 }}
               onClick={() => applySuggestion(sugEntry)}
             >
-              Alle Felder übernehmen
+              {t(lang, 'wiz_product_apply')}
             </button>
           </div>
         )}
@@ -393,7 +396,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
         {/* Cat + Origin */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kategorie</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_cat')}</div>
             <input
               type="text" value={state.basic.cat}
               onChange={e => updateBasic('cat', e.target.value)}
@@ -402,7 +405,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Herkunft</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_origin')}</div>
             <input
               type="text" value={state.basic.origin}
               onChange={e => updateBasic('origin', e.target.value)}
@@ -412,10 +415,10 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           </div>
         </div>
 
-        {/* HS Code + Einheit */}
+        {/* HS Code + Unit */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>HS-Code</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_hs_code')}</div>
             <input
               type="text" value={state.basic.hs}
               onChange={e => updateBasic('hs', e.target.value)}
@@ -433,14 +436,14 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
                     style={{ marginLeft: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#a78bfa', fontSize: 10.5, padding: 0, textDecoration: 'underline' }}
                     onClick={() => updateBasic('hs', suggestion[1].hs[0]?.code ?? '')}
                   >
-                    Übernehmen
+                    {t(lang, 'wiz_hs_apply')}
                   </button>
                 )}
               </div>
             )}
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Einheit</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_unit')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {UNITS.map(u => (
                 <span
@@ -457,7 +460,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
         {/* Packaging + MOQ */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verpackung</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_packaging')}</div>
             <input
               type="text" value={state.basic.packaging}
               onChange={e => updateBasic('packaging', e.target.value)}
@@ -466,7 +469,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>MOQ</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_moq')}</div>
             <input
               type="text" value={state.basic.moq}
               onChange={e => updateBasic('moq', e.target.value)}
@@ -492,7 +495,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Einkaufspreis (€/Einh.)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_buy_price')}</div>
           <input
             type="number" min={0} step={0.01} value={state.pricing.buyPrice || ''}
             onChange={e => updatePricing('buyPrice', parseFloat(e.target.value) || 0)}
@@ -500,7 +503,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Verkaufspreis (€/Einh.)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_sell_price')}</div>
           <input
             type="number" min={0} step={0.01} value={state.pricing.sellPrice || ''}
             onChange={e => updatePricing('sellPrice', parseFloat(e.target.value) || 0)}
@@ -510,38 +513,38 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
       </div>
 
       <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 12.5 }}>
-        <span style={{ color: 'var(--text-3)' }}>Marge: </span>
+        <span style={{ color: 'var(--text-3)' }}>{t(lang, 'margin')}: </span>
         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: margin >= 20 ? '#34d399' : margin >= 10 ? '#fbbf24' : margin > 0 ? '#f87171' : 'var(--text-3)' }}>
           {`${margin}%`}
         </span>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zertifikate</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_certs')}</div>
         <input
           type="text" value={state.pricing.certs}
           onChange={e => updatePricing('certs', e.target.value)}
           placeholder="z.B. Fairtrade, Organic" style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>{t(lang, 'wiz_comma_sep')}</div>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Exportstatus</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_export_status')}</div>
         <div style={{ display: 'flex', gap: 6 }}>
           <span
             className={`chip${state.pricing.exportReady ? ' on' : ''}`}
             onClick={() => updatePricing('exportReady', !state.pricing.exportReady)}
             style={{ cursor: 'pointer' }}
-          >Export bereit</span>
+          >{t(lang, 'wiz_export_ready')}</span>
         </div>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Varianten</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_variants')}</div>
         <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', background: 'rgba(255,255,255,0.04)', padding: '6px 10px', fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <span>Variante</span><span>Grad</span><span>Bestand (kg)</span>
+            <span>{t(lang, 'wiz_variant_col')}</span><span>{t(lang, 'wiz_variant_grade')}</span><span>{t(lang, 'wiz_variant_stock')}</span>
           </div>
           {state.pricing.variants.map((vr, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', gap: 6, padding: '6px 10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -552,7 +555,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
           ))}
         </div>
         <button className="btn ghost" onClick={addVariant} style={{ marginTop: 8, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Ic name="plus" size={12} /> Variante hinzufügen
+          <Ic name="plus" size={12} /> {t(lang, 'wiz_add_variant')}
         </button>
       </div>
     </div>
@@ -568,14 +571,14 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             <Ic name="check" size={26} color="#34d399" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Produkt angelegt!</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{t(lang, 'wiz_product_done')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newId}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{state.basic.name} · {state.basic.cat}</div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button className="btn ghost" onClick={handleClose}>Schließen</button>
+            <button className="btn ghost" onClick={handleClose}>{t(lang, 'close')}</button>
             <button className="btn primary" onClick={() => { onSuccess(); handleClose(); }}>
-              <Ic name="eye" size={13} /> Produkt ansehen
+              <Ic name="eye" size={13} /> {t(lang, 'wiz_product_view')}
             </button>
           </div>
         </div>
@@ -584,23 +587,23 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
 
     const { basic, pricing } = state;
     const rows = [
-      { l: 'Name',          v: basic.name || '—' },
-      { l: 'Kategorie',     v: basic.cat || '—' },
-      { l: 'Herkunft',      v: basic.origin || '—' },
-      { l: 'HS-Code',       v: basic.hs || '—' },
-      { l: 'Einheit',       v: basic.unit },
-      { l: 'Verpackung',    v: basic.packaging || '—' },
-      { l: 'MOQ',           v: basic.moq || '—' },
-      { l: 'Einkaufspreis', v: `${pricing.buyPrice.toFixed(2)} €` },
-      { l: 'Verkaufspreis', v: `${pricing.sellPrice.toFixed(2)} €` },
-      { l: 'Marge',         v: `${margin}%` },
-      { l: 'Zertifikate',   v: pricing.certs || '—' },
-      { l: 'Export bereit', v: pricing.exportReady ? 'Ja' : 'Nein' },
-      { l: 'Varianten',     v: `${pricing.variants.filter(v => v.v).length} definiert` },
+      { l: t(lang, 'wiz_row_name'),          v: basic.name || '—' },
+      { l: t(lang, 'wiz_row_cat'),            v: basic.cat || '—' },
+      { l: t(lang, 'wiz_row_origin'),         v: basic.origin || '—' },
+      { l: t(lang, 'wiz_row_hs_code'),        v: basic.hs || '—' },
+      { l: t(lang, 'wiz_row_unit'),           v: basic.unit },
+      { l: t(lang, 'wiz_row_packaging'),      v: basic.packaging || '—' },
+      { l: 'MOQ',                             v: basic.moq || '—' },
+      { l: t(lang, 'wiz_row_buy_price'),      v: `${pricing.buyPrice.toFixed(2)} €` },
+      { l: t(lang, 'wiz_row_sell_price'),     v: `${pricing.sellPrice.toFixed(2)} €` },
+      { l: t(lang, 'margin'),                 v: `${margin}%` },
+      { l: t(lang, 'wiz_row_certs'),          v: pricing.certs || '—' },
+      { l: t(lang, 'wiz_export_ready'),       v: pricing.exportReady ? t(lang, 'yes') : t(lang, 'no') },
+      { l: t(lang, 'wiz_row_variants'),       v: `${pricing.variants.filter(v => v.v).length} ${t(lang, 'wiz_defined')}` },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t(lang, 'overview')}</div>
         {rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
             <span style={{ color: 'var(--text-3)', width: 110, flexShrink: 0 }}>{r.l}</span>
@@ -633,7 +636,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Ic name="product" size={14} color="#a78bfa" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neues Produkt</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'wiz_new_product')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={handleClose}>
               <Ic name="x" size={13} />
             </button>
@@ -660,7 +663,7 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
                         {done ? '✓' : i + 1}
                       </div>
                       <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                        {s.label}
+                        {t(lang, s.labelKey)}
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
@@ -683,39 +686,39 @@ export function ProductWizard({ open, onClose, onSuccess }: ProductWizardProps) 
         {/* Footer */}
         {!isSuccess && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>Abbrechen</button>
+            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>{t(lang, 'cancel')}</button>
             {step === 'basic' && (
               <button
                 className="btn"
                 onClick={handleAiFill}
                 disabled={aiLoading}
                 style={{ fontSize: 12, gap: 5, color: '#a78bfa', borderColor: 'rgba(99,102,241,0.3)' }}
-                title={!isConfigured ? 'Kein AI-Key — in den Einstellungen hinterlegen' : 'Felder automatisch ausfüllen'}
+                title={!isConfigured ? t(lang, 'wiz_ai_no_key') : t(lang, 'wiz_ai_fill')}
               >
                 {aiLoading
-                  ? <><div style={{ width: 11, height: 11, border: '1.5px solid rgba(167,139,250,0.3)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> KI lädt…</>
-                  : <>✨ Mit KI ausfüllen</>
+                  ? <><div style={{ width: 11, height: 11, border: '1.5px solid rgba(167,139,250,0.3)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> {t(lang, 'wiz_ai_loading')}</>
+                  : <>{t(lang, 'wiz_ai_fill')}</>
                 }
               </button>
             )}
             {stepIdx > 0 && (
               <button className="btn" onClick={goBack} style={{ fontSize: 12 }}>
-                <Ic name="chevL" size={12} /> Zurück
+                <Ic name="chevL" size={12} /> {t(lang, 'back')}
               </button>
             )}
             <div style={{ flex: 1 }} />
             {step !== 'review' ? (
               <button className="btn primary" onClick={goNext} disabled={!canNext}>
-                Weiter <Ic name="chevR" size={12} />
+                {t(lang, 'next')} <Ic name="chevR" size={12} />
               </button>
             ) : (
               <button className="btn primary" onClick={handleSave} disabled={saving} style={{ minWidth: 150, gap: 6 }}>
                 {saving
                   ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                      Wird angelegt…
+                      {t(lang, 'creating')}
                     </span>
-                  : <><Ic name="plus" size={13} /> Produkt anlegen</>
+                  : <><Ic name="plus" size={13} /> {t(lang, 'wiz_product_create')}</>
                 }
               </button>
             )}

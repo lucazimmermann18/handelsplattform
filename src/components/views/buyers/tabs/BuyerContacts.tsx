@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { BuyerContact } from '@/lib/types';
 import { DECISION_POWER_MAP, CONTACT_QUALITY_MAP } from '../types';
+import { useLang } from '@/lib/lang-context';
+import { t } from '@/lib/i18n';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -25,6 +27,7 @@ interface ContactModalProps {
 }
 
 const ContactModal = ({ initial, buyerId, onSaved, onClose }: ContactModalProps) => {
+  const lang = useLang();
   const [form, setForm] = useState({
     firstName: initial?.firstName ?? '',
     lastName: initial?.lastName ?? '',
@@ -81,44 +84,44 @@ const ContactModal = ({ initial, buyerId, onSaved, onClose }: ContactModalProps)
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: 'var(--bg-2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, width: '100%', maxWidth: 560, maxHeight: '90vh', overflow: 'auto', padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>{initial?.id ? 'Kontakt bearbeiten' : 'Neuer Kontakt'}</span>
+          <span style={{ fontWeight: 700, fontSize: 15 }}>{initial?.id ? t(lang, 'contact_edit') : t(lang, 'contact_new')}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 18 }}>✕</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div><label style={labelStyle}>Vorname</label><input style={inputStyle} value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Max" /></div>
-          <div><label style={labelStyle}>Nachname *</label><input style={inputStyle} value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Mustermann" /></div>
-          <div><label style={labelStyle}>Position / Rolle</label><input style={inputStyle} value={form.role} onChange={e => set('role', e.target.value)} placeholder="Einkauf" /></div>
-          <div><label style={labelStyle}>Abteilung</label><input style={inputStyle} value={form.department} onChange={e => set('department', e.target.value)} placeholder="Beschaffung" /></div>
-          <div><label style={labelStyle}>E-Mail</label><input style={inputStyle} value={form.email} onChange={e => set('email', e.target.value)} placeholder="name@firma.de" /></div>
-          <div><label style={labelStyle}>Telefon</label><input style={inputStyle} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+49 ..." /></div>
+          <div><label style={labelStyle}>{t(lang, 'first_name')}</label><input style={inputStyle} value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Max" /></div>
+          <div><label style={labelStyle}>{t(lang, 'last_name')} *</label><input style={inputStyle} value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Mustermann" /></div>
+          <div><label style={labelStyle}>{t(lang, 'contact_role')}</label><input style={inputStyle} value={form.role} onChange={e => set('role', e.target.value)} /></div>
+          <div><label style={labelStyle}>{t(lang, 'department')}</label><input style={inputStyle} value={form.department} onChange={e => set('department', e.target.value)} /></div>
+          <div><label style={labelStyle}>{t(lang, 'email')}</label><input style={inputStyle} value={form.email} onChange={e => set('email', e.target.value)} placeholder="name@company.com" /></div>
+          <div><label style={labelStyle}>{t(lang, 'phone')}</label><input style={inputStyle} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+49 ..." /></div>
           <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>LinkedIn</label><input style={inputStyle} value={form.linkedin} onChange={e => set('linkedin', e.target.value)} placeholder="linkedin.com/in/..." /></div>
-          <div><label style={labelStyle}>Sprache</label><input style={inputStyle} value={form.language} onChange={e => set('language', e.target.value)} placeholder="de / en" /></div>
-          <div><label style={labelStyle}>Bevorzugter Kanal</label>
+          <div><label style={labelStyle}>{t(lang, 'language')}</label><input style={inputStyle} value={form.language} onChange={e => set('language', e.target.value)} placeholder="de / en" /></div>
+          <div><label style={labelStyle}>{t(lang, 'preferred_channel')}</label>
             <select style={inputStyle} value={form.preferredChannel} onChange={e => set('preferredChannel', e.target.value)}>
               {['email','phone','linkedin','whatsapp','persönlich'].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <div><label style={labelStyle}>Entscheidungsrelevanz</label>
+          <div><label style={labelStyle}>{t(lang, 'decision_power')}</label>
             <select style={inputStyle} value={form.decisionPower} onChange={e => set('decisionPower', e.target.value)}>
               {Object.entries(DECISION_POWER_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
           </div>
-          <div><label style={labelStyle}>Kontaktqualität</label>
+          <div><label style={labelStyle}>{t(lang, 'contact_quality')}</label>
             <select style={inputStyle} value={form.contactQuality} onChange={e => set('contactQuality', e.target.value)}>
               {Object.entries(CONTACT_QUALITY_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
           </div>
-          <div><label style={labelStyle}>Zuletzt kontaktiert</label><input type="date" style={inputStyle} value={form.lastContactedAt} onChange={e => set('lastContactedAt', e.target.value)} /></div>
+          <div><label style={labelStyle}>{t(lang, 'last_contacted')}</label><input type="date" style={inputStyle} value={form.lastContactedAt} onChange={e => set('lastContactedAt', e.target.value)} /></div>
           <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Notizen</label>
+            <label style={labelStyle}>{t(lang, 'notes')}</label>
             <textarea style={{ ...inputStyle, minHeight: 64, resize: 'vertical' }} value={form.notes} onChange={e => set('notes', e.target.value)} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
-          <button onClick={onClose} style={{ padding: '7px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>Abbrechen</button>
+          <button onClick={onClose} style={{ padding: '7px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>{t(lang, 'cancel')}</button>
           <button onClick={handleSave} disabled={saving || !form.lastName.trim()}
             style={{ padding: '7px 16px', borderRadius: 6, background: '#60a5fa', border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: saving ? 0.6 : 1 }}>
-            {saving ? 'Speichern…' : 'Speichern'}
+            {saving ? `${t(lang, 'save')}…` : t(lang, 'save')}
           </button>
         </div>
       </div>
@@ -135,6 +138,7 @@ interface TabBuyerContactsProps {
 }
 
 export const TabBuyerContacts = ({ buyerId, contacts, onRefresh }: TabBuyerContactsProps) => {
+  const lang = useLang();
   const [modal, setModal] = useState<Partial<BuyerContact> | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -149,13 +153,13 @@ export const TabBuyerContacts = ({ buyerId, contacts, onRefresh }: TabBuyerConta
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
         <button onClick={() => setModal({})}
           style={{ padding: '6px 14px', borderRadius: 6, background: '#60a5fa', border: 'none', color: '#0d0f1a', cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>
-          + Kontakt
+          {t(lang, 'bf_contact_new')}
         </button>
       </div>
 
       {contacts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-3)', fontSize: 13 }}>
-          Noch keine Ansprechpartner erfasst.
+          {t(lang, 'no_contacts')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -205,10 +209,10 @@ export const TabBuyerContacts = ({ buyerId, contacts, onRefresh }: TabBuyerConta
       {deleteId && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--bg-2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, maxWidth: 340, width: '100%' }}>
-            <p style={{ margin: '0 0 18px', fontSize: 14 }}>Kontakt wirklich löschen?</p>
+            <p style={{ margin: '0 0 18px', fontSize: 14 }}>{t(lang, 'confirm_delete_contact')}</p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setDeleteId(null)} style={{ padding: '7px 14px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>Abbrechen</button>
-              <button onClick={() => handleDelete(deleteId)} style={{ padding: '7px 14px', borderRadius: 6, background: '#f87171', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Löschen</button>
+              <button onClick={() => setDeleteId(null)} style={{ padding: '7px 14px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>{t(lang, 'cancel')}</button>
+              <button onClick={() => handleDelete(deleteId)} style={{ padding: '7px 14px', borderRadius: 6, background: '#f87171', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>{t(lang, 'delete')}</button>
             </div>
           </div>
         </div>

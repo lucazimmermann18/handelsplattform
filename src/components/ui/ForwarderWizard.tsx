@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { Ic } from '@/components/ui/icons';
 import { Badge } from '@/components/ui/primitives';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 // ── Types & constants ─────────────────────────────────────────────────────────
 
 type Step = 'basic' | 'services' | 'review';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'basic',    label: 'Basis'   },
-  { key: 'services', label: 'Dienste' },
-  { key: 'review',   label: 'Prüfen'  },
+const STEPS: { key: Step; labelKey: string }[] = [
+  { key: 'basic',    labelKey: 'wiz_step_basic' },
+  { key: 'services', labelKey: 'wiz_step_services' },
+  { key: 'review',   labelKey: 'wiz_step_review' },
 ];
 
 const SERVICE_OPTIONS = [
@@ -67,6 +69,7 @@ interface ForwarderWizardProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardProps) {
+  const lang = useLang();
   const [step, setStep]       = useState<Step>('basic');
   const [form, setForm]       = useState<FormState>(initForm);
   const [saving, setSaving]   = useState(false);
@@ -144,7 +147,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>Land</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_country')}</div>
           <input
             value={form.country}
             onChange={e => update('country', e.target.value)}
@@ -153,7 +156,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>Stadt</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_city')}</div>
           <input
             value={form.city}
             onChange={e => update('city', e.target.value)}
@@ -162,7 +165,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>Ansprechpartner</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_contact_person')}</div>
           <input
             value={form.contact}
             onChange={e => update('contact', e.target.value)}
@@ -171,7 +174,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>E-Mail</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_email')}</div>
           <input
             type="email"
             value={form.email}
@@ -181,7 +184,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>Telefon</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_phone')}</div>
           <input
             value={form.phone}
             onChange={e => update('phone', e.target.value)}
@@ -190,7 +193,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           />
         </div>
         <div>
-          <div style={labelStyle}>Website</div>
+          <div style={labelStyle}>{t(lang, 'wiz_row_website')}</div>
           <input
             value={form.website}
             onChange={e => update('website', e.target.value)}
@@ -208,7 +211,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       {/* Routes */}
       <div>
-        <div style={labelStyle}>Routen (kommagetrennt)</div>
+        <div style={labelStyle}>{t(lang, 'wiz_fwd_routes')}</div>
         <input
           value={form.routes}
           onChange={e => update('routes', e.target.value)}
@@ -219,7 +222,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
       {/* Services multi-select */}
       <div>
-        <div style={labelStyle}>Dienstleistungen</div>
+        <div style={labelStyle}>{t(lang, 'wiz_fwd_services')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 6 }}>
           {SERVICE_OPTIONS.map(s => {
             const on = form.services.includes(s);
@@ -239,7 +242,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
       {/* Rating */}
       <div>
-        <div style={labelStyle}>Bewertung</div>
+        <div style={labelStyle}>{t(lang, 'wiz_fwd_rating')}</div>
         <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
           {[1, 2, 3, 4, 5].map(star => (
             <span
@@ -266,7 +269,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
       {/* Notes */}
       <div>
-        <div style={labelStyle}>Notizen</div>
+        <div style={labelStyle}>{t(lang, 'notes')}</div>
         <textarea
           value={form.notes}
           onChange={e => update('notes', e.target.value)}
@@ -288,7 +291,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
             <Ic name="check" size={26} color="#34d399" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Spediteur angelegt!</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{t(lang, 'wiz_fwd_done')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{savedId}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
               {form.name}{form.city ? ` · ${form.city}` : ''}{form.country ? `, ${form.country}` : ''}
@@ -296,7 +299,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn primary" onClick={handleClose}>
-              <Ic name="check" size={13} /> Fertig
+              <Ic name="check" size={13} /> {t(lang, 'wiz_fwd_done_btn')}
             </button>
           </div>
         </div>
@@ -308,16 +311,16 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
-          Zusammenfassung
+          {t(lang, 'wiz_fwd_summary')}
         </div>
 
         {[
-          { l: 'Name',      v: form.name || '—' },
-          { l: 'Land',      v: form.country || '—' },
-          { l: 'Stadt',     v: form.city || '—' },
-          { l: 'Kontakt',   v: form.contact || '—' },
-          { l: 'E-Mail',    v: form.email || '—' },
-          { l: 'Telefon',   v: form.phone || '—' },
+          { l: t(lang, 'wiz_row_name'),    v: form.name || '—' },
+          { l: t(lang, 'wiz_row_country'), v: form.country || '—' },
+          { l: t(lang, 'wiz_row_city'),    v: form.city || '—' },
+          { l: t(lang, 'wiz_row_contact'), v: form.contact || '—' },
+          { l: t(lang, 'wiz_row_email'),   v: form.email || '—' },
+          { l: t(lang, 'wiz_row_phone'),   v: form.phone || '—' },
         ].map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
             <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>{r.l}</span>
@@ -327,7 +330,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
         {/* Routes */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Routen</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>{t(lang, 'wiz_fwd_routes_row')}</span>
           <span style={{ fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             {routesArr.length > 0 ? routesArr.join(' · ') : '—'}
           </span>
@@ -335,7 +338,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
         {/* Services */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Dienste</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>{t(lang, 'wiz_fwd_services_row')}</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
             {form.services.length > 0
               ? form.services.map(s => <Badge key={s}>{s}</Badge>)
@@ -346,7 +349,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
 
         {/* Rating */}
         <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
-          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>Bewertung</span>
+          <span style={{ color: 'var(--text-3)', width: 90, flexShrink: 0 }}>{t(lang, 'wiz_fwd_rating')}</span>
           <div style={{ display: 'flex', gap: 2 }}>
             {Array.from({ length: 5 }, (_, i) => (
               <span key={i} style={{ color: i < form.rating ? '#fbbf24' : '#3a4455', fontSize: 15 }}>★</span>
@@ -380,7 +383,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Ic name="ship" size={14} color="#a78bfa" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neuer Spediteur</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'wiz_new_forwarder')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={handleClose}>
               <Ic name="x" size={13} />
             </button>
@@ -409,7 +412,7 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
                         {done ? '✓' : i + 1}
                       </div>
                       <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                        {s.label}
+                        {t(lang, s.labelKey)}
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
@@ -432,16 +435,16 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
         {/* Footer */}
         {!isSuccess && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>Abbrechen</button>
+            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>{t(lang, 'cancel')}</button>
             {stepIdx > 0 && (
               <button className="btn" onClick={goBack} style={{ fontSize: 12 }}>
-                <Ic name="chevL" size={12} /> Zurück
+                <Ic name="chevL" size={12} /> {t(lang, 'back')}
               </button>
             )}
             <div style={{ flex: 1 }} />
             {step !== 'review' ? (
               <button className="btn primary" onClick={goNext} disabled={!canNext}>
-                Weiter <Ic name="chevR" size={12} />
+                {t(lang, 'next')} <Ic name="chevR" size={12} />
               </button>
             ) : (
               <button
@@ -453,10 +456,10 @@ export function ForwarderWizard({ open, onClose, onSuccess }: ForwarderWizardPro
                 {saving ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                    Wird angelegt…
+                    {t(lang, 'creating')}
                   </span>
                 ) : (
-                  <><Ic name="plus" size={13} /> Spediteur anlegen</>
+                  <><Ic name="plus" size={13} /> {t(lang, 'wiz_fwd_create')}</>
                 )}
               </button>
             )}

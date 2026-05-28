@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Ic } from '@/components/ui/icons';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Step = 'basic' | 'trading' | 'review';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'basic',   label: 'Basis' },
-  { key: 'trading', label: 'Handelskonditionen' },
-  { key: 'review',  label: 'Prüfen' },
+const STEPS: { key: Step; labelKey: string }[] = [
+  { key: 'basic',   labelKey: 'wiz_step_basic' },
+  { key: 'trading', labelKey: 'wiz_step_trading' },
+  { key: 'review',  labelKey: 'wiz_step_review' },
 ];
 
 const INCOTERMS = ['FOB', 'CIF', 'CFR', 'EXW', 'DAP'];
@@ -63,6 +65,7 @@ interface BuyerWizardProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
+  const lang = useLang();
   const { data: M, refresh } = useData();
   const [step, setStep] = useState<Step>('basic');
   const [state, setState] = useState<WizardState>(initState);
@@ -150,12 +153,12 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
             type="text"
             value={state.basic.name}
             onChange={e => updateBasic('name', e.target.value)}
-            placeholder="Kundenname / Unternehmen"
+            placeholder={t(lang, 'wiz_row_buyer')}
             style={inputStyle}
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Land</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_country')}</div>
           <input
             type="text"
             value={state.basic.country}
@@ -165,7 +168,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Stadt</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_city')}</div>
           <input
             type="text"
             value={state.basic.city}
@@ -175,7 +178,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Branche</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_industry')}</div>
           <input
             type="text"
             value={state.basic.industry}
@@ -185,7 +188,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Kontaktperson</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_contact_person')}</div>
           <input
             type="text"
             value={state.basic.contact}
@@ -195,7 +198,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Position</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'position')}</div>
           <input
             type="text"
             value={state.basic.position}
@@ -205,7 +208,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Telefon</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_phone')}</div>
           <input
             type="text"
             value={state.basic.phone}
@@ -215,7 +218,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>E-Mail</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_email')}</div>
           <input
             type="email"
             value={state.basic.email}
@@ -233,7 +236,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
   const renderTrading = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>Incoterm</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 500 }}>{t(lang, 'wiz_row_incoterm')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {INCOTERMS.map(inc => (
             <span
@@ -248,7 +251,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Mindestbestellmenge (MOQ)</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_moq')}</div>
         <input
           type="text"
           value={state.trading.moq}
@@ -258,7 +261,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
         />
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Zahlungskonditionen</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_terms')}</div>
         <input
           type="text"
           value={state.trading.terms}
@@ -268,7 +271,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
         />
       </div>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>Produktinteressen</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5, fontWeight: 500 }}>{t(lang, 'wiz_row_interests')}</div>
         <input
           type="text"
           value={state.trading.interests}
@@ -276,7 +279,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
           placeholder="z.B. Kaffee, Cashews"
           style={inputStyle}
         />
-        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>Kommagetrennt</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 3 }}>{t(lang, 'wiz_comma_sep')}</div>
       </div>
     </div>
   );
@@ -291,14 +294,14 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
             <Ic name="check" size={26} color="#34d399" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Käufer angelegt!</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{t(lang, 'wiz_buyer_done')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#a78bfa', fontWeight: 600, marginBottom: 4 }}>{newId}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{state.basic.name} · {state.basic.country}</div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button className="btn ghost" onClick={handleClose}>Schließen</button>
+            <button className="btn ghost" onClick={handleClose}>{t(lang, 'close')}</button>
             <button className="btn primary" onClick={() => { onSuccess(); handleClose(); }}>
-              <Ic name="eye" size={13} /> Käufer ansehen
+              <Ic name="eye" size={13} /> {t(lang, 'wiz_buyer_view')}
             </button>
           </div>
         </div>
@@ -307,23 +310,23 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
 
     const { basic, trading } = state;
     const rows = [
-      { l: 'Name',           v: basic.name || '—' },
-      { l: 'Land',           v: basic.country || '—' },
-      { l: 'Stadt',          v: basic.city || '—' },
-      { l: 'Branche',        v: basic.industry || '—' },
-      { l: 'Kontakt',        v: basic.contact || '—' },
-      { l: 'Position',       v: basic.position || '—' },
-      { l: 'Telefon',        v: basic.phone || '—' },
-      { l: 'E-Mail',         v: basic.email || '—' },
-      { l: 'Incoterm',       v: trading.incoterm },
-      { l: 'MOQ',            v: trading.moq || '—' },
-      { l: 'Konditionen',    v: trading.terms || '—' },
-      { l: 'Interessen',     v: trading.interests || '—' },
+      { l: t(lang, 'wiz_row_name'),       v: basic.name || '—' },
+      { l: t(lang, 'wiz_row_country'),    v: basic.country || '—' },
+      { l: t(lang, 'wiz_row_city'),       v: basic.city || '—' },
+      { l: t(lang, 'wiz_row_industry'),   v: basic.industry || '—' },
+      { l: t(lang, 'wiz_row_contact'),    v: basic.contact || '—' },
+      { l: t(lang, 'position'),           v: basic.position || '—' },
+      { l: t(lang, 'wiz_row_phone'),      v: basic.phone || '—' },
+      { l: t(lang, 'wiz_row_email'),      v: basic.email || '—' },
+      { l: t(lang, 'wiz_row_incoterm'),   v: trading.incoterm },
+      { l: 'MOQ',                         v: trading.moq || '—' },
+      { l: t(lang, 'wiz_row_conditions'), v: trading.terms || '—' },
+      { l: t(lang, 'wiz_row_interests'),  v: trading.interests || '—' },
     ];
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Übersicht</div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t(lang, 'overview')}</div>
         {rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12.5, gap: 8 }}>
             <span style={{ color: 'var(--text-3)', width: 110, flexShrink: 0 }}>{r.l}</span>
@@ -356,7 +359,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Ic name="buyer" size={14} color="#a78bfa" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neuer Käufer</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'wiz_new_buyer')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={handleClose}>
               <Ic name="x" size={13} />
             </button>
@@ -384,7 +387,7 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
                         {done ? '✓' : i + 1}
                       </div>
                       <span style={{ fontSize: 11, fontWeight: current ? 600 : 400, color: current ? 'var(--text)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                        {s.label}
+                        {t(lang, s.labelKey)}
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
@@ -407,16 +410,16 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
         {/* Footer */}
         {!isSuccess && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>Abbrechen</button>
+            <button className="btn ghost" onClick={handleClose} style={{ fontSize: 12 }}>{t(lang, 'cancel')}</button>
             {stepIdx > 0 && (
               <button className="btn" onClick={goBack} style={{ fontSize: 12 }}>
-                <Ic name="chevL" size={12} /> Zurück
+                <Ic name="chevL" size={12} /> {t(lang, 'back')}
               </button>
             )}
             <div style={{ flex: 1 }} />
             {step !== 'review' ? (
               <button className="btn primary" onClick={goNext} disabled={!canNext}>
-                Weiter <Ic name="chevR" size={12} />
+                {t(lang, 'next')} <Ic name="chevR" size={12} />
               </button>
             ) : (
               <button
@@ -428,10 +431,10 @@ export function BuyerWizard({ open, onClose, onSuccess }: BuyerWizardProps) {
                 {saving ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                    Wird angelegt…
+                    {t(lang, 'creating')}
                   </span>
                 ) : (
-                  <><Ic name="plus" size={13} /> Käufer anlegen</>
+                  <><Ic name="plus" size={13} /> {t(lang, 'wiz_buyer_create')}</>
                 )}
               </button>
             )}
