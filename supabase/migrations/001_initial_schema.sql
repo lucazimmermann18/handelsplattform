@@ -276,11 +276,27 @@ ALTER TABLE alerts         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rev_trend      ENABLE ROW LEVEL SECURITY;
 
 -- Read-only reference tables
+DROP POLICY IF EXISTS "auth_read" ON ports;
+DROP POLICY IF EXISTS "auth_read" ON vessels;
+DROP POLICY IF EXISTS "auth_read" ON rev_trend;
 CREATE POLICY "auth_read" ON ports     FOR SELECT TO authenticated USING (true);
 CREATE POLICY "auth_read" ON vessels   FOR SELECT TO authenticated USING (true);
 CREATE POLICY "auth_read" ON rev_trend FOR SELECT TO authenticated USING (true);
 
 -- Full CRUD for all business tables
+DROP POLICY IF EXISTS "auth_all" ON suppliers;
+DROP POLICY IF EXISTS "auth_all" ON buyers;
+DROP POLICY IF EXISTS "auth_all" ON products;
+DROP POLICY IF EXISTS "auth_all" ON orders;
+DROP POLICY IF EXISTS "auth_all" ON deals;
+DROP POLICY IF EXISTS "auth_all" ON offers;
+DROP POLICY IF EXISTS "auth_all" ON quality_checks;
+DROP POLICY IF EXISTS "auth_all" ON documents;
+DROP POLICY IF EXISTS "auth_all" ON tasks;
+DROP POLICY IF EXISTS "auth_all" ON complaints;
+DROP POLICY IF EXISTS "auth_all" ON inventory;
+DROP POLICY IF EXISTS "auth_all" ON alerts;
+DROP POLICY IF EXISTS "auth_all" ON rev_trend;
 CREATE POLICY "auth_all" ON suppliers      FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "auth_all" ON buyers         FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "auth_all" ON products       FOR ALL TO authenticated USING (true) WITH CHECK (true);
