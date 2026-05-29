@@ -49,6 +49,8 @@ import { BusinessPlanView } from '@/components/views/BusinessPlan';
 import { LandedCostView } from '@/components/views/LandedCost';
 import { HSLookupView } from '@/components/views/HSLookup';
 import { ScreeningView } from '@/components/views/Screening';
+import { SupplierScorecardView } from '@/components/views/SupplierScorecard';
+import { EUDREngineView } from '@/components/views/EUDREngine';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -213,6 +215,8 @@ export const App = () => {
       lots: 'nav_lots', payables: 'nav_payables', cbam: 'nav_cbam',
       company_builder: 'nav_company_builder', service_providers: 'nav_service_providers',
       business_plan: 'nav_business_plan',
+      supplier_scorecard: 'nav_supplier_scorecard',
+      eudr_engine: 'nav_eudr_engine',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (extNav[route.view]) return [...base, t(lang, extNav[route.view])];
@@ -330,6 +334,8 @@ export const App = () => {
       case 'landed_cost': return <LandedCostView lang={lang} />;
       case 'hs_lookup': return <HSLookupView lang={lang} />;
       case 'screening': return <ScreeningView lang={lang} />;
+      case 'supplier_scorecard': return <SupplierScorecardView lang={lang} />;
+      case 'eudr_engine': return <EUDREngineView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }

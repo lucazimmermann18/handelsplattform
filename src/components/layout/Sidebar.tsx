@@ -31,11 +31,13 @@ const NAV = [
     { id: 'service_providers', icon: 'building', label: 'nav_service_providers' },
     { id: 'calendar',          icon: 'clock',    label: 'nav_calendar' },
     { id: 'suppliers',         icon: 'supplier', label: 'nav_suppliers',        countKey: 'suppliers' },
+    { id: 'supplier_scorecard', icon: 'chart',   label: 'nav_supplier_scorecard' },
     { id: 'products',          icon: 'product',  label: 'nav_products',         countKey: 'products' },
     { id: 'quality',           icon: 'quality',  label: 'nav_quality' },
     { id: 'inventory',         icon: 'inv',      label: 'nav_inventory' },
     { id: 'tasks',             icon: 'task',     label: 'nav_tasks',            countKey: 'tasks' },
     { id: 'lots',              icon: 'layers',   label: 'nav_lots' },
+    { id: 'eudr_engine',       icon: 'leaf',     label: 'nav_eudr_engine' },
   ]},
   { group: 'group_finance', items: [
     { id: 'compliance',   icon: 'customs', label: 'nav_compliance' },
