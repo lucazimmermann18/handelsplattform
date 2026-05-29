@@ -46,6 +46,9 @@ import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { CompanyBuilderView } from '@/components/views/CompanyBuilder';
 import { BuyerFinderView } from '@/components/views/BuyerFinder';
 import { BusinessPlanView } from '@/components/views/BusinessPlan';
+import { LandedCostView } from '@/components/views/LandedCost';
+import { HSLookupView } from '@/components/views/HSLookup';
+import { ScreeningView } from '@/components/views/Screening';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -324,6 +327,9 @@ export const App = () => {
       case 'cbam': return <CBAMView lang={lang} />;
       case 'company_builder': return <CompanyBuilderView lang={lang} />;
       case 'business_plan': return <BusinessPlanView lang={lang} onNav={navigate} />;
+      case 'landed_cost': return <LandedCostView lang={lang} />;
+      case 'hs_lookup': return <HSLookupView lang={lang} />;
+      case 'screening': return <ScreeningView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }
