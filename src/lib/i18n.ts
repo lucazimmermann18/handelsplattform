@@ -594,6 +594,23 @@ export const I18N: Record<string, Record<string, string>> = {
     cb_section_progress:'Fortschritt nach Bereich',
     cb_critical_open:   'Kritische offene Aufgaben',
 
+    // Company Builder — Task Workspace 2.0
+    cb_workspace_open:    'Workspace',
+    cb_ws_analyse:        'Analysieren',
+    cb_ws_draft:          'KI-Entwurf',
+    cb_ws_advisor_letter: 'Berater-Brief',
+    cb_ws_to_bp:          'In Businessplan',
+    cb_ws_saved:          'Gespeichert',
+    cb_ws_added_to_bp:    '✓ In Businessplan',
+    cb_ws_no_advisor:     'Kein Berater angegeben',
+    cb_ws_evidence:       'Nachweis',
+    cb_ws_progress:       'Fortschritt',
+    cb_ws_why:            'Warum wichtig?',
+    cb_ws_artifact:       'Ergebnis-Dokument',
+    cb_ws_notes:          'Interne Notizen',
+    cb_ws_finish:         'Als erledigt markieren',
+    cb_ws_advisor_panel:  'Berater-Hinweise',
+
     // Service Providers — extended
     sp_new_provider:        'Neuer Dienstleister',
     sp_search:              'Dienstleister suchen…',
@@ -1636,6 +1653,23 @@ export const I18N: Record<string, Record<string, string>> = {
     cb_golive_subtitle: 'Complete overview of all requirements for the first export deal',
     cb_section_progress:'Progress by section',
     cb_critical_open:   'Critical open tasks',
+
+    // Company Builder — Task Workspace 2.0
+    cb_workspace_open:    'Workspace',
+    cb_ws_analyse:        'Analyse',
+    cb_ws_draft:          'AI Draft',
+    cb_ws_advisor_letter: 'Advisor Brief',
+    cb_ws_to_bp:          'To Business Plan',
+    cb_ws_saved:          'Saved',
+    cb_ws_added_to_bp:    '✓ Added to Business Plan',
+    cb_ws_no_advisor:     'No advisor specified',
+    cb_ws_evidence:       'Evidence',
+    cb_ws_progress:       'Progress',
+    cb_ws_why:            'Why important?',
+    cb_ws_artifact:       'Result Document',
+    cb_ws_notes:          'Internal Notes',
+    cb_ws_finish:         'Mark as done',
+    cb_ws_advisor_panel:  'Advisor Notes',
 
     // Service Providers — extended
     sp_new_provider:        'New Service Provider',
