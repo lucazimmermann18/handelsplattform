@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/primitives';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
+import { InlineEditCell } from '@/components/ui/InlineEditCell';
 
 const PRIO_ORDER: Record<string, number> = { hoch: 0, mittel: 1, niedrig: 2 };
 const STATUS_FILTERS = ['alle', 'offen', 'in_progress', 'wartet'] as const;
@@ -198,9 +199,20 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                       </div>
                     </td>
                     <td>
-                      <Badge kind={tk.prio === 'hoch' ? 'danger' : tk.prio === 'mittel' ? 'warning' : 'neutral'} dot>
-                        {tk.prio === 'hoch' ? t(lang, 'tasks_prio_high') : tk.prio === 'mittel' ? t(lang, 'tasks_prio_medium') : t(lang, 'tasks_prio_low')}
-                      </Badge>
+                      <InlineEditCell
+                        table="tasks" id={tk.id} column="priority"
+                        value={tk.prio} type="select"
+                        options={[
+                          { value: 'hoch',     label: t(lang, 'tasks_prio_high') },
+                          { value: 'mittel',   label: t(lang, 'tasks_prio_medium') },
+                          { value: 'niedrig',  label: t(lang, 'tasks_prio_low') },
+                        ]}
+                        renderValue={v => (
+                          <Badge kind={v === 'hoch' ? 'danger' : v === 'mittel' ? 'warning' : 'neutral'} dot>
+                            {v === 'hoch' ? t(lang, 'tasks_prio_high') : v === 'mittel' ? t(lang, 'tasks_prio_medium') : t(lang, 'tasks_prio_low')}
+                          </Badge>
+                        )}
+                      />
                     </td>
                     <td>
                       <span className="mono" style={{ fontSize: 11, color: overdue ? '#f87171' : dueToday ? '#fbbf24' : undefined }}>
@@ -209,11 +221,22 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                       </span>
                     </td>
                     <td>
-                      {done
-                        ? <Badge kind="success" dot>{t(lang, 'tasks_status_done')}</Badge>
-                        : tk.status === 'offen' ? <Badge kind="neutral">{t(lang, 'tasks_status_open')}</Badge>
-                        : tk.status === 'in_progress' ? <Badge kind="info" dot>{t(lang, 'tasks_status_in_progress')}</Badge>
-                        : <Badge kind="warning" dot>{t(lang, 'tasks_status_waiting')}</Badge>}
+                      <InlineEditCell
+                        table="tasks" id={tk.id} column="status"
+                        value={tk.status} type="select"
+                        options={[
+                          { value: 'offen',       label: t(lang, 'tasks_status_open') },
+                          { value: 'in_progress', label: t(lang, 'tasks_status_in_progress') },
+                          { value: 'wartet',      label: t(lang, 'tasks_status_waiting') },
+                          { value: 'done',        label: t(lang, 'tasks_status_done') },
+                        ]}
+                        renderValue={v => done
+                          ? <Badge kind="success" dot>{t(lang, 'tasks_status_done')}</Badge>
+                          : v === 'offen' ? <Badge kind="neutral">{t(lang, 'tasks_status_open')}</Badge>
+                          : v === 'in_progress' ? <Badge kind="info" dot>{t(lang, 'tasks_status_in_progress')}</Badge>
+                          : <Badge kind="warning" dot>{t(lang, 'tasks_status_waiting')}</Badge>
+                        }
+                      />
                     </td>
                     <td style={{ position: 'relative' }}>
                       <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>

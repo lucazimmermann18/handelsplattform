@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/primitives';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
+import { InlineEditCell } from '@/components/ui/InlineEditCell';
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -113,15 +114,28 @@ export const DealsView = ({ lang }: DealsViewProps) => {
                     <td className="num mono tx2" style={{ fontSize: 11 }}>{d.ourPrice.toFixed(2)} €</td>
                     <td className="num fw500">{fmtCur(d.value)}</td>
                     <td>
-                      <Badge kind={d.stage === 'Abschluss' ? 'success' : d.stage === 'Angebot' ? 'info' : 'neutral'}>{d.stage}</Badge>
+                      <InlineEditCell
+                        table="deals" id={d.id} column="stage"
+                        value={d.stage} type="select"
+                        options={M.dealStages.map(s => ({ value: s, label: s }))}
+                        renderValue={v => (
+                          <Badge kind={v === 'Abschluss' ? 'success' : v === 'Angebot' ? 'info' : 'neutral'}>{String(v)}</Badge>
+                        )}
+                      />
                     </td>
                     <td>
-                      <div className="row" style={{ gap: 6 }}>
-                        <div className="progress" style={{ width: 48 }}>
-                          <div style={{ width: `${d.prob}%`, background: d.prob >= 70 ? '#34d399' : d.prob >= 40 ? '#60a5fa' : '#a78bfa' }} />
-                        </div>
-                        <span className="mono tx2" style={{ fontSize: 10 }}>{d.prob}%</span>
-                      </div>
+                      <InlineEditCell
+                        table="deals" id={d.id} column="prob"
+                        value={d.prob} type="number" min={0} max={100}
+                        renderValue={v => (
+                          <div className="row" style={{ gap: 6 }}>
+                            <div className="progress" style={{ width: 48 }}>
+                              <div style={{ width: `${v}%`, background: Number(v) >= 70 ? '#34d399' : Number(v) >= 40 ? '#60a5fa' : '#a78bfa' }} />
+                            </div>
+                            <span className="mono tx2" style={{ fontSize: 10 }}>{v}%</span>
+                          </div>
+                        )}
+                      />
                     </td>
                     <td className="mono tx3" style={{ fontSize: 11 }}>{fmtDate(d.nextFollow)}</td>
                   </tr>

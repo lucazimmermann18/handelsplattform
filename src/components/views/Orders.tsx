@@ -8,10 +8,41 @@ import { OrderComments } from '@/components/ui/OrderComments';
 import { UploadModal } from '@/components/ui/UploadModal';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
+import { InlineEditCell } from '@/components/ui/InlineEditCell';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
+
+async function downloadPdf(type: string, payload: Record<string, unknown>) {
+  const res = await fetch(`/api/pdf/${type}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${type}-${String(payload.orderId ?? 'doc')}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import type { Order } from '@/lib/types';
+
+const ORDER_STATUS_OPTIONS = [
+  { value: 'confirmed',   label: 'Bestätigt' },
+  { value: 'procurement', label: 'Beschaffung' },
+  { value: 'quality',     label: 'Qualitätsprüfung' },
+  { value: 'ready',       label: 'Exportbereit' },
+  { value: 'in_export',   label: 'Exportdokumente' },
+  { value: 'shipped',     label: 'Container geladen' },
+  { value: 'in_transit',  label: 'Auf See' },
+  { value: 'arrived',     label: 'Zielhafen' },
+  { value: 'delivered',   label: 'Geliefert' },
+  { value: 'paid',        label: 'Bezahlt' },
+  { value: 'problem',     label: 'Problem' },
+];
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -50,6 +81,7 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [pdfMenu, setPdfMenu] = useState<string | null>(null);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const filtered = (statusFilter === 'all' ? M.orders : M.orders.filter((o) => o.status === statusFilter))
@@ -217,14 +249,65 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
                   </td>
                   <td className="mono tx2" style={{ fontSize: 11 }}>{fmtDate(o.eta)}</td>
                   <td>
-                    <div className="progress" style={{ width: 50 }}>
-                      <div style={{ width: o.paid + '%', background: o.paid === 100 ? '#10b981' : '#3b82f6' }} />
-                    </div>
-                    <div className="tx3 mono" style={{ fontSize: 10, marginTop: 2 }}>{o.paid}%</div>
+                    <InlineEditCell
+                      table="orders" id={o.id} column="paid"
+                      value={o.paid} type="number" min={0} max={100}
+                      renderValue={v => (
+                        <>
+                          <div className="progress" style={{ width: 50 }}>
+                            <div style={{ width: v + '%', background: Number(v) === 100 ? '#10b981' : '#3b82f6' }} />
+                          </div>
+                          <div className="tx3 mono" style={{ fontSize: 10, marginTop: 2 }}>{v}%</div>
+                        </>
+                      )}
+                    />
                   </td>
-                  <td><StatusBadge s={o.status} lang={lang} /></td>
-                  <td onClick={e => e.stopPropagation()}>
-                    <ActionMenu onEdit={() => onOpen(o)} onDelete={() => setDeleteId(o.id)} editLabel="Details / Bearbeiten" />
+                  <td>
+                    <InlineEditCell
+                      table="orders" id={o.id} column="status"
+                      value={o.status} type="select" options={ORDER_STATUS_OPTIONS}
+                      renderValue={v => <StatusBadge s={String(v)} lang={lang} />}
+                    />
+                  </td>
+                  <td onClick={e => e.stopPropagation()} style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <ActionMenu onEdit={() => onOpen(o)} onDelete={() => setDeleteId(o.id)} editLabel="Details / Bearbeiten" />
+                      <button
+                        className="btn sm ghost"
+                        title="PDF Export"
+                        onClick={() => setPdfMenu(pdfMenu === o.id ? null : o.id)}
+                        style={{ fontSize: 10, padding: '2px 6px' }}
+                      >
+                        PDF ▾
+                      </button>
+                    </div>
+                    {pdfMenu === o.id && (() => {
+                      const buyer = M.buyers.find(b => b.id === o.buyerId);
+                      const payload = {
+                        orderId: o.id, buyer: buyer?.name ?? o.buyerId,
+                        buyerAddress: buyer?.city, buyerCountry: buyer?.country,
+                        product: o.productVariant, qty: o.qty, unit: o.unit,
+                        unitPrice: o.sellPrice, portLoad: o.portLoad, portDest: o.portDest,
+                        etd: o.etd, eta: o.eta, incoterm: o.incoterm, batch: o.batch,
+                      };
+                      return (
+                        <>
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setPdfMenu(null)} />
+                          <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                            {[
+                              { type: 'packing-list', label: '📦 Packing List' },
+                              { type: 'proforma-invoice', label: '💶 Proforma Invoice' },
+                              { type: 'order-confirmation', label: '✅ Order Confirmation' },
+                            ].map(({ type, label }) => (
+                              <button key={type} className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '6px 10px' }}
+                                onClick={() => { downloadPdf(type, payload); setPdfMenu(null); }}>
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </td>
                 </tr>
               );

@@ -57,7 +57,7 @@ import { t } from '@/lib/i18n';
 import { LangContext } from '@/lib/lang-context';
 import type { Order } from '@/lib/types';
 import { useData } from '@/lib/data-context';
-import { fmtCur, fmtDate } from '@/lib/utils';
+import { fmtCur } from '@/lib/utils';
 import { Ic } from '@/components/ui/icons';
 
 interface Route {
