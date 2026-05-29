@@ -52,6 +52,9 @@ const NAV = [
     { id: 'complaints',   icon: 'bug',     label: 'nav_complaints', countKey: 'complaints_open' },
     { id: 'reports',      icon: 'chart',   label: 'nav_reports' },
     { id: 'heatmap',      icon: 'layers',  label: 'nav_heatmap' },
+    { id: 'landed_cost', icon: 'finance',  label: 'nav_landed_cost' },
+    { id: 'hs_lookup',   icon: 'customs',  label: 'nav_hs_lookup' },
+    { id: 'screening',   icon: 'shield',   label: 'nav_screening' },
   ]},
   { group: 'group_admin', items: [
     { id: 'import',   icon: 'upload',   label: 'nav_import' },
