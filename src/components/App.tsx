@@ -56,6 +56,9 @@ import type { Lang } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { LangContext } from '@/lib/lang-context';
 import type { Order } from '@/lib/types';
+import { useData } from '@/lib/data-context';
+import { fmtCur, fmtDate } from '@/lib/utils';
+import { Ic } from '@/components/ui/icons';
 
 interface Route {
   view: string;
@@ -63,6 +66,14 @@ interface Route {
   id?: string;
 }
 
+interface AppNotification {
+  id: string;
+  sev: 'critical' | 'warning' | 'info';
+  icon: string;
+  title: string;
+  desc: string;
+  nav: string;
+}
 
 export const App = () => {
   const { user, loading: authLoading, isConfigured } = useAuth();
@@ -98,6 +109,37 @@ export const App = () => {
   const [buyerWizardOpen, setBuyerWizardOpen] = useState(false);
   const [productWizardOpen, setProductWizardOpen] = useState(false);
   const [emailModal, setEmailModal] = useState<EmailModalData | null>(null);
+
+  const { data: M } = useData();
+
+  const notifications = useMemo((): AppNotification[] => {
+    if (!M) return [];
+    const today = new Date(M.todayBase);
+    const items: AppNotification[] = [];
+    M.orders.filter(o => o.status === 'problem').slice(0, 3).forEach(o => {
+      items.push({ id: `p-${o.id}`, sev: 'critical', icon: 'danger', title: t(lang, 'notif_problem_order'), desc: `${o.id} — ${t(lang, 'notif_immediate')}`, nav: 'orders' });
+    });
+    M.orders.filter(o => o.paid < 50 && ['delivered', 'arrived'].includes(o.status)).slice(0, 3).forEach(o => {
+      const amt = fmtCur(o.revenue * (100 - o.paid) / 100);
+      items.push({ id: `pay-${o.id}`, sev: 'critical', icon: 'warn', title: t(lang, 'notif_overdue_payment'), desc: `${o.id} — ${amt} ${t(lang, 'notif_outstanding')}`, nav: 'finance' });
+    });
+    M.documents.filter(d => { if (!d.expires) return false; const exp = new Date(d.expires), diff = (exp.getTime() - today.getTime()) / 86400000; return diff >= 0 && diff <= 30; }).slice(0, 5).forEach(d => {
+      const exp = new Date(d.expires!); const days = Math.ceil((exp.getTime() - today.getTime()) / 86400000);
+      items.push({ id: `doc-${d.id}`, sev: 'warning', icon: 'doc', title: d.name, desc: `${t(lang, 'notif_doc_expiring')} ${days} ${t(lang, 'notif_days')}`, nav: 'documents' });
+    });
+    M.tasks.filter(x => x.status !== 'erledigt' && new Date(x.due) < today).slice(0, 5).forEach(tk => {
+      const days = Math.ceil((today.getTime() - new Date(tk.due).getTime()) / 86400000);
+      items.push({ id: `tk-${tk.id}`, sev: 'warning', icon: 'clock', title: tk.t, desc: `${t(lang, 'notif_task_overdue')} ${days} ${t(lang, 'notif_days')}`, nav: 'tasks' });
+    });
+    M.tasks.filter(x => x.status !== 'erledigt' && new Date(x.due).toDateString() === today.toDateString()).slice(0, 5).forEach(tk => {
+      items.push({ id: `tkd-${tk.id}`, sev: 'info', icon: 'task', title: tk.t, desc: t(lang, 'notif_task_today'), nav: 'tasks' });
+    });
+    return items;
+  }, [M, lang]);
+
+  const criticalCount = notifications.filter(n => n.sev === 'critical').length;
+  const warningCount = notifications.filter(n => n.sev === 'warning').length;
+  const notifBadgeCount = criticalCount + warningCount;
 
   // Auth guard: redirect to login when Supabase is configured but no user
   const redirectedRef = useRef(false);
@@ -312,6 +354,7 @@ export const App = () => {
           onPalette={() => setPaletteOpen(true)}
           onBell={() => setNotifOpen(true)}
           onCopilot={() => setCopilotOpen(true)}
+          notifCount={notifBadgeCount}
         />
 
         <Sidebar active={activeNav} onNav={navigate} lang={lang} />
@@ -333,10 +376,53 @@ export const App = () => {
           <div className="drawer" style={{ top: 44 }} onClick={(e) => e.stopPropagation()}>
             <div className="drawer-head">
               <span style={{ fontWeight: 600 }}>{t(lang, 'notifications')}</span>
-              <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNotifOpen(false)}>✕</button>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8, fontSize: 10, color: '#34d399' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
+                {t(lang, 'notif_realtime')}
+              </span>
+              <button className="btn sm ghost" style={{ marginLeft: 'auto', fontSize: 11 }} onClick={() => {}}>
+                {t(lang, 'notif_mark_all')}
+              </button>
+              <button className="btn sm ghost" onClick={() => setNotifOpen(false)}>✕</button>
             </div>
-            <div className="drawer-body">
-              <div className="tx3 empty">{t(lang, 'no_notifications')}</div>
+            <div className="drawer-body" style={{ padding: 0 }}>
+              {notifications.length === 0 ? (
+                <div style={{ padding: 24, textAlign: 'center' }}>
+                  <Ic name="quality" size={24} color="#34d399" />
+                  <div className="tx3" style={{ marginTop: 8, fontSize: 12 }}>{t(lang, 'no_notifications')}</div>
+                </div>
+              ) : (
+                <>
+                  {(['critical', 'warning', 'info'] as const).map(sev => {
+                    const group = notifications.filter(n => n.sev === sev);
+                    if (group.length === 0) return null;
+                    const secLabel = sev === 'critical' ? t(lang, 'notif_critical_section') : sev === 'warning' ? t(lang, 'notif_warning_section') : t(lang, 'notif_info_section');
+                    const secColor = sev === 'critical' ? '#ef4444' : sev === 'warning' ? '#f59e0b' : '#60a5fa';
+                    return (
+                      <div key={sev}>
+                        <div style={{ padding: '6px 14px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color: secColor, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{secLabel}</span>
+                          <span style={{ fontSize: 9.5, background: secColor, color: '#fff', borderRadius: 10, padding: '0 5px', fontWeight: 700 }}>{group.length}</span>
+                        </div>
+                        {group.map(n => (
+                          <div key={n.id} style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 6, background: sev === 'critical' ? 'rgba(239,68,68,0.12)' : sev === 'warning' ? 'rgba(245,158,11,0.12)' : 'rgba(96,165,250,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <Ic name={n.icon} size={13} color={secColor} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{n.title}</div>
+                              <div className="tx3" style={{ fontSize: 10.5, marginTop: 1 }}>{n.desc}</div>
+                            </div>
+                            <button className="btn sm ghost" style={{ fontSize: 10.5, whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => { setNotifOpen(false); navigate(n.nav); }}>
+                              {t(lang, 'notif_view_btn')}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
         </div>

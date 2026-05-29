@@ -77,22 +77,22 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
 
   const flat: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   const kpis: KpiEntry[] = [
-    { lbl: t(lang, 'kpi_active_orders'), v: activeOrders.length, sub: `${inShipping.length} in Verschiffung`, spark: activeOrders.length > 0 ? [8,9,10,9,11,10,12,11,12] : flat, target: 'orders', icon: 'box' },
-    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: `${M.orders.filter(o => o.status === 'in_transit').length} auf See`, spark: inShipping.length > 0 ? [3,4,3,5,4,5,4,5,4] : flat, target: 'shipments', icon: 'ship' },
-    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: `${M.suppliers.filter(s => s.status === 'aktiv').length} Lieferanten aktiv`, spark: inProc > 0 ? [2,3,2,3,2,2,3,2,2] : flat, target: 'orders', icon: 'pkg' },
-    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: `${M.quality.filter(q => q.status === 'in_progress').length} in Labor`, spark: inQual > 0 ? [1,1,2,1,2,1,1,2,1] : flat, target: 'quality', icon: 'quality' },
-    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: `${M.orders.filter(o => !['paid','done','delivered'].includes(o.status)).length} offene Aufträge`, spark: expRev > 0 ? [62,68,72,78,76,82,85,88,92] : flat, target: 'finance', icon: 'finance' },
-    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev), sub: `${M.orders.filter(o => ['paid','delivered','done'].includes(o.status)).length} abgeschlossen`, spark: realRev > 0 ? [40,52,58,68,72,84,88,92,99] : flat, target: 'finance', icon: 'chart' },
-    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: `${M.orders.length} Aufträge`, spark: avgMargin > 0 ? [27,28,28,30,29,31,30,32,31] : flat, target: 'reports', icon: 'activity' },
+    { lbl: t(lang, 'kpi_active_orders'), v: activeOrders.length, sub: `${inShipping.length} ${t(lang, 'dash_sub_in_transit')}`, spark: activeOrders.length > 0 ? [8,9,10,9,11,10,12,11,12] : flat, target: 'orders', icon: 'box' },
+    { lbl: t(lang, 'kpi_in_shipping'), v: inShipping.length, sub: `${M.orders.filter(o => o.status === 'in_transit').length} ${t(lang, 'dash_sub_at_sea')}`, spark: inShipping.length > 0 ? [3,4,3,5,4,5,4,5,4] : flat, target: 'shipments', icon: 'ship' },
+    { lbl: t(lang, 'kpi_in_procurement'), v: inProc, sub: `${M.suppliers.filter(s => s.status === 'aktiv').length} ${t(lang, 'dash_sub_suppliers_active')}`, spark: inProc > 0 ? [2,3,2,3,2,2,3,2,2] : flat, target: 'orders', icon: 'pkg' },
+    { lbl: t(lang, 'kpi_in_quality'), v: inQual, sub: `${M.quality.filter(q => q.status === 'in_progress').length} ${t(lang, 'dash_sub_in_lab')}`, spark: inQual > 0 ? [1,1,2,1,2,1,1,2,1] : flat, target: 'quality', icon: 'quality' },
+    { lbl: t(lang, 'kpi_expected_revenue'), v: fmtCur(expRev), sub: `${M.orders.filter(o => !['paid','done','delivered'].includes(o.status)).length} ${t(lang, 'dash_sub_open_orders')}`, spark: expRev > 0 ? [62,68,72,78,76,82,85,88,92] : flat, target: 'finance', icon: 'finance' },
+    { lbl: t(lang, 'kpi_realized_revenue'), v: fmtCur(realRev), sub: `${M.orders.filter(o => ['paid','delivered','done'].includes(o.status)).length} ${t(lang, 'dash_sub_closed')}`, spark: realRev > 0 ? [40,52,58,68,72,84,88,92,99] : flat, target: 'finance', icon: 'chart' },
+    { lbl: t(lang, 'kpi_avg_margin'), v: avgMargin + '%', sub: `${M.orders.length} ${t(lang, 'dash_sub_orders')}`, spark: avgMargin > 0 ? [27,28,28,30,29,31,30,32,31] : flat, target: 'reports', icon: 'activity' },
     { lbl: t(lang, 'kpi_inventory_value'), v: fmtCur(invValue), sub: `${M.inventory.length} SKU`, spark: invValue > 0 ? [120,140,135,150,162,158,170,175,182] : flat, target: 'inventory', icon: 'inv' },
-    { lbl: t(lang, 'kpi_open_deals'), v: M.deals.length, sub: fmtCur(pipelineValue) + ' gewichtet', target: 'deals', icon: 'deals' },
-    { lbl: t(lang, 'kpi_open_offers'), v: openOffers.length, sub: `${M.offers.length} gesamt`, target: 'offers', icon: 'offer' },
-    { lbl: t(lang, 'kpi_supplier_docs'), v: M.documents.length, sub: expiringDocs.length > 0 ? `${expiringDocs.length} laufen ab (30d)` : 'alle aktuell', warn: expiringDocs.length > 0, target: 'documents', icon: 'doc' },
-    { lbl: t(lang, 'kpi_overdue_payments'), v: overdueOrders.length, sub: overdueAmount > 0 ? fmtCur(overdueAmount) + ' offen' : 'keine', alert: overdueOrders.length > 0, target: 'finance', icon: 'warn' },
-    { lbl: t(lang, 'kpi_critical_alerts'), v: criticalAlerts, sub: `${M.alerts.length} gesamt`, alert: criticalAlerts > 0, target: 'compliance', icon: 'danger' },
-    { lbl: t(lang, 'kpi_suppliers_active'), v: M.suppliers.filter((s) => s.status === 'aktiv').length, sub: `${activeSupplierCountries} ${activeSupplierCountries === 1 ? 'Land' : 'Länder'}`, target: 'suppliers', icon: 'supplier' },
-    { lbl: t(lang, 'kpi_buyers_pipeline'), v: M.buyers.length, sub: `${dealsInNegotiation} in Verhandlung`, target: 'buyers', icon: 'buyer' },
-    { lbl: t(lang, 'section_tasks'), v: M.tasks.filter((x) => x.status !== 'erledigt').length, sub: `${tasksHigh} hoch · ${tasksWaiting} wartet`, target: 'tasks', icon: 'task' },
+    { lbl: t(lang, 'kpi_open_deals'), v: M.deals.length, sub: `${fmtCur(pipelineValue)} ${t(lang, 'dash_sub_weighted')}`, target: 'deals', icon: 'deals' },
+    { lbl: t(lang, 'kpi_open_offers'), v: openOffers.length, sub: `${M.offers.length} ${t(lang, 'dash_sub_total')}`, target: 'offers', icon: 'offer' },
+    { lbl: t(lang, 'kpi_supplier_docs'), v: M.documents.length, sub: expiringDocs.length > 0 ? `${expiringDocs.length} ${t(lang, 'dash_sub_expiring_30d')}` : t(lang, 'dash_sub_all_ok'), warn: expiringDocs.length > 0, target: 'documents', icon: 'doc' },
+    { lbl: t(lang, 'kpi_overdue_payments'), v: overdueOrders.length, sub: overdueAmount > 0 ? `${fmtCur(overdueAmount)} ${t(lang, 'dash_sub_open_suffix')}` : t(lang, 'dash_sub_none'), alert: overdueOrders.length > 0, target: 'finance', icon: 'warn' },
+    { lbl: t(lang, 'kpi_critical_alerts'), v: criticalAlerts, sub: `${M.alerts.length} ${t(lang, 'dash_sub_total')}`, alert: criticalAlerts > 0, target: 'compliance', icon: 'danger' },
+    { lbl: t(lang, 'kpi_suppliers_active'), v: M.suppliers.filter((s) => s.status === 'aktiv').length, sub: `${activeSupplierCountries} ${activeSupplierCountries === 1 ? t(lang, 'dash_sub_country') : t(lang, 'dash_sub_countries')}`, target: 'suppliers', icon: 'supplier' },
+    { lbl: t(lang, 'kpi_buyers_pipeline'), v: M.buyers.length, sub: `${dealsInNegotiation} ${t(lang, 'dash_sub_in_negot')}`, target: 'buyers', icon: 'buyer' },
+    { lbl: t(lang, 'section_tasks'), v: M.tasks.filter((x) => x.status !== 'erledigt').length, sub: `${tasksHigh} ${t(lang, 'dash_sub_high')} · ${tasksWaiting} ${t(lang, 'dash_sub_waiting')}`, target: 'tasks', icon: 'task' },
   ];
 
   const byStatus = ['procurement','quality','ready','in_export','in_transit','arrived','delivered','paid','problem'].map((s) => {
@@ -113,11 +113,11 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4, gap: 8 }}>
-            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 3, background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>AI · Tagesbriefing</span>
+            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 3, background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{t(lang, 'dash_ai_badge')}</span>
             <button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => onNav('intelligence')}><Ic name="arrow_r" size={11} /> Intelligence</button>
           </div>
-          <div className="fw600" style={{ fontSize: 14, marginBottom: 4 }}>KI-Briefing noch nicht konfiguriert</div>
-          <div className="tx2" style={{ fontSize: 11.5 }}>Verbinde eine KI-Integration unter Intelligence um automatische Tagesanalysen zu erhalten.</div>
+          <div className="fw600" style={{ fontSize: 14, marginBottom: 4 }}>{t(lang, 'dash_ai_no_config')}</div>
+          <div className="tx2" style={{ fontSize: 11.5 }}>{t(lang, 'dash_ai_hint')}</div>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           <button className="btn" onClick={refresh}><Ic name="refresh" size={13} /> {t(lang, 'refresh')}</button>
           <button className="btn" onClick={exportCSV}><Ic name="download" size={13} /> {t(lang, 'export')}</button>
-          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}><Ic name="plus" size={13} /> {t(lang, 'new')} Auftrag</button>
+          <button className="btn primary" onClick={() => window.dispatchEvent(new CustomEvent('open-wizard'))}><Ic name="plus" size={13} /> {t(lang, 'dash_new_order_btn')}</button>
         </div>
       </div>
 
@@ -158,11 +158,11 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-head">
             <Ic name="bell" size={14} />
             <span className="title">{t(lang, 'section_alerts')}</span>
-            <Badge kind="danger">{M.alerts.filter(a => a.sev === 'r').length} kritisch</Badge>
+            <Badge kind="danger">{M.alerts.filter(a => a.sev === 'r').length} {t(lang, 'dash_critical_badge')}</Badge>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-              <span className="chip on">Alle</span>
-              <span className="chip">Kritisch</span>
-              <span className="chip">Warn</span>
+              <span className="chip on">{t(lang, 'dash_filter_all')}</span>
+              <span className="chip">{t(lang, 'dash_filter_critical')}</span>
+              <span className="chip">{t(lang, 'dash_filter_warn')}</span>
             </div>
           </div>
           <div>
@@ -181,7 +181,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
 
         {/* Orders by status donut */}
         <div className="card">
-          <div className="card-head"><Ic name="layers" size={14} /><span className="title">{t(lang, 'section_orders_status')}</span><span className="meta">{M.orders.length} gesamt</span></div>
+          <div className="card-head"><Ic name="layers" size={14} /><span className="title">{t(lang, 'section_orders_status')}</span><span className="meta">{M.orders.length} {t(lang, 'dash_sub_total')}</span></div>
           <div className="card-body" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <Donut data={byStatus} size={118} thickness={16} />
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
@@ -202,8 +202,8 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-body" style={{ paddingTop: 4 }}>
             <BarChart data={byStage} w={380} h={120} color="#3b82f6" lblKey="m" valKey="v" />
             <div style={{ display: 'flex', fontSize: 10, marginTop: 4, justifyContent: 'space-between', color: 'var(--text-3)' }}>
-              <span>Wert in k €</span>
-              <span>Ø Win-Rate: <span className="mono tx2">38%</span></span>
+              <span>{t(lang, 'dash_chart_value_lbl')}</span>
+              <span>{t(lang, 'dash_win_rate_lbl')} <span className="mono tx2">38%</span></span>
             </div>
           </div>
         </div>
@@ -217,8 +217,8 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-body" style={{ paddingTop: 4 }}>
             <BarChart data={revData} w={340} h={120} color="#3b82f6" secondColor="#22d3ee" valKey="v" val2Key="v2" lblKey="m" />
             <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: 10.5 }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span style={{ width: 10, height: 3, background: '#3b82f6', display: 'inline-block', borderRadius: 2 }} />Umsatz (k€)</div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span style={{ width: 10, height: 3, background: '#22d3ee', display: 'inline-block', borderRadius: 2 }} />Marge (k€)</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span style={{ width: 10, height: 3, background: '#3b82f6', display: 'inline-block', borderRadius: 2 }} />{t(lang, 'dash_chart_revenue_lbl')}</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span style={{ width: 10, height: 3, background: '#22d3ee', display: 'inline-block', borderRadius: 2 }} />{t(lang, 'dash_chart_margin_lbl')}</div>
             </div>
           </div>
         </div>
@@ -233,12 +233,12 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <table className="table">
             <thead>
               <tr>
-                <th>Auftrag</th>
-                <th>Käufer · Produkt</th>
-                <th>Menge</th>
-                <th className="num">Umsatz</th>
-                <th>ETA</th>
-                <th>Status</th>
+                <th>{t(lang, 'dash_tbl_order')}</th>
+                <th>{t(lang, 'dash_tbl_buyer_product')}</th>
+                <th>{t(lang, 'dash_tbl_qty')}</th>
+                <th className="num">{t(lang, 'revenue')}</th>
+                <th>{t(lang, 'eta')}</th>
+                <th>{t(lang, 'status')}</th>
               </tr>
             </thead>
             <tbody>
@@ -272,7 +272,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-head">
             <Ic name="task" size={14} />
             <span className="title">{t(lang, 'section_tasks')}</span>
-            <span className="meta">{M.tasks.filter((x) => x.status !== 'erledigt').length} offen</span>
+            <span className="meta">{M.tasks.filter((x) => x.status !== 'erledigt').length} {t(lang, 'dash_sub_open_suffix')}</span>
           </div>
           <div>
             {M.tasks.slice(0, 8).map((tk, i) => (
@@ -284,7 +284,7 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
                   <div style={{ fontSize: 12, fontWeight: 500, color: tk.status === 'erledigt' ? 'var(--text-3)' : 'var(--text)' }}>{tk.t}</div>
                   <div className="tx3" style={{ fontSize: 10.5 }}>{tk.order} · {fmtDate(tk.due)}</div>
                 </div>
-                <Badge kind={tk.prio === 'hoch' ? 'danger' : tk.prio === 'mittel' ? 'warning' : 'neutral'}>{tk.prio}</Badge>
+                <Badge kind={tk.prio === 'hoch' ? 'danger' : tk.prio === 'mittel' ? 'warning' : 'neutral'}>{tk.prio === 'hoch' ? t(lang, 'tasks_prio_high') : tk.prio === 'mittel' ? t(lang, 'tasks_prio_medium') : t(lang, 'tasks_prio_low')}</Badge>
               </div>
             ))}
           </div>
@@ -339,14 +339,14 @@ export const Dashboard = ({ lang, onNav, onOpenOrder }: DashboardProps) => {
           <div className="card-body">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { label: 'Neuer Auftrag', icon: 'plus', color: '#3b82f6', action: () => window.dispatchEvent(new CustomEvent('open-wizard')) },
+                { label: t(lang, 'dash_new_order_btn'), icon: 'plus', color: '#3b82f6', action: () => window.dispatchEvent(new CustomEvent('open-wizard')) },
                 { label: 'Shipment Map', icon: 'map', color: '#06b6d4', action: () => onNav('shipments') },
                 { label: 'Intelligence Hub', icon: 'sparkle', color: '#a78bfa', action: () => onNav('intelligence') },
-                { label: 'Dokumente', icon: 'doc', color: '#f59e0b', action: () => onNav('documents') },
-                { label: 'Deals', icon: 'deals', color: '#34d399', action: () => onNav('deals') },
-                { label: 'Reports', icon: 'chart', color: '#f87171', action: () => onNav('reports') },
-                { label: 'Daten-Import', icon: 'upload', color: '#60a5fa', action: () => onNav('import') },
-                { label: 'Einstellungen', icon: 'settings', color: '#5d667d', action: () => onNav('settings') },
+                { label: t(lang, 'nav_documents'), icon: 'doc', color: '#f59e0b', action: () => onNav('documents') },
+                { label: t(lang, 'nav_deals'), icon: 'deals', color: '#34d399', action: () => onNav('deals') },
+                { label: t(lang, 'nav_reports'), icon: 'chart', color: '#f87171', action: () => onNav('reports') },
+                { label: t(lang, 'nav_import'), icon: 'upload', color: '#60a5fa', action: () => onNav('import') },
+                { label: t(lang, 'nav_settings'), icon: 'settings', color: '#5d667d', action: () => onNav('settings') },
               ].map((q, i) => (
                 <button key={i} className="btn" style={{ justifyContent: 'flex-start', gap: 8, padding: '7px 10px' }} onClick={q.action}>
                   <span style={{ color: q.color }}><Ic name={q.icon} size={14} /></span>

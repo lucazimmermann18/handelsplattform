@@ -15,6 +15,7 @@ interface TopbarProps {
   onPalette: () => void;
   onBell: () => void;
   onCopilot: () => void;
+  notifCount?: number;
 }
 
 function getInitials(email?: string, name?: string): string {
@@ -37,7 +38,7 @@ function getDisplayName(email?: string, name?: string): string {
   return t('de', 'user_name');
 }
 
-export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPalette, onBell, onCopilot }: TopbarProps) => {
+export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPalette, onBell, onCopilot, notifCount = 0 }: TopbarProps) => {
   const { user, isConfigured, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -82,8 +83,22 @@ export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPal
       >
         <Ic name="sparkle" size={14} color="#c4b5fd" />
       </button>
-      <button className="iconbtn" title={t(lang, 'notifications')} onClick={onBell}>
-        <Ic name="bell" size={15} /><span className="dot" />
+      <button className="iconbtn" title={t(lang, 'notifications')} onClick={onBell} style={{ position: 'relative' }}>
+        <Ic name="bell" size={15} />
+        {notifCount > 0 ? (
+          <span style={{
+            position: 'absolute', top: 3, right: 3,
+            minWidth: 14, height: 14, borderRadius: 7,
+            background: '#ef4444', color: '#fff',
+            fontSize: 9, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            lineHeight: 1, padding: '0 2px',
+          }}>
+            {notifCount > 9 ? '9+' : notifCount}
+          </span>
+        ) : (
+          <span className="dot" />
+        )}
       </button>
       <button className="iconbtn" title="Help"><Ic name="help" size={15} /></button>
 

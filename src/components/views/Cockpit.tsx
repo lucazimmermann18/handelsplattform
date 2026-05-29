@@ -21,13 +21,13 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
   const sections = [
-    { id: 'all', label: 'Alle' },
-    { id: 'critical', label: 'Kritisch' },
-    { id: 'blockers', label: 'Blocker' },
-    { id: 'ready', label: 'Exportbereit' },
-    { id: 'money', label: 'Money at Risk' },
-    { id: 'docs', label: 'Dokumente' },
-    { id: 'demurrage', label: 'Demurrage' },
+    { id: 'all', label: t(lang, 'cockpit_sec_all') },
+    { id: 'critical', label: t(lang, 'cockpit_sec_critical') },
+    { id: 'blockers', label: t(lang, 'cockpit_sec_blockers') },
+    { id: 'ready', label: t(lang, 'cockpit_sec_ready') },
+    { id: 'money', label: t(lang, 'cockpit_sec_money') },
+    { id: 'docs', label: t(lang, 'cockpit_sec_docs') },
+    { id: 'demurrage', label: t(lang, 'cockpit_sec_demurrage') },
   ];
 
   // ── Money at Risk ──
@@ -42,11 +42,11 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
   const pipeline = M.orders.filter(o => ['procurement', 'quality', 'ready', 'in_export'].includes(o.status)).reduce((s, o) => s + o.revenue, 0);
 
   const moneyPanels = [
-    { label: 'Auf See', value: atSea, count: M.orders.filter(o => ['in_transit', 'shipped'].includes(o.status)).length, color: '#60a5fa', icon: 'ship', nav: 'shipments' },
-    { label: 'Überfällig', value: overdue, count: overdueOrders.length, color: '#f87171', icon: 'warn', nav: 'finance' },
-    { label: 'Blockiert', value: blocked, count: M.orders.filter(o => o.status === 'problem').length, color: '#ef4444', icon: 'danger', nav: 'orders' },
-    { label: 'Lager', value: storage, count: M.inventory.length, color: '#fbbf24', icon: 'inv', nav: 'inventory' },
-    { label: 'Pipeline', value: pipeline, count: M.orders.filter(o => ['procurement', 'quality', 'ready', 'in_export'].includes(o.status)).length, color: '#34d399', icon: 'pkg', nav: 'orders' },
+    { label: t(lang, 'cockpit_money_at_sea'), value: atSea, count: M.orders.filter(o => ['in_transit', 'shipped'].includes(o.status)).length, color: '#60a5fa', icon: 'ship', nav: 'shipments' },
+    { label: t(lang, 'cockpit_money_overdue'), value: overdue, count: overdueOrders.length, color: '#f87171', icon: 'warn', nav: 'finance' },
+    { label: t(lang, 'cockpit_money_blocked'), value: blocked, count: M.orders.filter(o => o.status === 'problem').length, color: '#ef4444', icon: 'danger', nav: 'orders' },
+    { label: t(lang, 'cockpit_money_storage'), value: storage, count: M.inventory.length, color: '#fbbf24', icon: 'inv', nav: 'inventory' },
+    { label: t(lang, 'cockpit_money_pipeline'), value: pipeline, count: M.orders.filter(o => ['procurement', 'quality', 'ready', 'in_export'].includes(o.status)).length, color: '#34d399', icon: 'pkg', nav: 'orders' },
   ];
 
   // ── Blockers ──
@@ -55,9 +55,9 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
   const blockers = [
     ...problemOrders.map((o, idx) => ({
       id: `BLK-${String(idx + 1).padStart(2, '0')}`,
-      prio: 'kritisch',
-      title: `Blockierter Auftrag: ${o.id}`,
-      desc: 'Auftrag hat Status "Problem". Sofortige Klärung erforderlich.',
+      prio: t(lang, 'cockpit_prio_critical'),
+      title: `${t(lang, 'cockpit_blocker_p_title')} ${o.id}`,
+      desc: t(lang, 'cockpit_blocker_p_desc'),
       order: o.id,
       impact: o.revenue,
       daysLeft: 0,
@@ -65,9 +65,9 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
     })),
     ...noDownpaymentOrders.map((o, idx) => ({
       id: `BLK-A${String(idx + 1).padStart(2, '0')}`,
-      prio: 'wichtig',
-      title: `Fehlende Anzahlung: ${o.id}`,
-      desc: 'Auftrag bestätigt, aber noch keine Anzahlung erhalten. Produktion kann nicht starten.',
+      prio: t(lang, 'cockpit_prio_important'),
+      title: `${t(lang, 'cockpit_blocker_a_title')} ${o.id}`,
+      desc: t(lang, 'cockpit_blocker_a_desc'),
       order: o.id,
       impact: o.revenue,
       daysLeft: 30,
@@ -81,8 +81,6 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
 
   // ── Document Risk ──
   const docRisk = M.documents.filter(d => ['fehlt', 'läuft ab', 'Entwurf'].includes(d.status));
-
-  // ── Free Days / Demurrage ──
 
   // ── Plausibility Checks ──
   const plausibilityChecks = [
@@ -100,8 +98,8 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
   return (
     <div>
       <div className="section-head">
-        <h1>Operations Cockpit</h1>
-        <div className="sub">Bin ich auf Kurs? · Blocker · Exportbereit · Demurrage · Dokumente</div>
+        <h1>{t(lang, 'cockpit_title')}</h1>
+        <div className="sub">{t(lang, 'cockpit_sub')}</div>
         <div className="right">
           <button className="btn" onClick={() => onNav('intelligence')}><Ic name="sparkle" size={13} /> Intelligence</button>
           <button className="btn" onClick={() => onNav('cashflow')}><Ic name="finance" size={13} /> Cashflow</button>
@@ -122,7 +120,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {/* ── Money at Risk ── */}
         {(section === 'all' || section === 'money') && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Money at Risk</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{t(lang, 'cockpit_money_title')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
               {moneyPanels.map((p, i) => (
                 <div key={i} className="card" style={{ padding: 14, cursor: 'pointer', borderLeft: `3px solid ${p.color}` }} onClick={() => onNav(p.nav)}>
@@ -131,7 +129,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                     <span className="tx3" style={{ fontSize: 10 }}>{p.label}</span>
                   </div>
                   <div className="mono fw700" style={{ fontSize: 20, color: p.color }}>{fmtCur(p.value)}</div>
-                  <div className="tx3" style={{ fontSize: 10, marginTop: 4 }}>{p.count} Aufträge</div>
+                  <div className="tx3" style={{ fontSize: 10, marginTop: 4 }}>{p.count} {t(lang, 'cockpit_money_orders')}</div>
                 </div>
               ))}
             </div>
@@ -142,39 +140,39 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {(section === 'all' || section === 'blockers' || section === 'critical') && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Blocker &amp; Kritische Punkte
+              {t(lang, 'cockpit_blockers_title')}
             </div>
             <div className="card">
               <div className="card-body" style={{ padding: 0 }}>
                 <table className="tbl" style={{ width: '100%' }}>
                   <thead>
                     <tr>
-                      <th>Priorität</th>
-                      <th>Titel</th>
-                      <th>Auftrag</th>
-                      <th>Impact</th>
-                      <th>ETD in</th>
-                      <th>Aktion</th>
+                      <th>{t(lang, 'cockpit_col_priority')}</th>
+                      <th>{t(lang, 'cockpit_col_title_h')}</th>
+                      <th>{t(lang, 'cockpit_col_order')}</th>
+                      <th>{t(lang, 'cockpit_col_impact')}</th>
+                      <th>{t(lang, 'cockpit_col_etd_in')}</th>
+                      <th>{t(lang, 'cockpit_col_action')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {blockers.length === 0 && (
-                      <tr><td colSpan={6} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine Blocker — alles im grünen Bereich</td></tr>
+                      <tr><td colSpan={6} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>{t(lang, 'cockpit_no_blockers')}</td></tr>
                     )}
                     {blockers.map(b => (
                       <tr key={b.id}>
-                        <td><Badge kind={b.prio === 'kritisch' ? 'danger' : 'warning'}>{b.prio}</Badge></td>
+                        <td><Badge kind={b.prio === t(lang, 'cockpit_prio_critical') ? 'danger' : 'warning'}>{b.prio}</Badge></td>
                         <td>
                           <div style={{ fontSize: 12, fontWeight: 600 }}>{b.title}</div>
                           <div className="tx2" style={{ fontSize: 10 }}>{b.desc}</div>
                         </td>
                         <td className="mono" style={{ fontSize: 11, color: '#60a5fa', cursor: 'pointer' }} onClick={b.action}>{b.order}</td>
-                        <td className="mono fw600" style={{ fontSize: 12, color: b.prio === 'kritisch' ? '#ef4444' : '#f59e0b' }}>{fmtCur(b.impact)}</td>
+                        <td className="mono fw600" style={{ fontSize: 12, color: b.prio === t(lang, 'cockpit_prio_critical') ? '#ef4444' : '#f59e0b' }}>{fmtCur(b.impact)}</td>
                         <td className="mono" style={{ fontSize: 11, color: b.daysLeft <= 3 ? '#ef4444' : b.daysLeft <= 10 ? '#f59e0b' : 'inherit' }}>
-                          {b.daysLeft === 0 ? 'Heute' : `${b.daysLeft}d`}
+                          {b.daysLeft === 0 ? t(lang, 'cockpit_today') : `${b.daysLeft}d`}
                         </td>
                         <td>
-                          <button className="btn sm primary" onClick={b.action}>Öffnen</button>
+                          <button className="btn sm primary" onClick={b.action}>{t(lang, 'cockpit_btn_open')}</button>
                         </td>
                       </tr>
                     ))}
@@ -189,20 +187,20 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {(section === 'all' || section === 'ready') && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Exportbereit &amp; Fast Ready
+              {t(lang, 'cockpit_ready_title')}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="card">
                 <div className="card-head">
                   <Ic name="quality" size={14} />
-                  <span className="title">Exportbereit ({readyOrders.length})</span>
+                  <span className="title">{t(lang, 'cockpit_ready_export')} ({readyOrders.length})</span>
                 </div>
                 <div className="card-body" style={{ padding: 0 }}>
                   {readyOrders.length === 0 ? (
-                    <div className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine exportbereiten Aufträge</div>
+                    <div className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>{t(lang, 'cockpit_no_ready')}</div>
                   ) : (
                     <table className="tbl" style={{ width: '100%' }}>
-                      <thead><tr><th>Auftrag</th><th>Produkt</th><th>ETD</th><th>Wert</th><th></th></tr></thead>
+                      <thead><tr><th>{t(lang, 'cockpit_col_order')}</th><th>{t(lang, 'cockpit_col_product')}</th><th>ETD</th><th>{t(lang, 'cockpit_col_value')}</th><th></th></tr></thead>
                       <tbody>
                         {readyOrders.map(o => {
                           const prod = M.products.find(p => p.id === o.productId);
@@ -212,7 +210,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                               <td style={{ fontSize: 11 }}>{prod?.name ?? o.productId}</td>
                               <td className="mono" style={{ fontSize: 11, color: '#34d399' }}>{o.etd.slice(5)}</td>
                               <td className="mono" style={{ fontSize: 11 }}>{fmtCur(o.revenue)}</td>
-                              <td><button className="btn sm primary" onClick={e => { e.stopPropagation(); onOpenOrder(o); }}>Verschiffung</button></td>
+                              <td><button className="btn sm primary" onClick={e => { e.stopPropagation(); onOpenOrder(o); }}>{t(lang, 'cockpit_btn_shipping')}</button></td>
                             </tr>
                           );
                         })}
@@ -224,14 +222,14 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
               <div className="card">
                 <div className="card-head">
                   <Ic name="clock" size={14} />
-                  <span className="title">Fast Ready — Exportdokumente ({fastReadyOrders.length})</span>
+                  <span className="title">{t(lang, 'cockpit_ready_fast')} ({fastReadyOrders.length})</span>
                 </div>
                 <div className="card-body" style={{ padding: 0 }}>
                   {fastReadyOrders.length === 0 ? (
-                    <div className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine Aufträge in Exportdokumenten</div>
+                    <div className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>{t(lang, 'cockpit_no_fast_ready')}</div>
                   ) : (
                     <table className="tbl" style={{ width: '100%' }}>
-                      <thead><tr><th>Auftrag</th><th>Status</th><th>ETD</th><th>Wert</th><th></th></tr></thead>
+                      <thead><tr><th>{t(lang, 'cockpit_col_order')}</th><th>{t(lang, 'status')}</th><th>ETD</th><th>{t(lang, 'cockpit_col_value')}</th><th></th></tr></thead>
                       <tbody>
                         {fastReadyOrders.map(o => (
                           <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => onOpenOrder(o)}>
@@ -239,7 +237,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                             <td><StatusBadge s={o.status} lang={lang} /></td>
                             <td className="mono" style={{ fontSize: 11, color: '#fbbf24' }}>{o.etd.slice(5)}</td>
                             <td className="mono" style={{ fontSize: 11 }}>{fmtCur(o.revenue)}</td>
-                            <td><button className="btn sm" onClick={e => { e.stopPropagation(); onOpenOrder(o); }}>Details</button></td>
+                            <td><button className="btn sm" onClick={e => { e.stopPropagation(); onOpenOrder(o); }}>{t(lang, 'cockpit_btn_details')}</button></td>
                           </tr>
                         ))}
                       </tbody>
@@ -255,7 +253,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {(section === 'all' || section === 'docs') && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Dokumente mit Handlungsbedarf
+              {t(lang, 'cockpit_docs_title')}
             </div>
             <div className="card">
               <div className="card-body" style={{ padding: 0 }}>
@@ -263,11 +261,11 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Dokument</th>
-                      <th>Typ</th>
-                      <th>Auftrag</th>
-                      <th>Status</th>
-                      <th>Aktion</th>
+                      <th>{t(lang, 'sp_doc_name')}</th>
+                      <th>{t(lang, 'type')}</th>
+                      <th>{t(lang, 'cockpit_col_order')}</th>
+                      <th>{t(lang, 'status')}</th>
+                      <th>{t(lang, 'cockpit_col_action')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -282,7 +280,7 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
                         </td>
                         <td>
                           <button className="btn sm" onClick={() => onNav('documents')}>
-                            {d.status === 'fehlt' ? 'Beantragen' : d.status === 'läuft ab' ? 'Erneuern' : 'Finalisieren'}
+                            {d.status === 'fehlt' ? t(lang, 'cockpit_doc_apply') : d.status === 'läuft ab' ? t(lang, 'cockpit_doc_renew') : t(lang, 'cockpit_doc_finalize')}
                           </button>
                         </td>
                       </tr>
@@ -298,25 +296,25 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {(section === 'all' || section === 'demurrage') && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Liegegeld &amp; Free Days
+              {t(lang, 'cockpit_demurrage_title')}
             </div>
             <div className="card">
               <div className="card-body" style={{ padding: 0 }}>
                 <table className="tbl" style={{ width: '100%' }}>
                   <thead>
                     <tr>
-                      <th>Container</th>
-                      <th>Auftrag</th>
-                      <th>Hafen</th>
-                      <th>Carrier</th>
-                      <th>Free Days</th>
-                      <th>Verbleibend</th>
-                      <th>Demurrage/Tag</th>
-                      <th>Risiko</th>
+                      <th>{t(lang, 'cockpit_dem_container')}</th>
+                      <th>{t(lang, 'cockpit_col_order')}</th>
+                      <th>{t(lang, 'cockpit_dem_port')}</th>
+                      <th>{t(lang, 'cockpit_dem_carrier')}</th>
+                      <th>{t(lang, 'cockpit_dem_free_days')}</th>
+                      <th>{t(lang, 'cockpit_dem_remaining')}</th>
+                      <th>{t(lang, 'cockpit_dem_per_day')}</th>
+                      <th>{t(lang, 'cockpit_dem_risk')}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td colSpan={8} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>Keine Container-Tracking-Daten erfasst</td></tr>
+                    <tr><td colSpan={8} className="empty tx3" style={{ padding: 16, textAlign: 'center' }}>{t(lang, 'cockpit_dem_empty')}</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -328,12 +326,12 @@ export const CockpitView = ({ lang, onOpenOrder, onNav }: CockpitViewProps) => {
         {section === 'all' && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Plausibilitätsprüfungen
+              {t(lang, 'cockpit_plaus_title')}
             </div>
             <div className="card">
               <div className="card-body" style={{ padding: '8px 0' }}>
                 {plausibilityChecks.length === 0 ? (
-                  <div className="tx3" style={{ padding: '12px 16px', fontSize: 12, textAlign: 'center' }}>Keine Plausibilitätswarnungen</div>
+                  <div className="tx3" style={{ padding: '12px 16px', fontSize: 12, textAlign: 'center' }}>{t(lang, 'cockpit_no_plaus')}</div>
                 ) : plausibilityChecks.map(pc => (
                   <div key={pc.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '6px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <Ic name={pc.sev === 'warn' ? 'warn' : 'info'} size={14} color={pc.sev === 'warn' ? '#f59e0b' : '#60a5fa'} />
