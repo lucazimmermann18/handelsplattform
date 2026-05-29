@@ -41,6 +41,37 @@
   --shadow-1: 0 1px 0 rgba(255,255,255,0.02), 0 0 0 1px rgba(255,255,255,0.02);
 }
 
+/* ── Light theme ────────────────────────────────────────────────────────── */
+html.light {
+  --bg:        #f0f2f7;
+  --bg-2:      #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f5f6fa;
+  --surface-3: #eaecf4;
+  --border:    #e0e3ed;
+  --border-2:  #cdd2e1;
+  --border-3:  #b4bcce;
+
+  --text:   #0f172a;
+  --text-2: #475569;
+  --text-3: #8896b0;
+  --text-4: #c2ccdb;
+
+  --accent:     #2563eb;
+  --accent-2:   #3b82f6;
+  --accent-ink: #eff6ff;
+
+  --shadow-1: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+
+  color-scheme: light;
+}
+html.light select { color-scheme: light; }
+html.light select option { background: #ffffff; color: #0f172a; }
+html.light ::-webkit-scrollbar-thumb { background: var(--border-2); border: 2px solid var(--bg); }
+html.light .topbar .search input { background: var(--surface-2); }
+html.light .side { box-shadow: 1px 0 0 var(--border); }
+html.light .table thead th { background: var(--surface-2); }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 13px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
 body { overflow: hidden; }

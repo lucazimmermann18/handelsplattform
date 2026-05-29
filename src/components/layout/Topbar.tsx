@@ -9,6 +9,8 @@ import { useAuth } from '@/lib/auth-context';
 interface TopbarProps {
   lang: Lang;
   setLang: (l: Lang) => void;
+  theme: 'dark' | 'light';
+  onThemeToggle: () => void;
   breadcrumbs: string[];
   onPalette: () => void;
   onBell: () => void;
@@ -35,7 +37,7 @@ function getDisplayName(email?: string, name?: string): string {
   return t('de', 'user_name');
 }
 
-export const Topbar = ({ lang, setLang, breadcrumbs, onPalette, onBell, onCopilot }: TopbarProps) => {
+export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPalette, onBell, onCopilot }: TopbarProps) => {
   const { user, isConfigured, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -65,6 +67,13 @@ export const Topbar = ({ lang, setLang, breadcrumbs, onPalette, onBell, onCopilo
         <button className={lang === 'de' ? 'on' : ''} onClick={() => setLang('de')}>DE</button>
         <button className={lang === 'en' ? 'on' : ''} onClick={() => setLang('en')}>EN</button>
       </div>
+      <button
+        className="iconbtn"
+        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        onClick={onThemeToggle}
+      >
+        <Ic name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
+      </button>
       <button
         className="iconbtn"
         title="AI Copilot · ⌘J"

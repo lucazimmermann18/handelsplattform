@@ -77,6 +77,18 @@ export const App = () => {
     setLang(l);
     if (typeof window !== 'undefined') localStorage.setItem('lang', l);
   };
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as 'dark' | 'light') ?? 'dark';
+    }
+    return 'dark';
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
   const [route, setRoute] = useState<Route>({ view: 'dashboard' });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -294,6 +306,8 @@ export const App = () => {
         <Topbar
           lang={lang}
           setLang={handleSetLang}
+          theme={theme}
+          onThemeToggle={toggleTheme}
           breadcrumbs={crumbs}
           onPalette={() => setPaletteOpen(true)}
           onBell={() => setNotifOpen(true)}
