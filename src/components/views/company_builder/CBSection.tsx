@@ -16,6 +16,7 @@ interface CBSectionProps {
   sectionKey: string;
   onBack: () => void;
   lang: Lang;
+  onTask?: (taskId: string) => void;
 }
 
 // ── Task modal ─────────────────────────────────────────────────────────────────
@@ -141,11 +142,12 @@ const TaskModal = ({ task, onSave, onClose, saving }: TaskModalProps) => {
 
 // ── Task row ───────────────────────────────────────────────────────────────────
 
-const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
+const TaskRow = ({ task, onEdit, onStatusCycle, onDelete, onWorkspace }: {
   task: SetupTask;
   onEdit: (t: SetupTask) => void;
   onStatusCycle: (t: SetupTask) => void;
   onDelete: (id: string) => void;
+  onWorkspace?: (taskId: string) => void;
 }) => {
   const lang = useLang();
   const STATUS_CYCLE: CBStatus[] = ['open', 'in_progress', 'submitted', 'waiting', 'done', 'not_relevant'];
@@ -153,9 +155,14 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
   const isDone = task.status === 'done';
   const isNA = task.status === 'not_relevant';
 
+  // Read workspace progress from localStorage for display
+  const wsState = typeof window !== 'undefined' ? (() => { try { const raw = localStorage.getItem(`cb_workspace_${task.id}`); return raw ? JSON.parse(raw) : null; } catch { return null; } })() : null;
+  const wsAnswered = wsState ? Object.values(wsState.answers ?? {}).filter(Boolean).length : 0;
+  const wsHasArtifact = !!wsState?.artifact;
+
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '20px 1fr auto auto auto', alignItems: 'start', gap: 10,
+      display: 'grid', gridTemplateColumns: onWorkspace ? '20px 1fr auto auto auto auto' : '20px 1fr auto auto auto', alignItems: 'start', gap: 10,
       padding: '12px 14px', borderRadius: 8,
       background: isDone ? 'rgba(52,211,153,0.04)' : isNA ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.03)',
       border: `1px solid ${isDone ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.07)'}`,
@@ -191,11 +198,26 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
             {task.evidenceNotes && <span style={{ color: 'var(--text-4)' }}> — {task.evidenceNotes}</span>}
           </div>
         )}
+        {wsState && (
+          <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: 'var(--text-4)' }}>
+            <div style={{ width: 40, height: 3, borderRadius: 2, background: 'var(--surface-3)' }}>
+              <div style={{ width: `${Math.min(100, wsAnswered * 20)}%`, height: '100%', background: '#60a5fa', borderRadius: 2 }} />
+            </div>
+            {wsAnswered > 0 && <span>{wsAnswered} Schr.</span>}
+            {wsHasArtifact && <span style={{ color: '#10b981' }}>✓ Dokument</span>}
+          </div>
+        )}
         {task.notes && (
           <p style={{ fontSize: 11, color: 'var(--text-4)', margin: '6px 0 0', fontStyle: 'italic' }}>{task.notes}</p>
         )}
       </div>
 
+      {onWorkspace && (
+        <button onClick={() => onWorkspace(task.id)} title={tr(lang, 'cb_workspace_open')}
+          style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 6, color: '#60a5fa', cursor: 'pointer', padding: '4px 10px', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+          <Ic name="sparkle" size={10} /> {tr(lang, 'cb_workspace_open')}
+        </button>
+      )}
       <button onClick={() => onEdit(task)} title={tr(lang, 'edit')}
         style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>✏️</button>
       <div />
@@ -207,7 +229,7 @@ const TaskRow = ({ task, onEdit, onStatusCycle, onDelete }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export const CBSection = ({ sectionKey, onBack, lang }: CBSectionProps) => {
+export const CBSection = ({ sectionKey, onBack, lang, onTask }: CBSectionProps) => {
   const { data: M, refresh } = useData();
   const [modal, setModal] = useState<Partial<SetupTask> | null>(null);
   const [saving, setSaving] = useState(false);
@@ -336,6 +358,7 @@ export const CBSection = ({ sectionKey, onBack, lang }: CBSectionProps) => {
               onEdit={openEdit}
               onStatusCycle={handleStatusCycle}
               onDelete={(id) => setConfirmDelete(id)}
+              onWorkspace={onTask}
             />
           ))}
         </div>
