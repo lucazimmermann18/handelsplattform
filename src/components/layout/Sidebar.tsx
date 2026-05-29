@@ -10,6 +10,7 @@ const NAV = [
   { group: 'group_overview', items: [
     { id: 'dashboard',          icon: 'dashboard', label: 'nav_dashboard' },
     { id: 'company_builder',    icon: 'flag',      label: 'nav_company_builder' },
+    { id: 'business_plan',     icon: 'chart',     label: 'nav_business_plan' },
     { id: 'cockpit',            icon: 'activity',  label: 'nav_cockpit' },
     { id: 'intelligence',       icon: 'sparkle',   label: 'nav_intelligence' },
     { id: 'strategy',           icon: 'flag',      label: 'nav_strategy' },

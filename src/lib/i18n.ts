@@ -35,6 +35,7 @@ export const I18N: Record<string, Record<string, string>> = {
 
     // Navigation — extended modules
     nav_company_builder:    'Company Builder',
+    nav_business_plan:      'Businessplan',
     nav_cockpit:            'Cockpit',
     nav_intelligence:       'Intelligence',
     nav_strategy:           'Strategie',
@@ -1019,6 +1020,28 @@ export const I18N: Record<string, Record<string, string>> = {
     tasks_sub_tasks:            'Aufgaben',
     tasks_sub_high:             'hoch',
     tasks_sub_waiting:          'wartet',
+
+    // Business Plan module
+    bp_title:                    'Businessplan Builder',
+    bp_readiness:                'Readiness Score',
+    bp_classification:           'Klassifizierung',
+    bp_bank_ready:               'Bankfähig',
+    bp_investor_ready:           'Investorfähig',
+    bp_export_pdf:               'PDF Exportieren',
+    bp_gaps_title:               'Lücken & nächste Schritte',
+    bp_auto_data:                'Aus Plattformdaten',
+    bp_manual_additions:         'Eigene Ergänzungen',
+    bp_assumptions:              'Annahmen',
+    bp_add_assumption:           'Annahme hinzufügen',
+    bp_assumption_status_guess:  'Annahme',
+    bp_assumption_status_researched: 'Recherchiert',
+    bp_assumption_status_validated:  'Validiert',
+    bp_assumption_status_confirmed:  'Bestätigt',
+    bp_last_updated:             'Zuletzt aktualisiert',
+    bp_no_data:                  'Keine Daten verfügbar',
+    bp_go_to_module:             'Zum Modul',
+    bp_operational:              'Operativ',
+    bp_save:                     'Gespeichert',
   },
 
   en: {
@@ -1055,6 +1078,7 @@ export const I18N: Record<string, Record<string, string>> = {
 
     // Navigation — extended modules
     nav_company_builder:    'Company Builder',
+    nav_business_plan:      'Business Plan',
     nav_cockpit:            'Cockpit',
     nav_intelligence:       'Intelligence',
     nav_strategy:           'Strategy',
@@ -2039,6 +2063,28 @@ export const I18N: Record<string, Record<string, string>> = {
     tasks_sub_tasks:            'tasks',
     tasks_sub_high:             'high',
     tasks_sub_waiting:          'waiting',
+
+    // Business Plan module
+    bp_title:                    'Business Plan Builder',
+    bp_readiness:                'Readiness Score',
+    bp_classification:           'Classification',
+    bp_bank_ready:               'Bank-Ready',
+    bp_investor_ready:           'Investor-Ready',
+    bp_export_pdf:               'Export PDF',
+    bp_gaps_title:               'Gaps & Next Steps',
+    bp_auto_data:                'From Platform Data',
+    bp_manual_additions:         'Your Additions',
+    bp_assumptions:              'Assumptions',
+    bp_add_assumption:           'Add assumption',
+    bp_assumption_status_guess:  'Assumption',
+    bp_assumption_status_researched: 'Researched',
+    bp_assumption_status_validated:  'Validated',
+    bp_assumption_status_confirmed:  'Confirmed',
+    bp_last_updated:             'Last updated',
+    bp_no_data:                  'No data available',
+    bp_go_to_module:             'Go to module',
+    bp_operational:              'Operational',
+    bp_save:                     'Saved',
   },
 };
 

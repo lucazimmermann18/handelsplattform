@@ -45,6 +45,7 @@ import { CBAMView } from '@/components/views/CBAM';
 import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { CompanyBuilderView } from '@/components/views/CompanyBuilder';
 import { BuyerFinderView } from '@/components/views/BuyerFinder';
+import { BusinessPlanView } from '@/components/views/BusinessPlan';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -208,6 +209,7 @@ export const App = () => {
       cold_chain: 'bc_cold_chain', insurance: 'bc_insurance', db_health: 'bc_db_health',
       lots: 'nav_lots', payables: 'nav_payables', cbam: 'nav_cbam',
       company_builder: 'nav_company_builder', service_providers: 'nav_service_providers',
+      business_plan: 'nav_business_plan',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (extNav[route.view]) return [...base, t(lang, extNav[route.view])];
@@ -321,6 +323,7 @@ export const App = () => {
       case 'payables': return <PayablesView lang={lang} />;
       case 'cbam': return <CBAMView lang={lang} />;
       case 'company_builder': return <CompanyBuilderView lang={lang} />;
+      case 'business_plan': return <BusinessPlanView lang={lang} onNav={navigate} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }
