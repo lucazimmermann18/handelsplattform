@@ -59,8 +59,8 @@ export interface ProformaInvoiceData {
 
 export function ProformaInvoice({ data }: { data: ProformaInvoiceData }) {
   const cur = data.currency ?? 'EUR';
-  const fmt = (v: number) => `${cur} ${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const lineTotal = data.qty * data.unitPrice;
+  const fmt = (v: number) => `${cur} ${(isNaN(v) ? 0 : v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const lineTotal = (data.qty ?? 0) * (data.unitPrice ?? 0);
   const shipping = data.shippingCost ?? 0;
   const grandTotal = lineTotal + shipping;
 

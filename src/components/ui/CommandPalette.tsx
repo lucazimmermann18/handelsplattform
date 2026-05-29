@@ -152,12 +152,12 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
       }));
 
     const tasks: Result[] = (M.tasks ?? [])
-      .filter(tk => !q || tk.t.toLowerCase().includes(q) || tk.order.toLowerCase().includes(q) || tk.owner.toLowerCase().includes(q))
+      .filter(tk => !q || tk.t.toLowerCase().includes(q) || (tk.order ?? '').toLowerCase().includes(q) || tk.owner.toLowerCase().includes(q))
       .slice(0, q ? 5 : 0)
       .map(tk => ({
         id: `task:${tk.id}`,
         label: tk.t,
-        meta: `${tk.order} · ${tk.owner} · ${tk.prio}`,
+        meta: `${tk.order ?? '—'} · ${tk.owner} · ${tk.prio}`,
         group: 'Aufgaben',
         icon: 'task',
         action: () => { onNav('tasks'); onClose(); },

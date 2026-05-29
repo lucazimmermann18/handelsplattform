@@ -40,12 +40,14 @@ export function InlineEditCell({
   const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
 
+  // Reset draft and focus only when entering edit mode, not on every value change
   useEffect(() => {
     if (editing) {
       setDraft(String(value));
       setTimeout(() => inputRef.current?.focus(), 20);
     }
-  }, [editing, value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
 
   const save = async () => {
     if (!isSupabaseConfigured()) { setEditing(false); return; }

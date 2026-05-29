@@ -119,7 +119,7 @@ export const DealsView = ({ lang }: DealsViewProps) => {
                         value={d.stage} type="select"
                         options={M.dealStages.map(s => ({ value: s, label: s }))}
                         renderValue={v => (
-                          <Badge kind={v === 'Abschluss' ? 'success' : v === 'Angebot' ? 'info' : 'neutral'}>{String(v)}</Badge>
+                          <Badge kind={v === 'Gewonnen' ? 'success' : v === 'Angebot' || v === 'Verhandlung' || v === 'Vertrag' ? 'info' : 'neutral'}>{String(v)}</Badge>
                         )}
                       />
                     </td>

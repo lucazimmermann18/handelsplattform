@@ -339,6 +339,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
           { value: 'offen', label: t(lang, 'tasks_status_open') },
           { value: 'in_progress', label: t(lang, 'tasks_status_in_progress') },
           { value: 'wartet', label: t(lang, 'tasks_status_waiting') },
+          { value: 'done', label: t(lang, 'tasks_status_done') },
         ] },
       ];
       return <GenericEditModal title={t(lang, 'tasks_edit_title_modal')} subtitle={r.t} record={r as unknown as Record<string, unknown>} fields={fields} table="tasks" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;

@@ -10,6 +10,9 @@ import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { InlineEditCell } from '@/components/ui/InlineEditCell';
 import { fmtCur, fmtNum, fmtDate, fmtDateLong } from '@/lib/utils';
+import type { Lang } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
+import type { Order } from '@/lib/types';
 
 async function downloadPdf(type: string, payload: Record<string, unknown>) {
   const res = await fetch(`/api/pdf/${type}`, {
@@ -26,9 +29,6 @@ async function downloadPdf(type: string, payload: Record<string, unknown>) {
   a.click();
   URL.revokeObjectURL(url);
 }
-import type { Lang } from '@/lib/i18n';
-import { t } from '@/lib/i18n';
-import type { Order } from '@/lib/types';
 
 const ORDER_STATUS_OPTIONS = [
   { value: 'confirmed',   label: 'Bestätigt' },
@@ -292,8 +292,8 @@ export const OrdersList = ({ lang, onOpen }: OrdersListProps) => {
                       };
                       return (
                         <>
-                          <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setPdfMenu(null)} />
-                          <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 100, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setPdfMenu(null)} />
+                          <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 200, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
                             {[
                               { type: 'packing-list', label: '📦 Packing List' },
                               { type: 'proforma-invoice', label: '💶 Proforma Invoice' },
