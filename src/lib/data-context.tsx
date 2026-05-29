@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
-import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
@@ -476,6 +476,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const sb = createClient();
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const channel = sb
+      .channel('realtime-all')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => load(), 400);
+      })
+      .subscribe();
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      sb.removeChannel(channel);
+    };
+  }, [load]);
 
   return (
     <DataContext.Provider value={{ data, loading, error, isConnected, lastSync, supabaseUrl, refresh: load }}>

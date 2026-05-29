@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Ic } from '@/components/ui/icons';
+import { useAuth } from '@/lib/auth-context';
 
 export interface EmailModalData {
   type: 'offer' | 'order_confirmation' | 'alert';
@@ -16,7 +17,20 @@ interface EmailModalProps {
   onClose: () => void;
 }
 
+function getDisplayName(email?: string, name?: string): string {
+  if (name) return name;
+  if (email) {
+    const local = email.split('@')[0];
+    return local.split(/[._-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  return '';
+}
+
 export function EmailModal({ initial, onClose }: EmailModalProps) {
+  const { user } = useAuth();
+  const senderEmail = user?.email ?? '';
+  const senderName = getDisplayName(senderEmail, user?.user_metadata?.full_name as string | undefined);
+
   const [to, setTo] = useState(initial.to);
   const [subject, setSubject] = useState(initial.subject);
   const [sending, setSending] = useState(false);
@@ -31,7 +45,14 @@ export function EmailModal({ initial, onClose }: EmailModalProps) {
       const res = await fetch('/api/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: initial.type, to, subject, data: { ...initial.data, recipientName: to } }),
+        body: JSON.stringify({
+          type: initial.type,
+          to,
+          subject,
+          senderEmail,
+          senderName,
+          data: { ...initial.data, recipientName: to, senderName },
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -76,9 +97,26 @@ export function EmailModal({ initial, onClose }: EmailModalProps) {
             <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
             <div className="fw600" style={{ fontSize: 15, color: '#34d399' }}>E-Mail versendet</div>
             <div className="tx3" style={{ fontSize: 12, marginTop: 4 }}>An: {to}</div>
+            {senderEmail && (
+              <div className="tx3" style={{ fontSize: 11, marginTop: 2 }}>Antworten gehen an: {senderEmail}</div>
+            )}
           </div>
         ) : (
           <div style={{ padding: '18px 18px 20px' }}>
+            {/* Sender row */}
+            {senderEmail && (
+              <div style={{ marginBottom: 12, padding: '8px 10px', background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 5, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#3b82f6,#60a5fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                  {senderName ? senderName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 600 }}>{senderName || senderEmail}</div>
+                  <div className="tx3" style={{ fontSize: 10.5 }}>Absender · Antworten gehen direkt an {senderEmail}</div>
+                </div>
+                <span style={{ fontSize: 9.5, padding: '1px 6px', borderRadius: 3, background: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 600 }}>REPLY-TO</span>
+              </div>
+            )}
+
             <div style={{ marginBottom: 12 }}>
               <label className="tx3" style={{ fontSize: 10.5, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>An</label>
               <input type="email" value={to} onChange={(e) => setTo(e.target.value)} style={inp} placeholder="empfaenger@firma.com" />

@@ -10,14 +10,11 @@ import { Badge } from '@/components/ui/primitives';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { ConfirmDelete } from '@/components/ui/ConfirmDelete';
 import { GenericEditModal, type FieldDef } from '@/components/ui/GenericEditModal';
+import { InlineEditCell } from '@/components/ui/InlineEditCell';
 
 const PRIO_ORDER: Record<string, number> = { hoch: 0, mittel: 1, niedrig: 2 };
 const STATUS_FILTERS = ['alle', 'offen', 'in_progress', 'wartet'] as const;
 type StatusFilter = typeof STATUS_FILTERS[number];
-
-const STATUS_LABEL: Record<string, string> = {
-  offen: 'Offen', in_progress: 'In Arbeit', wartet: 'Wartet',
-};
 
 interface TasksViewProps {
   lang: Lang;
@@ -90,12 +87,19 @@ export const TasksView = ({ lang }: TasksViewProps) => {
   const sorted = [...M.tasks].sort((a, b) => (PRIO_ORDER[a.prio] ?? 3) - (PRIO_ORDER[b.prio] ?? 3));
   const filtered = filter === 'alle' ? sorted : sorted.filter(tk => tk.status === filter);
 
+  const statusLabel = (s: string) => {
+    if (s === 'offen') return t(lang, 'tasks_status_open');
+    if (s === 'in_progress') return t(lang, 'tasks_status_in_progress');
+    if (s === 'wartet') return t(lang, 'tasks_status_waiting');
+    return s;
+  };
+
   const kpis = [
-    { l: 'Gesamt', v: M.tasks.length, c: 'var(--text-2)' },
-    { l: 'Hohe Prio', v: M.tasks.filter(tk => tk.prio === 'hoch').length, c: '#f87171' },
-    { l: 'Fällig heute', v: M.tasks.filter(tk => isDueToday(tk.due)).length, c: '#fbbf24' },
-    { l: 'In Arbeit', v: M.tasks.filter(tk => tk.status === 'in_progress').length, c: '#60a5fa' },
-    { l: 'Überfällig', v: M.tasks.filter(tk => isOverdue(tk.due) && tk.status !== 'done').length, c: '#f87171' },
+    { l: t(lang, 'tasks_kpi_total'), v: M.tasks.length, c: 'var(--text-2)' },
+    { l: t(lang, 'tasks_kpi_high_prio'), v: M.tasks.filter(tk => tk.prio === 'hoch').length, c: '#f87171' },
+    { l: t(lang, 'tasks_kpi_due_today'), v: M.tasks.filter(tk => isDueToday(tk.due)).length, c: '#fbbf24' },
+    { l: t(lang, 'tasks_kpi_in_progress'), v: M.tasks.filter(tk => tk.status === 'in_progress').length, c: '#60a5fa' },
+    { l: t(lang, 'tasks_kpi_overdue'), v: M.tasks.filter(tk => isOverdue(tk.due) && tk.status !== 'done').length, c: '#f87171' },
   ];
 
   return (
@@ -104,10 +108,10 @@ export const TasksView = ({ lang }: TasksViewProps) => {
       <div className="section-head">
         <h1>{t(lang, 'nav_tasks')}</h1>
         <div className="sub">
-          {M.tasks.length} Aufgaben · {M.tasks.filter(x => x.prio === 'hoch').length} hoch · {M.tasks.filter(x => x.status === 'wartet').length} wartet
+          {M.tasks.length} {t(lang, 'tasks_sub_tasks')} · {M.tasks.filter(x => x.prio === 'hoch').length} {t(lang, 'tasks_sub_high')} · {M.tasks.filter(x => x.status === 'wartet').length} {t(lang, 'tasks_sub_waiting')}
         </div>
         <div className="right">
-          <button className="btn primary" onClick={() => setNewTask(true)}><Ic name="plus" size={13} /> Neue Aufgabe</button>
+          <button className="btn primary" onClick={() => setNewTask(true)}><Ic name="plus" size={13} /> {t(lang, 'tasks_new')}</button>
         </div>
       </div>
 
@@ -130,7 +134,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
               className={`btn sm${filter === f ? ' primary' : ' ghost'}`}
               onClick={() => setFilter(f)}
             >
-              {f === 'alle' ? 'Alle' : STATUS_LABEL[f]}
+              {f === 'alle' ? t(lang, 'all') : statusLabel(f)}
               {f !== 'alle' && (
                 <span className="mono" style={{ marginLeft: 4, opacity: 0.7 }}>
                   {M.tasks.filter(tk => tk.status === f).length}
@@ -141,7 +145,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
           {checked.size > 0 && (
             <button className="btn sm ghost" style={{ marginLeft: 'auto', color: '#34d399' }}
               onClick={() => setChecked(new Set())}>
-              {checked.size} erledigt · Zurücksetzen
+              {checked.size} {t(lang, 'tasks_checked_reset')}
             </button>
           )}
         </div>
@@ -151,12 +155,12 @@ export const TasksView = ({ lang }: TasksViewProps) => {
             <thead>
               <tr>
                 <th style={{ width: 26 }}></th>
-                <th>Aufgabe</th>
-                <th>Auftrag</th>
-                <th>Verantwortlich</th>
-                <th>Priorität</th>
-                <th>Fällig</th>
-                <th>Status</th>
+                <th>{t(lang, 'tasks_col_task')}</th>
+                <th>{t(lang, 'tasks_col_order')}</th>
+                <th>{t(lang, 'tasks_col_owner')}</th>
+                <th>{t(lang, 'tasks_col_priority')}</th>
+                <th>{t(lang, 'tasks_col_due')}</th>
+                <th>{t(lang, 'tasks_col_status')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -195,9 +199,20 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                       </div>
                     </td>
                     <td>
-                      <Badge kind={tk.prio === 'hoch' ? 'danger' : tk.prio === 'mittel' ? 'warning' : 'neutral'} dot>
-                        {tk.prio}
-                      </Badge>
+                      <InlineEditCell
+                        table="tasks" id={tk.id} column="priority"
+                        value={tk.prio} type="select"
+                        options={[
+                          { value: 'hoch',     label: t(lang, 'tasks_prio_high') },
+                          { value: 'mittel',   label: t(lang, 'tasks_prio_medium') },
+                          { value: 'niedrig',  label: t(lang, 'tasks_prio_low') },
+                        ]}
+                        renderValue={v => (
+                          <Badge kind={v === 'hoch' ? 'danger' : v === 'mittel' ? 'warning' : 'neutral'} dot>
+                            {v === 'hoch' ? t(lang, 'tasks_prio_high') : v === 'mittel' ? t(lang, 'tasks_prio_medium') : t(lang, 'tasks_prio_low')}
+                          </Badge>
+                        )}
+                      />
                     </td>
                     <td>
                       <span className="mono" style={{ fontSize: 11, color: overdue ? '#f87171' : dueToday ? '#fbbf24' : undefined }}>
@@ -206,11 +221,22 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                       </span>
                     </td>
                     <td>
-                      {done
-                        ? <Badge kind="success" dot>Erledigt</Badge>
-                        : tk.status === 'offen' ? <Badge kind="neutral">Offen</Badge>
-                        : tk.status === 'in_progress' ? <Badge kind="info" dot>In Arbeit</Badge>
-                        : <Badge kind="warning" dot>Wartet</Badge>}
+                      <InlineEditCell
+                        table="tasks" id={tk.id} column="status"
+                        value={tk.status} type="select"
+                        options={[
+                          { value: 'offen',       label: t(lang, 'tasks_status_open') },
+                          { value: 'in_progress', label: t(lang, 'tasks_status_in_progress') },
+                          { value: 'wartet',      label: t(lang, 'tasks_status_waiting') },
+                          { value: 'done',        label: t(lang, 'tasks_status_done') },
+                        ]}
+                        renderValue={v => done
+                          ? <Badge kind="success" dot>{t(lang, 'tasks_status_done')}</Badge>
+                          : v === 'offen' ? <Badge kind="neutral">{t(lang, 'tasks_status_open')}</Badge>
+                          : v === 'in_progress' ? <Badge kind="info" dot>{t(lang, 'tasks_status_in_progress')}</Badge>
+                          : <Badge kind="warning" dot>{t(lang, 'tasks_status_waiting')}</Badge>
+                        }
+                      />
                     </td>
                     <td style={{ position: 'relative' }}>
                       <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -224,7 +250,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                               {(['offen', 'in_progress', 'wartet'] as const).filter(s => s !== tk.status).map(s => (
                                 <button key={s} className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
                                   onClick={() => handleStatusChange(tk.id, s)}>
-                                  → {STATUS_LABEL[s]}
+                                  → {statusLabel(s)}
                                 </button>
                               ))}
                             </div>
@@ -237,7 +263,7 @@ export const TasksView = ({ lang }: TasksViewProps) => {
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="empty">Keine Aufgaben in dieser Kategorie</td></tr>
+                <tr><td colSpan={8} className="empty">{t(lang, 'tasks_empty')}</td></tr>
               )}
             </tbody>
           </table>
@@ -251,47 +277,47 @@ export const TasksView = ({ lang }: TasksViewProps) => {
         <div className="modal" onClick={e => e.stopPropagation()} style={{ width: 440, padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Ic name="task" size={14} color="#60a5fa" />
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Neue Aufgabe</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t(lang, 'tasks_modal_title')}</span>
             <button className="btn sm ghost" style={{ marginLeft: 'auto' }} onClick={() => setNewTask(false)}><Ic name="x" size={13} /></button>
           </div>
           <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Titel *</div>
-              <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Was ist zu tun?" style={inputStyle} />
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>{t(lang, 'tasks_lbl_title_req')}</div>
+              <input autoFocus value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder={t(lang, 'tasks_placeholder_what')} style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>Priorität</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>{t(lang, 'tasks_lbl_priority')}</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['hoch','mittel','niedrig'] as const).map(p => (
                   <span key={p} className={`chip${form.prio === p ? ' on' : ''}`} onClick={() => setForm(prev => ({ ...prev, prio: p }))} style={{ cursor: 'pointer' }}>
-                    {p}
+                    {p === 'hoch' ? t(lang, 'tasks_prio_high') : p === 'mittel' ? t(lang, 'tasks_prio_medium') : t(lang, 'tasks_prio_low')}
                   </span>
                 ))}
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Fällig *</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>{t(lang, 'tasks_lbl_due_req')}</div>
                 <input type="date" value={form.due} onChange={e => setForm(p => ({ ...p, due: e.target.value }))} style={inputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Verantwortlich</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>{t(lang, 'tasks_lbl_owner')}</div>
                 <input value={form.owner} onChange={e => setForm(p => ({ ...p, owner: e.target.value }))} placeholder="Admin" style={inputStyle} />
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>Auftrag (optional)</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>{t(lang, 'tasks_lbl_order_opt')}</div>
               <select value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))} style={inputStyle}>
-                <option value="">— kein Auftrag —</option>
+                <option value="">{t(lang, 'tasks_no_order')}</option>
                 {M.orders.slice(0, 20).map(o => <option key={o.id} value={o.id}>{o.id} · {o.productVariant}</option>)}
               </select>
             </div>
             {saveError && <div style={{ fontSize: 11.5, color: '#f87171', padding: '6px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6 }}>{saveError}</div>}
           </div>
           <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button className="btn ghost" onClick={() => setNewTask(false)}>Abbrechen</button>
+            <button className="btn ghost" onClick={() => setNewTask(false)}>{t(lang, 'cancel')}</button>
             <button className="btn primary" onClick={handleSaveTask} disabled={saving || !form.title || !form.due}>
-              {saving ? 'Speichern…' : <><Ic name="plus" size={13} /> Aufgabe anlegen</>}
+              {saving ? `${t(lang, 'save')}…` : <><Ic name="plus" size={13} /> {t(lang, 'tasks_btn_create')}</>}
             </button>
           </div>
         </div>
@@ -301,17 +327,22 @@ export const TasksView = ({ lang }: TasksViewProps) => {
       const r = M.tasks.find(x => x.id === editId);
       if (!r) return null;
       const fields: FieldDef[] = [
-        { key: 't', label: 'Titel', type: 'text', required: true, dbKey: 'title', span: 2 },
-        { key: 'owner', label: 'Verantwortlich', type: 'text' },
-        { key: 'prio', label: 'Priorität', type: 'select', dbKey: 'priority', options: [
-          { value: 'hoch', label: 'Hoch' }, { value: 'mittel', label: 'Mittel' }, { value: 'niedrig', label: 'Niedrig' },
+        { key: 't', label: t(lang, 'tasks_edit_lbl_title'), type: 'text', required: true, dbKey: 'title', span: 2 },
+        { key: 'owner', label: t(lang, 'tasks_edit_lbl_owner'), type: 'text' },
+        { key: 'prio', label: t(lang, 'tasks_edit_lbl_priority'), type: 'select', dbKey: 'priority', options: [
+          { value: 'hoch', label: t(lang, 'tasks_prio_high_cap') },
+          { value: 'mittel', label: t(lang, 'tasks_prio_medium_cap') },
+          { value: 'niedrig', label: t(lang, 'tasks_prio_low_cap') },
         ] },
-        { key: 'due', label: 'Fällig', type: 'date', dbKey: 'due_date' },
-        { key: 'status', label: 'Status', type: 'select', options: [
-          { value: 'offen', label: 'Offen' }, { value: 'in_progress', label: 'In Arbeit' }, { value: 'wartet', label: 'Wartet' },
+        { key: 'due', label: t(lang, 'tasks_edit_lbl_due'), type: 'date', dbKey: 'due_date' },
+        { key: 'status', label: t(lang, 'tasks_edit_lbl_status'), type: 'select', options: [
+          { value: 'offen', label: t(lang, 'tasks_status_open') },
+          { value: 'in_progress', label: t(lang, 'tasks_status_in_progress') },
+          { value: 'wartet', label: t(lang, 'tasks_status_waiting') },
+          { value: 'done', label: t(lang, 'tasks_status_done') },
         ] },
       ];
-      return <GenericEditModal title="Aufgabe bearbeiten" subtitle={r.t} record={r as unknown as Record<string, unknown>} fields={fields} table="tasks" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
+      return <GenericEditModal title={t(lang, 'tasks_edit_title_modal')} subtitle={r.t} record={r as unknown as Record<string, unknown>} fields={fields} table="tasks" onClose={() => setEditId(null)} onSaved={() => setEditId(null)} />;
     })()}
     {deleteId && (() => {
       const r = M.tasks.find(x => x.id === deleteId);

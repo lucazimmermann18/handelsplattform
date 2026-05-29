@@ -15,14 +15,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { type: EmailType; to: string; subject: string; data: Record<string, unknown> };
+  let body: { type: EmailType; to: string; subject: string; senderEmail?: string; senderName?: string; data: Record<string, unknown> };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Ungültiger Request-Body.' }, { status: 400 });
   }
 
-  const { type, to, subject, data } = body;
+  const { type, to, subject, senderEmail, senderName, data } = body;
 
   if (!type || !to || !subject) {
     return NextResponse.json({ error: 'Pflichtfelder fehlen: type, to, subject.' }, { status: 400 });
@@ -46,11 +46,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Unbekannter E-Mail-Typ: ${type}` }, { status: 400 });
   }
 
+  // Build "from" with sender name if available, keep verified domain address
+  const fromAddress = senderName
+    ? FROM_EMAIL.replace(/^[^<]*/, `${senderName} via EastAfrica Export OS `)
+    : FROM_EMAIL;
+
   const { data: result, error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: fromAddress,
     to: Array.isArray(to) ? to : [to],
     subject,
     react: emailComponent,
+    ...(senderEmail ? { reply_to: senderEmail } : {}),
   });
 
   if (error) {

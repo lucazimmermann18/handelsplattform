@@ -127,7 +127,43 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
         action: () => { onNav('supplier_detail', { id: s.id }); onClose(); },
       }));
 
-    return [...orders, ...buyers, ...suppliers, ...nav];
+    const products: Result[] = (M.products ?? [])
+      .filter(p => !q || p.name.toLowerCase().includes(q) || (p.cat ?? '').toLowerCase().includes(q) || (p.hs ?? '').toLowerCase().includes(q))
+      .slice(0, q ? 6 : 0)
+      .map(p => ({
+        id: `product:${p.id}`,
+        label: p.name,
+        meta: `${p.cat ?? ''} · HS ${p.hs ?? '—'} · ${p.unit}`,
+        group: 'Produkte',
+        icon: 'product',
+        action: () => { onNav('products'); onClose(); },
+      }));
+
+    const documents: Result[] = (M.documents ?? [])
+      .filter(d => !q || d.name.toLowerCase().includes(q) || d.type.toLowerCase().includes(q) || (d.order ?? '').toLowerCase().includes(q))
+      .slice(0, q ? 5 : 0)
+      .map(d => ({
+        id: `doc:${d.id}`,
+        label: d.name,
+        meta: `${d.type}${d.order ? ` · ${d.order}` : ''} · ${d.status}`,
+        group: 'Dokumente',
+        icon: 'doc',
+        action: () => { onNav('documents'); onClose(); },
+      }));
+
+    const tasks: Result[] = (M.tasks ?? [])
+      .filter(tk => !q || tk.t.toLowerCase().includes(q) || (tk.order ?? '').toLowerCase().includes(q) || tk.owner.toLowerCase().includes(q))
+      .slice(0, q ? 5 : 0)
+      .map(tk => ({
+        id: `task:${tk.id}`,
+        label: tk.t,
+        meta: `${tk.order ?? '—'} · ${tk.owner} · ${tk.prio}`,
+        group: 'Aufgaben',
+        icon: 'task',
+        action: () => { onNav('tasks'); onClose(); },
+      }));
+
+    return [...orders, ...buyers, ...suppliers, ...products, ...documents, ...tasks, ...nav];
   }, [query, M, onNav, onClose]);
 
   useEffect(() => { setSelectedIdx(0); }, [query]);
@@ -161,7 +197,7 @@ export function CommandPalette({ open, onClose, onNav }: CommandPaletteProps) {
     arr.push({ ...r, idx: flatIdx++ });
     groupedMap.set(r.group, arr);
   });
-  const groupOrder = ['Aufträge', 'Käufer', 'Lieferanten', 'Navigation'];
+  const groupOrder = ['Aufträge', 'Käufer', 'Lieferanten', 'Produkte', 'Dokumente', 'Aufgaben', 'Navigation'];
   groupOrder.forEach(g => { if (groupedMap.has(g)) groups.push({ name: g, items: groupedMap.get(g)! }); });
 
   return (

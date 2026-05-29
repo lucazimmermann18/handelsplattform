@@ -368,6 +368,10 @@ select option { background: #131927; color: #e6eaf2; }
 .toast.error { border-color: rgba(239,68,68,0.3); }
 .toast.warning { border-color: rgba(245,158,11,0.3); }
 
+/* Inline edit */
+.tbl tr:hover .inline-edit-trigger, tr:hover .inline-edit-trigger { opacity: 1 !important; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 /* Form elements */
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 11px; color: var(--text-3); font-weight: 500; }
