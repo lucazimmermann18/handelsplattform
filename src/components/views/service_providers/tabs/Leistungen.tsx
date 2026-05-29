@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/primitives';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, ProviderCategory } from '../types';
 import { PROCESS_PHASES, PROVIDER_SUBCATEGORIES, PROVIDER_CATEGORIES } from '../types';
@@ -20,6 +22,7 @@ const ALL_SUBCATEGORIES: string[] = Array.from(
 );
 
 export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(_provider.id, refresh);
 
@@ -66,17 +69,16 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       <SectionCard
-        icon="layers" title="Leistungsumfang"
+        icon="layers" title={t(lang, 'sp_leistungen_scope')}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
           <FormGrid cols={2}>
-            <FormField label="Leistungen (kommagetrennt)" full>
+            <FormField label={t(lang, 'sp_leistungen_services_label')} full>
               <textarea
                 style={textareaStyle}
                 value={(form.services ?? []).join(', ')}
                 onChange={e => set('services', e.target.value.split(',').map(s => s.trim()).filter(Boolean) as unknown as undefined)}
-                placeholder="z.B. Seefracht, Zollabwicklung, Lagerung"
               />
               <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {ALL_SUBCATEGORIES.map(sub => {
@@ -96,31 +98,31 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
                 })}
               </div>
             </FormField>
-            <FormField label="Spezialisierung" full>
+            <FormField label={t(lang, 'sp_leistungen_spec')} full>
               <textarea style={textareaStyle} value={form.specialization ?? ''} onChange={e => set('specialization', e.target.value)} />
             </FormField>
             <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-              <CheckFlag label="Export-Erfahrung" value={!!form.exportExperience} onChange={v => set('exportExperience', v)} editMode={edit} />
-              <CheckFlag label="EU-Import-Erfahrung" value={!!form.euImportExperience} onChange={v => set('euImportExperience', v)} editMode={edit} />
-              <CheckFlag label="Tansania-Erfahrung" value={!!form.tanzaniaExperience} onChange={v => set('tanzaniaExperience', v)} editMode={edit} />
-              <CheckFlag label="Agrar-Erfahrung" value={!!form.agriExperience} onChange={v => set('agriExperience', v)} editMode={edit} />
-              <CheckFlag label="Bio/Fairtrade-Erfahrung" value={!!form.bioFairtradeExperience} onChange={v => set('bioFairtradeExperience', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_export_exp')} value={!!form.exportExperience} onChange={v => set('exportExperience', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_eu_exp')} value={!!form.euImportExperience} onChange={v => set('euImportExperience', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_tz_exp')} value={!!form.tanzaniaExperience} onChange={v => set('tanzaniaExperience', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_agri_exp')} value={!!form.agriExperience} onChange={v => set('agriExperience', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_bio_exp')} value={!!form.bioFairtradeExperience} onChange={v => set('bioFairtradeExperience', v)} editMode={edit} />
             </div>
-            <FormField label="Mindestvolumen">
-              <input style={inputStyle} value={form.minVolume ?? ''} onChange={e => set('minVolume', e.target.value)} placeholder="z.B. 1 Container" />
+            <FormField label={t(lang, 'sp_leistungen_min_vol')}>
+              <input style={inputStyle} value={form.minVolume ?? ''} onChange={e => set('minVolume', e.target.value)} />
             </FormField>
-            <FormField label="Maximalvolumen">
-              <input style={inputStyle} value={form.maxVolume ?? ''} onChange={e => set('maxVolume', e.target.value)} placeholder="z.B. 50 Container / Monat" />
+            <FormField label={t(lang, 'sp_leistungen_max_vol')}>
+              <input style={inputStyle} value={form.maxVolume ?? ''} onChange={e => set('maxVolume', e.target.value)} />
             </FormField>
             <div style={{ gridColumn: '1 / -1' }}>
-              <CheckFlag label="SLA vorhanden" value={!!form.hasSLA} onChange={v => set('hasSLA', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_sla')} value={!!form.hasSLA} onChange={v => set('hasSLA', v)} editMode={edit} />
             </div>
             {form.hasSLA && (
-              <FormField label="SLA-Details" full>
+              <FormField label={t(lang, 'sp_leistungen_sla_details')} full>
                 <textarea style={textareaStyle} value={form.slaDetails ?? ''} onChange={e => set('slaDetails', e.target.value)} />
               </FormField>
             )}
-            <FormField label="Leistungsnotizen" full>
+            <FormField label={t(lang, 'sp_leistungen_notes')} full>
               <textarea style={textareaStyle} value={form.serviceNotes ?? ''} onChange={e => set('serviceNotes', e.target.value)} />
             </FormField>
             <SaveError error={error} />
@@ -133,63 +135,60 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
               </div>
             )}
             <div className="fields">
-              <FieldRow label="Spezialisierung" value={master.specialization} />
-              <div className="l">Export-Erfahrung</div>
-              <div className="v"><CheckFlag label="Export-Erfahrung" value={!!master.exportExperience} editMode={false} /></div>
-              <div className="l">EU-Import-Erfahrung</div>
-              <div className="v"><CheckFlag label="EU-Import-Erfahrung" value={!!master.euImportExperience} editMode={false} /></div>
-              <div className="l">Tansania-Erfahrung</div>
-              <div className="v"><CheckFlag label="Tansania-Erfahrung" value={!!master.tanzaniaExperience} editMode={false} /></div>
-              <div className="l">Agrar-Erfahrung</div>
-              <div className="v"><CheckFlag label="Agrar-Erfahrung" value={!!master.agriExperience} editMode={false} /></div>
-              <div className="l">Bio/Fairtrade-Erfahrung</div>
-              <div className="v"><CheckFlag label="Bio/Fairtrade-Erfahrung" value={!!master.bioFairtradeExperience} editMode={false} /></div>
-              <FieldRow label="Mindestvolumen" value={master.minVolume} />
-              <FieldRow label="Maximalvolumen" value={master.maxVolume} />
-              <div className="l">SLA vorhanden</div>
-              <div className="v"><CheckFlag label="SLA vorhanden" value={!!master.hasSLA} editMode={false} /></div>
-              {master.hasSLA && <FieldRow label="SLA-Details" value={master.slaDetails} />}
-              <FieldRow label="Leistungsnotizen" value={master.serviceNotes} />
+              <FieldRow label={t(lang, 'sp_leistungen_spec')} value={master.specialization} />
+              <div className="l">{t(lang, 'sp_leistungen_export_exp')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_export_exp')} value={!!master.exportExperience} editMode={false} /></div>
+              <div className="l">{t(lang, 'sp_leistungen_eu_exp')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_eu_exp')} value={!!master.euImportExperience} editMode={false} /></div>
+              <div className="l">{t(lang, 'sp_leistungen_tz_exp')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_tz_exp')} value={!!master.tanzaniaExperience} editMode={false} /></div>
+              <div className="l">{t(lang, 'sp_leistungen_agri_exp')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_agri_exp')} value={!!master.agriExperience} editMode={false} /></div>
+              <div className="l">{t(lang, 'sp_leistungen_bio_exp')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_bio_exp')} value={!!master.bioFairtradeExperience} editMode={false} /></div>
+              <FieldRow label={t(lang, 'sp_leistungen_min_vol')} value={master.minVolume} />
+              <FieldRow label={t(lang, 'sp_leistungen_max_vol')} value={master.maxVolume} />
+              <div className="l">{t(lang, 'sp_leistungen_sla')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_sla')} value={!!master.hasSLA} editMode={false} /></div>
+              {master.hasSLA && <FieldRow label={t(lang, 'sp_leistungen_sla_details')} value={master.slaDetails} />}
+              <FieldRow label={t(lang, 'sp_leistungen_notes')} value={master.serviceNotes} />
             </div>
           </div>
         )}
       </SectionCard>
 
       <SectionCard
-        icon="ship" title="Länder, Häfen & Routen"
+        icon="ship" title={t(lang, 'sp_leistungen_routes_title')}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
           <FormGrid cols={1}>
-            <FormField label="Länderabdeckung (kommagetrennt)">
+            <FormField label={t(lang, 'sp_leistungen_countries')}>
               <textarea
                 style={textareaStyle}
                 value={(form.countryCoverage ?? []).join(', ')}
                 onChange={e => set('countryCoverage', e.target.value.split(',').map(s => s.trim()).filter(Boolean) as unknown as undefined)}
-                placeholder="z.B. Deutschland, Tansania, Kenia"
               />
             </FormField>
-            <FormField label="Häfen (kommagetrennt)">
+            <FormField label={t(lang, 'sp_leistungen_ports')}>
               <textarea
                 style={textareaStyle}
                 value={(form.portsCoverage ?? []).join(', ')}
                 onChange={e => set('portsCoverage', e.target.value.split(',').map(s => s.trim()).filter(Boolean) as unknown as undefined)}
-                placeholder="z.B. Hamburg, Dar es Salaam, Rotterdam"
               />
             </FormField>
-            <FormField label="Relevante Produkte / Warengruppen (kommagetrennt)">
+            <FormField label={t(lang, 'sp_leistungen_products_field')}>
               <textarea
                 style={textareaStyle}
                 value={(form.productFocus ?? []).join(', ')}
                 onChange={e => set('productFocus', e.target.value.split(',').map(s => s.trim()).filter(Boolean) as unknown as undefined)}
-                placeholder="z.B. Kaffee, Kakao, Gewürze"
               />
             </FormField>
             <SaveError error={error} />
           </FormGrid>
         ) : (
           <div className="fields">
-            <div className="l">Länderabdeckung</div>
+            <div className="l">{t(lang, 'sp_leistungen_countries_label')}</div>
             <div className="v">
               {(master.countryCoverage ?? []).length > 0
                 ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -197,7 +196,7 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
                   </div>
                 : '—'}
             </div>
-            <div className="l">Häfen</div>
+            <div className="l">{t(lang, 'sp_leistungen_ports_label')}</div>
             <div className="v">
               {(master.portsCoverage ?? []).length > 0
                 ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -205,7 +204,7 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
                   </div>
                 : '—'}
             </div>
-            <div className="l">Relevante Produkte</div>
+            <div className="l">{t(lang, 'sp_leistungen_products_label')}</div>
             <div className="v">
               {(master.productFocus ?? []).length > 0
                 ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -218,12 +217,12 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
       </SectionCard>
 
       <SectionCard
-        icon="flag" title="Prozess & Kritikalität"
+        icon="flag" title={t(lang, 'sp_leistungen_process_title')}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
           <FormGrid cols={1}>
-            <FormField label="Prozessphasen">
+            <FormField label={t(lang, 'sp_leistungen_phases_label')}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {PROCESS_PHASES.map(phase => {
                   const active = (form.processPhases ?? []).includes(phase);
@@ -242,22 +241,22 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
               </div>
             </FormField>
             <div>
-              <CheckFlag label="Single Point of Failure (SPOF)" value={!!form.isSinglePointOfFailure} onChange={v => set('isSinglePointOfFailure', v)} editMode={edit} />
-              <CheckFlag label="Backup-Anbieter vorhanden" value={!!form.hasBackupProvider} onChange={v => set('hasBackupProvider', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_spof')} value={!!form.isSinglePointOfFailure} onChange={v => set('isSinglePointOfFailure', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_backup')} value={!!form.hasBackupProvider} onChange={v => set('hasBackupProvider', v)} editMode={edit} />
             </div>
             {form.hasBackupProvider && (
-              <FormField label="Name Backup-Anbieter">
+              <FormField label={t(lang, 'sp_leistungen_backup_name')}>
                 <input style={inputStyle} value={form.backupProviderName ?? ''} onChange={e => set('backupProviderName', e.target.value)} />
               </FormField>
             )}
-            <FormField label="Kritikalitätsbegründung">
+            <FormField label={t(lang, 'sp_leistungen_crit_reason')}>
               <textarea style={textareaStyle} value={form.criticalityReason ?? ''} onChange={e => set('criticalityReason', e.target.value)} />
             </FormField>
             <div>
-              <CheckFlag label="Subunternehmer eingesetzt" value={!!form.hasSubcontractors} onChange={v => set('hasSubcontractors', v)} editMode={edit} />
+              <CheckFlag label={t(lang, 'sp_leistungen_subcontractors')} value={!!form.hasSubcontractors} onChange={v => set('hasSubcontractors', v)} editMode={edit} />
             </div>
             {form.hasSubcontractors && (
-              <FormField label="Subunternehmer-Details">
+              <FormField label={t(lang, 'sp_leistungen_sub_details')}>
                 <textarea style={textareaStyle} value={form.subcontractorDetails ?? ''} onChange={e => set('subcontractorDetails', e.target.value)} />
               </FormField>
             )}
@@ -271,19 +270,19 @@ export const TabLeistungen = ({ provider: _provider, master, onSaved }: TabProps
               </div>
             )}
             <div className="fields">
-              <div className="l">SPOF</div>
+              <div className="l">{t(lang, 'sp_leistungen_spof_label')}</div>
               <div className="v">
                 {master.isSinglePointOfFailure
-                  ? <Badge kind="danger">Single Point of Failure</Badge>
-                  : <Badge kind="neutral">Kein SPOF</Badge>}
+                  ? <Badge kind="danger">{t(lang, 'sp_leistungen_spof')}</Badge>
+                  : <Badge kind="neutral">{t(lang, 'sp_leistungen_no_spof')}</Badge>}
               </div>
-              <div className="l">Backup-Anbieter</div>
-              <div className="v"><CheckFlag label="Backup-Anbieter vorhanden" value={!!master.hasBackupProvider} editMode={false} /></div>
-              {master.hasBackupProvider && <FieldRow label="Name Backup-Anbieter" value={master.backupProviderName} />}
-              <FieldRow label="Kritikalitätsbegründung" value={master.criticalityReason} />
-              <div className="l">Subunternehmer</div>
-              <div className="v"><CheckFlag label="Subunternehmer eingesetzt" value={!!master.hasSubcontractors} editMode={false} /></div>
-              {master.hasSubcontractors && <FieldRow label="Subunternehmer-Details" value={master.subcontractorDetails} />}
+              <div className="l">{t(lang, 'sp_leistungen_backup_label')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_backup')} value={!!master.hasBackupProvider} editMode={false} /></div>
+              {master.hasBackupProvider && <FieldRow label={t(lang, 'sp_leistungen_backup_name')} value={master.backupProviderName} />}
+              <FieldRow label={t(lang, 'sp_leistungen_crit_reason')} value={master.criticalityReason} />
+              <div className="l">{t(lang, 'sp_leistungen_sub_label')}</div>
+              <div className="v"><CheckFlag label={t(lang, 'sp_leistungen_subcontractors')} value={!!master.hasSubcontractors} editMode={false} /></div>
+              {master.hasSubcontractors && <FieldRow label={t(lang, 'sp_leistungen_sub_details')} value={master.subcontractorDetails} />}
             </div>
           </div>
         )}

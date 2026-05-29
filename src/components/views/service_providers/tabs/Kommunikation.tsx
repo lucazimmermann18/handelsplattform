@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/primitives';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, CommEntry, CommChannel } from '../types';
 import {
@@ -12,6 +14,7 @@ import {
 interface TabProps { provider: ServiceProvider; master: ProviderMaster; onSaved: () => void; }
 
 export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(provider.id, refresh);
 
@@ -68,8 +71,8 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
   return (
     <SectionCard
       icon="chat"
-      title="Kommunikationshistorie"
-      badge={comms.length ? `${comms.length} Einträge` : undefined}
+      title={t(lang, 'sp_comm_history_title')}
+      badge={comms.length ? `${comms.length} ${t(lang, 'sp_entries')}` : undefined}
       editMode={edit}
       onEdit={enter}
       onSave={doSave}
@@ -83,13 +86,13 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={{ ...thStyle, width: 110 }}>Datum</th>
-                    <th style={{ ...thStyle, width: 110 }}>Kanal</th>
-                    <th style={thStyle}>Kontakt</th>
-                    <th style={thStyle}>Betreff</th>
-                    <th style={thStyle}>Zusammenfassung</th>
-                    <th style={thStyle}>Ergebnis</th>
-                    <th style={thStyle}>Nächster Schritt</th>
+                    <th style={{ ...thStyle, width: 110 }}>{t(lang, 'sp_comm_date')}</th>
+                    <th style={{ ...thStyle, width: 110 }}>{t(lang, 'sp_comm_channel')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_comm_contact')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_comm_subject')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_comm_summary')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_comm_outcome')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_comm_next_step_col')}</th>
                     <th style={{ ...thStyle, width: 28 }} />
                   </tr>
                 </thead>
@@ -124,7 +127,7 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                           style={cellInput}
                           value={c.contactName}
                           onChange={e => upd(i, 'contactName', e.target.value)}
-                          placeholder="Kontakt"
+                          placeholder={t(lang, 'sp_comm_contact')}
                         />
                       </td>
                       <td style={{ padding: '4px' }}>
@@ -132,7 +135,7 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                           style={cellInput}
                           value={c.subject}
                           onChange={e => upd(i, 'subject', e.target.value)}
-                          placeholder="Betreff"
+                          placeholder={t(lang, 'sp_comm_subject')}
                         />
                       </td>
                       <td style={{ padding: '4px' }}>
@@ -140,7 +143,7 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                           style={cellInput}
                           value={c.summary}
                           onChange={e => upd(i, 'summary', e.target.value)}
-                          placeholder="Zusammenfassung"
+                          placeholder={t(lang, 'sp_comm_summary')}
                         />
                       </td>
                       <td style={{ padding: '4px' }}>
@@ -148,7 +151,7 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                           style={cellInput}
                           value={c.result}
                           onChange={e => upd(i, 'result', e.target.value)}
-                          placeholder="Ergebnis"
+                          placeholder={t(lang, 'sp_comm_outcome')}
                         />
                       </td>
                       <td style={{ padding: '4px' }}>
@@ -156,7 +159,7 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                           style={cellInput}
                           value={c.nextStep}
                           onChange={e => upd(i, 'nextStep', e.target.value)}
-                          placeholder="Nächster Schritt"
+                          placeholder={t(lang, 'sp_comm_next_step_col')}
                         />
                       </td>
                       <td style={{ padding: '4px 0 4px 4px', textAlign: 'center' }}>
@@ -173,13 +176,13 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
             style={{ marginTop: 10 }}
             onClick={() => setComms(cs => [...cs, emptyComm()])}
           >
-            + Eintrag hinzufügen
+            {t(lang, 'sp_comm_add')}
           </button>
           <SaveError error={error} />
         </>
       ) : comms.length === 0 ? (
         <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '12px 0' }}>
-          Noch keine Kommunikation erfasst.
+          {t(lang, 'sp_comm_no_entries')}
         </div>
       ) : (
         <>
@@ -190,14 +193,14 @@ export const TabKommunikation = ({ provider, master, onSaved }: TabProps) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span className="mono" style={{ fontSize: 11, color: 'var(--text-3)' }}>{c.date}</span>
                   <Badge kind={channelKind(c.channel)}>{c.channel}</Badge>
-                  {c.contactName && <span style={{ fontSize: 12, color: 'var(--text-2)' }}>mit {c.contactName}</span>}
+                  {c.contactName && <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{t(lang, 'sp_comm_with')} {c.contactName}</span>}
                   {c.author && <span style={{ fontSize: 11, color: 'var(--text-3)' }}>· {c.author}</span>}
                 </div>
                 {c.subject && <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{c.subject}</div>}
                 {c.summary && <div style={{ fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 4 }}>{c.summary}</div>}
                 <div style={{ display: 'flex', gap: 16, fontSize: 11.5 }}>
-                  {c.result && <span style={{ color: '#34d399' }}>Ergebnis: {c.result}</span>}
-                  {c.nextStep && <span style={{ color: '#fbbf24' }}>Nächster Schritt: {c.nextStep}</span>}
+                  {c.result && <span style={{ color: '#34d399' }}>{t(lang, 'sp_comm_result_label')} {c.result}</span>}
+                  {c.nextStep && <span style={{ color: '#fbbf24' }}>{t(lang, 'sp_comm_next_step')} {c.nextStep}</span>}
                 </div>
               </div>
             </div>

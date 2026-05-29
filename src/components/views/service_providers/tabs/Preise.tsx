@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, PricingItem } from '../types';
 import { PRICING_MODELS } from '../types';
@@ -17,6 +19,7 @@ const emptyPricing = (): PricingItem => ({
 });
 
 export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(provider.id, refresh);
 
@@ -56,8 +59,8 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       <SectionCard
-        icon="finance" title="Preistabelle"
-        badge={pricing.length ? `${pricing.length} Positionen` : undefined}
+        icon="finance" title={t(lang, 'sp_preise_table_title')}
+        badge={pricing.length ? `${pricing.length} ${t(lang, 'sp_preise_positions')}` : undefined}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
@@ -67,12 +70,12 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={thStyle}>Leistung</th>
-                      <th style={thStyle}>Modell</th>
-                      <th style={thStyle}>Betrag</th>
-                      <th style={thStyle}>Währung</th>
-                      <th style={thStyle}>Einheit</th>
-                      <th style={thStyle}>Hinweise</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_service')}</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_model')}</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_amount')}</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_currency')}</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_unit')}</th>
+                      <th style={thStyle}>{t(lang, 'sp_preise_notes')}</th>
                       <th style={{ ...thStyle, width: 28 }} />
                     </tr>
                   </thead>
@@ -80,7 +83,7 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
                     {pricing.map((p, i) => (
                       <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '4px 4px 4px 0' }}>
-                          <input style={cellInput} value={p.serviceType} onChange={e => updPricing(i, 'serviceType', e.target.value)} placeholder="Leistung" />
+                          <input style={cellInput} value={p.serviceType} onChange={e => updPricing(i, 'serviceType', e.target.value)} placeholder={t(lang, 'sp_preise_service')} />
                         </td>
                         <td style={{ padding: '4px' }}>
                           <select style={cellInput} value={p.model} onChange={e => updPricing(i, 'model', e.target.value)}>
@@ -94,10 +97,10 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
                           <input style={cellInput} value={p.currency} onChange={e => updPricing(i, 'currency', e.target.value)} placeholder="EUR" />
                         </td>
                         <td style={{ padding: '4px' }}>
-                          <input style={cellInput} value={p.unit} onChange={e => updPricing(i, 'unit', e.target.value)} placeholder="Einheit" />
+                          <input style={cellInput} value={p.unit} onChange={e => updPricing(i, 'unit', e.target.value)} placeholder={t(lang, 'sp_preise_unit')} />
                         </td>
                         <td style={{ padding: '4px' }}>
-                          <input style={cellInput} value={p.notes} onChange={e => updPricing(i, 'notes', e.target.value)} placeholder="Hinweise" />
+                          <input style={cellInput} value={p.notes} onChange={e => updPricing(i, 'notes', e.target.value)} placeholder={t(lang, 'sp_preise_notes')} />
                         </td>
                         <td style={{ padding: '4px 0 4px 4px', textAlign: 'center' }}>
                           <DeleteBtn onClick={() => setPricing(p => p.filter((_, j) => j !== i))} />
@@ -109,24 +112,24 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
               </div>
             )}
             <button className="btn sm ghost" style={{ marginTop: 10 }} onClick={() => setPricing(p => [...p, emptyPricing()])}>
-              + Position hinzufügen
+              {t(lang, 'sp_preise_add')}
             </button>
             <SaveError error={error} />
           </>
         ) : pricing.length === 0 ? (
           <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '12px 0' }}>
-            Noch keine Preispositionen erfasst.
+            {t(lang, 'sp_preise_no_data')}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={thStyle}>Leistung</th>
-                <th style={thStyle}>Modell</th>
-                <th style={thStyle}>Betrag</th>
-                <th style={thStyle}>Währung</th>
-                <th style={thStyle}>Einheit</th>
-                <th style={thStyle}>Hinweise</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_service')}</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_model')}</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_amount')}</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_currency')}</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_unit')}</th>
+                <th style={thStyle}>{t(lang, 'sp_preise_notes')}</th>
               </tr>
             </thead>
             <tbody>
@@ -146,17 +149,17 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
       </SectionCard>
 
       <SectionCard
-        icon="doc" title="Zahlungskonditionen"
+        icon="doc" title={t(lang, 'sp_preise_payment_title')}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
           <FormGrid cols={2}>
-            <FormField label="Zahlungsziel in Tagen">
+            <FormField label={t(lang, 'sp_preise_payment_days')}>
               <input style={inputStyle} value={form.paymentTermDays ?? ''} onChange={e => set('paymentTermDays', e.target.value)} placeholder="z.B. 30" />
             </FormField>
-            <FormField label="Zahlungsart">
+            <FormField label={t(lang, 'sp_preise_payment_method')}>
               <select style={inputStyle} value={form.paymentMethod ?? ''} onChange={e => set('paymentMethod', e.target.value)}>
-                <option value="">— Auswählen —</option>
+                <option value="">{t(lang, 'sp_preise_select')}</option>
                 <option value="Überweisung">Überweisung</option>
                 <option value="L/C">L/C</option>
                 <option value="D/A">D/A</option>
@@ -164,52 +167,52 @@ export const TabPreise = ({ provider, master, onSaved }: TabProps) => {
                 <option value="Open Account">Open Account</option>
               </select>
             </FormField>
-            <FormField label="Währung">
+            <FormField label={t(lang, 'sp_preise_currency')}>
               <select style={inputStyle} value={form.priceCurrency ?? ''} onChange={e => set('priceCurrency', e.target.value)}>
-                <option value="">— Auswählen —</option>
+                <option value="">{t(lang, 'sp_preise_select')}</option>
                 <option value="EUR">EUR</option>
                 <option value="USD">USD</option>
                 <option value="TZS">TZS</option>
                 <option value="GBP">GBP</option>
               </select>
             </FormField>
-            <FormField label="Preis gültig bis">
+            <FormField label={t(lang, 'sp_preise_valid_until')}>
               <input type="date" style={inputStyle} value={form.priceValidUntil ?? ''} onChange={e => set('priceValidUntil', e.target.value)} />
             </FormField>
             <div style={{ gridColumn: '1 / -1' }}>
               <CheckFlag
-                label="Vorauszahlung erforderlich"
+                label={t(lang, 'sp_preise_advance')}
                 value={!!form.advancePaymentRequired}
                 onChange={v => set('advancePaymentRequired', v)}
                 editMode={true}
               />
               <CheckFlag
-                label="Reverse Charge relevant"
+                label={t(lang, 'sp_preise_reverse_charge')}
                 value={!!form.reverseChargeRelevant}
                 onChange={v => set('reverseChargeRelevant', v)}
                 editMode={true}
               />
             </div>
-            <FormField label="Preisnotizen" full>
-              <textarea style={textareaStyle} value={form.pricingNotes ?? ''} onChange={e => set('pricingNotes', e.target.value)} placeholder="Konditionsdetails, Rabatte, Sonderregelungen…" />
+            <FormField label={t(lang, 'sp_preise_price_notes')} full>
+              <textarea style={textareaStyle} value={form.pricingNotes ?? ''} onChange={e => set('pricingNotes', e.target.value)} />
             </FormField>
             <SaveError error={error} />
           </FormGrid>
         ) : (
           <div className="fields">
-            <FieldRow label="Zahlungsziel" value={master.paymentTermDays ? `${master.paymentTermDays} Tage` : undefined} />
-            <FieldRow label="Zahlungsart" value={master.paymentMethod} />
-            <FieldRow label="Währung" value={master.priceCurrency} />
-            <FieldRow label="Preis gültig bis" value={master.priceValidUntil} />
-            <div className="l">Vorauszahlung</div>
+            <FieldRow label={t(lang, 'sp_preise_payment_label')} value={master.paymentTermDays ? `${master.paymentTermDays} ${t(lang, 'sp_preise_days_suffix')}` : undefined} />
+            <FieldRow label={t(lang, 'sp_preise_payment_method')} value={master.paymentMethod} />
+            <FieldRow label={t(lang, 'sp_preise_currency')} value={master.priceCurrency} />
+            <FieldRow label={t(lang, 'sp_preise_valid_until')} value={master.priceValidUntil} />
+            <div className="l">{t(lang, 'sp_preise_advance_label')}</div>
             <div className="v">
-              <CheckFlag label="Vorauszahlung erforderlich" value={!!master.advancePaymentRequired} onChange={() => {}} editMode={false} />
+              <CheckFlag label={t(lang, 'sp_preise_advance')} value={!!master.advancePaymentRequired} onChange={() => {}} editMode={false} />
             </div>
-            <div className="l">Reverse Charge</div>
+            <div className="l">{t(lang, 'sp_preise_reverse_label')}</div>
             <div className="v">
-              <CheckFlag label="Reverse Charge relevant" value={!!master.reverseChargeRelevant} onChange={() => {}} editMode={false} />
+              <CheckFlag label={t(lang, 'sp_preise_reverse_charge')} value={!!master.reverseChargeRelevant} onChange={() => {}} editMode={false} />
             </div>
-            <FieldRow label="Notizen" value={master.pricingNotes} />
+            <FieldRow label={t(lang, 'sp_preise_notes')} value={master.pricingNotes} />
           </div>
         )}
       </SectionCard>

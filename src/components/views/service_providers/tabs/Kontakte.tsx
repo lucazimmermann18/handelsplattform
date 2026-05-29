@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/primitives';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, ContactPerson } from '../types';
 import { CONTACT_ROLES } from '../types';
@@ -17,6 +19,7 @@ const emptyContact = (): ContactPerson => ({
 });
 
 export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(provider.id, refresh);
 
@@ -41,8 +44,8 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
 
   return (
     <SectionCard
-      icon="person" title="Ansprechpartner"
-      badge={contacts.length ? `${contacts.length} Kontakte` : undefined}
+      icon="person" title={t(lang, 'sp_contacts_title')}
+      badge={contacts.length ? `${contacts.length} ${t(lang, 'sp_tab_contacts')}` : undefined}
       editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
     >
       {edit ? (
@@ -52,14 +55,14 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>Name</th>
-                    <th style={thStyle}>Rolle</th>
-                    <th style={thStyle}>E-Mail</th>
-                    <th style={thStyle}>Telefon</th>
-                    <th style={thStyle}>WhatsApp</th>
-                    <th style={thStyle}>Sprache</th>
-                    <th style={thStyle}>Entscheid.</th>
-                    <th style={{ ...thStyle, textAlign: 'center' }}>Haupt</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_name')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_role')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_email')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_phone')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_whatsapp')}</th>
+                    <th style={thStyle}>{t(lang, 'language')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_contact_decide_col')}</th>
+                    <th style={{ ...thStyle, textAlign: 'center' }}>{t(lang, 'sp_contact_main_col')}</th>
                     <th style={{ ...thStyle, width: 28 }} />
                   </tr>
                 </thead>
@@ -67,25 +70,25 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
                   {contacts.map((c, i) => (
                     <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ padding: '4px 4px 4px 0' }}>
-                        <input style={cellInput} value={c.name} onChange={e => upd(i, 'name', e.target.value)} placeholder="Name" />
+                        <input style={cellInput} value={c.name} onChange={e => upd(i, 'name', e.target.value)} placeholder={t(lang, 'sp_contact_name')} />
                       </td>
                       <td style={{ padding: '4px' }}>
                         <select style={cellInput} value={c.role} onChange={e => upd(i, 'role', e.target.value)}>
-                          <option value="">— Rolle —</option>
+                          <option value="">— {t(lang, 'sp_contact_role')} —</option>
                           {CONTACT_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                       </td>
                       <td style={{ padding: '4px' }}>
-                        <input style={cellInput} value={c.email} onChange={e => upd(i, 'email', e.target.value)} placeholder="E-Mail" />
+                        <input style={cellInput} value={c.email} onChange={e => upd(i, 'email', e.target.value)} placeholder={t(lang, 'sp_contact_email')} />
                       </td>
                       <td style={{ padding: '4px' }}>
-                        <input style={cellInput} value={c.phone} onChange={e => upd(i, 'phone', e.target.value)} placeholder="Telefon" />
+                        <input style={cellInput} value={c.phone} onChange={e => upd(i, 'phone', e.target.value)} placeholder={t(lang, 'sp_contact_phone')} />
                       </td>
                       <td style={{ padding: '4px' }}>
-                        <input style={cellInput} value={c.whatsapp ?? ''} onChange={e => upd(i, 'whatsapp', e.target.value)} placeholder="WhatsApp" />
+                        <input style={cellInput} value={c.whatsapp ?? ''} onChange={e => upd(i, 'whatsapp', e.target.value)} placeholder={t(lang, 'sp_contact_whatsapp')} />
                       </td>
                       <td style={{ padding: '4px' }}>
-                        <input style={cellInput} value={c.language ?? ''} onChange={e => upd(i, 'language', e.target.value)} placeholder="Sprache" />
+                        <input style={cellInput} value={c.language ?? ''} onChange={e => upd(i, 'language', e.target.value)} placeholder={t(lang, 'language')} />
                       </td>
                       <td style={{ padding: '4px' }}>
                         <select style={cellInput} value={c.canDecide ?? 'unklar'} onChange={e => upd(i, 'canDecide', e.target.value)}>
@@ -108,13 +111,13 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
             </div>
           )}
           <button className="btn sm ghost" style={{ marginTop: 10 }} onClick={() => setContacts(c => [...c, emptyContact()])}>
-            + Kontakt hinzufügen
+            {t(lang, 'sp_contact_add')}
           </button>
           <SaveError error={error} />
         </>
       ) : contacts.length === 0 ? (
         <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '12px 0' }}>
-          Noch keine Ansprechpartner erfasst.
+          {t(lang, 'sp_contact_no_contacts')}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -122,8 +125,8 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
             <div key={i} style={{ padding: '12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <div style={{ fontWeight: 600, fontSize: 13 }}>{c.name || '—'}</div>
-                {c.isPrimary && <Badge kind="success">Haupt</Badge>}
-                {c.isEmergency && <Badge kind="warning">Notfall</Badge>}
+                {c.isPrimary && <Badge kind="success">{t(lang, 'sp_contact_primary')}</Badge>}
+                {c.isEmergency && <Badge kind="warning">{t(lang, 'sp_contact_emergency')}</Badge>}
               </div>
               <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginBottom: 4 }}>{c.role || '—'}</div>
               {c.email && <div style={{ fontSize: 12 }}>✉ {c.email}</div>}
@@ -131,7 +134,7 @@ export const TabKontakte = ({ provider, master, onSaved }: TabProps) => {
               {c.whatsapp && <div style={{ fontSize: 12 }}>📱 {c.whatsapp}</div>}
               <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {c.language && <Badge>{c.language}</Badge>}
-                {c.canDecide && c.canDecide !== 'unklar' && <Badge kind={c.canDecide === 'ja' ? 'success' : 'warning'}>Entscheidung: {c.canDecide}</Badge>}
+                {c.canDecide && c.canDecide !== 'unklar' && <Badge kind={c.canDecide === 'ja' ? 'success' : 'warning'}>{t(lang, 'sp_contact_decide')}{c.canDecide}</Badge>}
               </div>
             </div>
           ))}

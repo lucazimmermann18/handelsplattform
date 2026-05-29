@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, PerformanceEntry } from '../types';
 import {
@@ -20,6 +22,7 @@ const Stars = ({ rating }: { rating: number }) => (
 );
 
 export const TabPerformance = ({ provider: _provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(_provider.id, refresh);
 
@@ -62,30 +65,30 @@ export const TabPerformance = ({ provider: _provider, master, onSaved }: TabProp
           <div style={{ fontSize: 32 }}><Stars rating={Math.round(master.overallRating ?? 0)} /></div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>{master.overallRating?.toFixed(1) ?? '—'} / 5</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-3)' }}>{master.totalOrders ?? 0} Aufträge · Zuverlässigkeit: {master.reliabilityScore ?? '—'}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-3)' }}>{master.totalOrders ?? 0} {t(lang, 'sp_perf_orders_label')} · {t(lang, 'sp_perf_reliability_label')} {master.reliabilityScore ?? '—'}</div>
           </div>
         </div>
       )}
 
       <SectionCard
-        icon="chart" title="Performance-Verlauf"
-        badge={`${performance.length} Einträge`}
+        icon="chart" title={t(lang, 'sp_perf_history_title')}
+        badge={`${performance.length} ${t(lang, 'sp_entries')}`}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {(performance.length === 0 && !edit) ? (
           <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '12px 0' }}>
-            Noch keine Performance-Daten erfasst.
+            {t(lang, 'sp_perf_no_data')}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={{ ...thStyle, width: '14%' }}>Zeitraum</th>
-                <th style={{ ...thStyle, width: '12%' }}>Bewertung</th>
-                <th style={{ ...thStyle, width: '12%' }}>Pünktlichkeit</th>
-                <th style={{ ...thStyle, width: '10%' }}>Probleme</th>
-                <th style={{ ...thStyle, width: '12%' }}>Kostenabw.</th>
-                <th style={thStyle}>Notizen</th>
+                <th style={{ ...thStyle, width: '14%' }}>{t(lang, 'sp_perf_period')}</th>
+                <th style={{ ...thStyle, width: '12%' }}>{t(lang, 'rating')}</th>
+                <th style={{ ...thStyle, width: '12%' }}>{t(lang, 'sp_perf_punctuality')}</th>
+                <th style={{ ...thStyle, width: '10%' }}>{t(lang, 'sp_perf_issues')}</th>
+                <th style={{ ...thStyle, width: '12%' }}>{t(lang, 'sp_perf_cost_dev')}</th>
+                <th style={thStyle}>{t(lang, 'sp_doc_notes')}</th>
                 {edit && <th style={{ ...thStyle, width: 36 }} />}
               </tr>
             </thead>
@@ -119,7 +122,7 @@ export const TabPerformance = ({ provider: _provider, master, onSaved }: TabProp
                   </td>
                   <td style={{ padding: '5px 4px' }}>
                     {edit
-                      ? <input style={cellInput} value={p.notes} onChange={e => updPerf(i, 'notes', e.target.value)} placeholder="Notizen…" />
+                      ? <input style={cellInput} value={p.notes} onChange={e => updPerf(i, 'notes', e.target.value)} />
                       : <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{p.notes || '—'}</span>}
                   </td>
                   {edit && (
@@ -135,41 +138,41 @@ export const TabPerformance = ({ provider: _provider, master, onSaved }: TabProp
 
         {edit && (
           <button className="btn sm ghost" style={{ marginTop: 10 }} onClick={() => setPerformance(p => [...p, emptyPerf()])}>
-            + Eintrag hinzufügen
+            {t(lang, 'sp_perf_add_entry')}
           </button>
         )}
       </SectionCard>
 
       <SectionCard
-        icon="quality" title="KPIs & Lessons Learned"
+        icon="quality" title={t(lang, 'sp_perf_kpi_title')}
         editMode={edit} onEdit={enter} onSave={doSave} onCancel={cancel} saving={saving}
       >
         {edit ? (
           <FormGrid cols={2}>
-            <FormField label="Gesamtbewertung (1–5)">
+            <FormField label={t(lang, 'sp_perf_overall_rating')}>
               <input type="number" min={1} max={5} step={0.1} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} value={form.overallRating ?? ''} onChange={e => set('overallRating', e.target.value === '' ? undefined : Number(e.target.value))} />
             </FormField>
-            <FormField label="Gesamtaufträge">
+            <FormField label={t(lang, 'sp_perf_total_orders')}>
               <input type="number" min={0} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} value={form.totalOrders ?? ''} onChange={e => set('totalOrders', e.target.value === '' ? undefined : Number(e.target.value))} />
             </FormField>
-            <FormField label="Zuverlässigkeit">
+            <FormField label={t(lang, 'sp_reliability')}>
               <input style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} value={form.reliabilityScore !== undefined && form.reliabilityScore !== null ? String(form.reliabilityScore) : ''} onChange={e => set('reliabilityScore', e.target.value)} placeholder="z.B. 94%" />
             </FormField>
-            <FormField label="Kommunikationsqualität">
+            <FormField label={t(lang, 'sp_perf_comm_quality')}>
               <input style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} value={form.communicationScore !== undefined && form.communicationScore !== null ? String(form.communicationScore) : ''} onChange={e => set('communicationScore', e.target.value)} placeholder="z.B. 88%" />
             </FormField>
-            <FormField label="Lessons Learned" full>
-              <textarea style={textareaStyle} value={form.lessonsLearned ?? ''} onChange={e => set('lessonsLearned', e.target.value)} placeholder="Was hat gut funktioniert? Was sollte verbessert werden?" />
+            <FormField label={t(lang, 'sp_perf_lessons')} full>
+              <textarea style={textareaStyle} value={form.lessonsLearned ?? ''} onChange={e => set('lessonsLearned', e.target.value)} />
             </FormField>
             <SaveError error={error} />
           </FormGrid>
         ) : (
           <div className="fields">
-            <FieldRow label="Gesamtbewertung" value={master.overallRating !== undefined && master.overallRating !== null ? `${master.overallRating} / 5` : undefined} />
-            <FieldRow label="Gesamtaufträge" value={master.totalOrders !== undefined && master.totalOrders !== null ? String(master.totalOrders) : undefined} />
-            <FieldRow label="Zuverlässigkeit" value={master.reliabilityScore !== undefined && master.reliabilityScore !== null ? String(master.reliabilityScore) : undefined} />
-            <FieldRow label="Kommunikationsqualität" value={master.communicationScore !== undefined && master.communicationScore !== null ? String(master.communicationScore) : undefined} />
-            <FieldRow label="Lessons Learned" value={master.lessonsLearned} />
+            <FieldRow label={t(lang, 'sp_perf_overall_label')} value={master.overallRating !== undefined && master.overallRating !== null ? `${master.overallRating} / 5` : undefined} />
+            <FieldRow label={t(lang, 'sp_perf_total_orders')} value={master.totalOrders !== undefined && master.totalOrders !== null ? String(master.totalOrders) : undefined} />
+            <FieldRow label={t(lang, 'sp_reliability')} value={master.reliabilityScore !== undefined && master.reliabilityScore !== null ? String(master.reliabilityScore) : undefined} />
+            <FieldRow label={t(lang, 'sp_perf_comm_quality')} value={master.communicationScore !== undefined && master.communicationScore !== null ? String(master.communicationScore) : undefined} />
+            <FieldRow label={t(lang, 'sp_perf_lessons')} value={master.lessonsLearned} />
           </div>
         )}
       </SectionCard>

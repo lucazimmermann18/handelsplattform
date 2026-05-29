@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/primitives';
 import { Ic } from '@/components/ui/icons';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, DocEntry, DocStatus } from '../types';
 import { DOC_TYPES, DOC_STATUS_MAP } from '../types';
@@ -15,6 +17,7 @@ import {
 interface TabProps { provider: ServiceProvider; master: ProviderMaster; onSaved: () => void; }
 
 export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(provider.id, refresh);
 
@@ -59,8 +62,8 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <SectionCard
         icon="doc"
-        title="Dokumente & Nachweise"
-        badge={missing > 0 ? `${missing} fehlen` : undefined}
+        title={t(lang, 'sp_dok_section_title')}
+        badge={missing > 0 ? `${missing} ${t(lang, 'sp_doc_missing_badge')}` : undefined}
         editMode={edit}
         onEdit={enter}
         onSave={doSave}
@@ -68,30 +71,30 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
         saving={saving}
       >
         <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-          <div style={{ fontSize: 12, color: '#34d399' }}>{verified} geprüft</div>
+          <div style={{ fontSize: 12, color: '#34d399' }}>{verified} {t(lang, 'sp_doc_verified_count')}</div>
           <div style={{ fontSize: 12, color: 'var(--text-3)' }}>·</div>
-          <div style={{ fontSize: 12, color: missing > 0 ? '#f87171' : 'var(--text-3)' }}>{missing} fehlen / abgelaufen</div>
+          <div style={{ fontSize: 12, color: missing > 0 ? '#f87171' : 'var(--text-3)' }}>{missing} {t(lang, 'sp_doc_missing_count')}</div>
           <div style={{ fontSize: 12, color: 'var(--text-3)' }}>·</div>
-          <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{documents.length} gesamt</div>
+          <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{documents.length} {t(lang, 'sp_doc_total')}</div>
         </div>
 
         {documents.length === 0 && !edit ? (
           <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '10px 0' }}>
-            Noch keine Dokumente gepflegt.
+            {t(lang, 'sp_doc_no_docs_hint')}
             <button className="btn sm ghost" style={{ marginLeft: 8 }} onClick={enter}>
-              <Ic name="plus" size={11} /> Jetzt pflegen
+              <Ic name="plus" size={11} /> {t(lang, 'sp_doc_now_add')}
             </button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={{ ...thStyle, width: '20%' }}>Dokumententyp</th>
-                <th style={{ ...thStyle, width: '12%' }}>Status</th>
-                <th style={{ ...thStyle, width: '10%' }}>Ausgestellt</th>
-                <th style={{ ...thStyle, width: '12%' }}>Ablauf</th>
-                <th style={{ ...thStyle, width: '14%' }}>Geprüft von</th>
-                <th style={thStyle}>Notizen</th>
+                <th style={{ ...thStyle, width: '20%' }}>{t(lang, 'sp_doc_type_col')}</th>
+                <th style={{ ...thStyle, width: '12%' }}>{t(lang, 'sp_doc_status')}</th>
+                <th style={{ ...thStyle, width: '10%' }}>{t(lang, 'sp_doc_issue_date')}</th>
+                <th style={{ ...thStyle, width: '12%' }}>{t(lang, 'sp_doc_expiry_col')}</th>
+                <th style={{ ...thStyle, width: '14%' }}>{t(lang, 'sp_doc_verified_by')}</th>
+                <th style={thStyle}>{t(lang, 'sp_doc_notes')}</th>
                 {edit && <th style={{ ...thStyle, width: 36 }} />}
               </tr>
             </thead>
@@ -101,13 +104,13 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
                   <td style={{ padding: '5px 4px' }}>
                     {edit ? (
                       <select style={cellInput} value={d.docType} onChange={e => update(i, 'docType', e.target.value)}>
-                        <option value="">— Typ —</option>
-                        {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        <option value="">— {t(lang, 'sp_doc_type')} —</option>
+                        {DOC_TYPES.map(t2 => <option key={t2} value={t2}>{t2}</option>)}
                       </select>
                     ) : (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ fontSize: 12.5 }}>{d.docType || '—'}</span>
-                        {d.isCritical && <Badge kind="danger">Kritisch</Badge>}
+                        {d.isCritical && <Badge kind="danger">{t(lang, 'sp_doc_critical')}</Badge>}
                       </span>
                     )}
                   </td>
@@ -144,14 +147,14 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
                   </td>
                   <td style={{ padding: '5px 4px' }}>
                     {edit ? (
-                      <input style={cellInput} value={d.verifiedBy} onChange={e => update(i, 'verifiedBy', e.target.value)} placeholder="Name…" />
+                      <input style={cellInput} value={d.verifiedBy} onChange={e => update(i, 'verifiedBy', e.target.value)} />
                     ) : (
                       <span style={{ fontSize: 12 }}>{d.verifiedBy || '—'}</span>
                     )}
                   </td>
                   <td style={{ padding: '5px 4px' }}>
                     {edit ? (
-                      <input style={cellInput} value={d.notes} onChange={e => update(i, 'notes', e.target.value)} placeholder="Notizen…" />
+                      <input style={cellInput} value={d.notes} onChange={e => update(i, 'notes', e.target.value)} />
                     ) : (
                       <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{d.notes || '—'}</span>
                     )}
@@ -170,7 +173,7 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
         {edit && (
           <>
             <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>SCHNELL HINZUFÜGEN</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 5 }}>{t(lang, 'sp_doc_quick_add')}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {DOC_TYPES.map(dt => {
                   const exists = documents.some(d => d.docType === dt);
@@ -193,19 +196,19 @@ export const TabDokumente = ({ provider, master, onSaved }: TabProps) => {
               style={{ marginTop: 10 }}
               onClick={() => setDocuments(ds => [...ds, emptyDoc()])}
             >
-              <Ic name="plus" size={12} /> Zeile hinzufügen
+              <Ic name="plus" size={12} /> {t(lang, 'sp_doc_add_row')}
             </button>
 
             <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>Dokumentennotizen</div>
-              <textarea style={textareaStyle} value={docNotes} onChange={e => setDocNotes(e.target.value)} placeholder="Allgemeine Hinweise zu Dokumenten…" />
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>{t(lang, 'sp_doc_notes_label')}</div>
+              <textarea style={textareaStyle} value={docNotes} onChange={e => setDocNotes(e.target.value)} />
             </div>
           </>
         )}
 
         {!edit && docNotes && (
           <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>DOKUMENTENNOTIZEN</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>{t(lang, 'sp_doc_notes_heading')}</div>
             <div style={{ fontSize: 12.5, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{docNotes}</div>
           </div>
         )}
