@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/primitives';
+import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/lang-context';
 import type { ServiceProvider } from '@/lib/types';
 import type { ProviderMaster, TaskEntry, TaskStatus, TaskPriority } from '../types';
 import {
@@ -20,6 +22,7 @@ const statusKind = (s: TaskStatus) => s === 'erledigt' ? 'success' : s === 'in_b
 const isOverdue = (t: TaskEntry) => t.status !== 'erledigt' && t.dueDate && new Date(t.dueDate).getTime() < Date.now();
 
 export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
+  const lang = useLang();
   const { refresh } = useData();
   const { save, saving, error, setError } = useSectionSave(provider.id, refresh);
 
@@ -53,8 +56,8 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
   return (
     <SectionCard
       icon="task"
-      title="Aufgaben & Wiedervorlagen"
-      badge={`${openCount} offen`}
+      title={t(lang, 'sp_tab_tasks_title')}
+      badge={`${openCount} ${t(lang, 'sp_tab_tasks_open_badge')}`}
       editMode={edit}
       onEdit={enter}
       onSave={doSave}
@@ -66,11 +69,11 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
           <button
             className={`btn sm ${filter === 'offen' ? 'primary' : 'ghost'}`}
             onClick={() => setFilter('offen')}
-          >Offen</button>
+          >{t(lang, 'sp_tab_task_open')}</button>
           <button
             className={`btn sm ${filter === 'alle' ? 'primary' : 'ghost'}`}
             onClick={() => setFilter('alle')}
-          >Alle</button>
+          >{t(lang, 'sp_tab_task_all')}</button>
         </div>
       )}
 
@@ -78,7 +81,7 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
         <>
           {displayTasks.length === 0 ? (
             <div style={{ color: 'var(--text-3)', fontSize: 12, textAlign: 'center', padding: '12px 0' }}>
-              Keine Aufgaben vorhanden.
+              {t(lang, 'sp_tab_no_tasks')}
             </div>
           ) : (
             displayTasks.map((task, i) => (
@@ -89,7 +92,7 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{task.title}</span>
                       <Badge kind={statusKind(task.status)}>{task.status}</Badge>
-                      {isOverdue(task) && <Badge kind="danger">Überfällig</Badge>}
+                      {isOverdue(task) && <Badge kind="danger">{t(lang, 'sp_tab_task_overdue')}</Badge>}
                     </div>
                     {task.description && <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 4 }}>{task.description}</div>}
                     <div style={{ fontSize: 11.5, color: 'var(--text-3)' }}>
@@ -109,12 +112,12 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>Aufgabe</th>
-                    <th style={thStyle}>Beschreibung</th>
-                    <th style={{ ...thStyle, width: 100 }}>Priorität</th>
-                    <th style={{ ...thStyle, width: 120 }}>Fälligkeit</th>
-                    <th style={thStyle}>Verantwortlicher</th>
-                    <th style={{ ...thStyle, width: 120 }}>Status</th>
+                    <th style={thStyle}>{t(lang, 'sp_tab_task_col')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_tab_desc')}</th>
+                    <th style={{ ...thStyle, width: 100 }}>{t(lang, 'sp_tab_priority')}</th>
+                    <th style={{ ...thStyle, width: 120 }}>{t(lang, 'sp_tab_due')}</th>
+                    <th style={thStyle}>{t(lang, 'sp_tab_owner')}</th>
+                    <th style={{ ...thStyle, width: 120 }}>{t(lang, 'sp_tab_status')}</th>
                     <th style={{ ...thStyle, width: 28 }} />
                   </tr>
                 </thead>
@@ -158,7 +161,7 @@ export const TabAufgaben = ({ provider, master, onSaved }: TabProps) => {
             </div>
           )}
           <button className="btn sm ghost" style={{ marginTop: 10 }} onClick={() => setTasks(ts => [...ts, emptyTask()])}>
-            + Aufgabe hinzufügen
+            {t(lang, 'sp_tab_add_task')}
           </button>
         </>
       )}
