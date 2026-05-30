@@ -16,6 +16,7 @@ interface TopbarProps {
   onBell: () => void;
   onCopilot: () => void;
   notifCount?: number;
+  onMenuOpen?: () => void;
 }
 
 function getInitials(email?: string, name?: string): string {
@@ -38,7 +39,7 @@ function getDisplayName(email?: string, name?: string): string {
   return t('de', 'user_name');
 }
 
-export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPalette, onBell, onCopilot, notifCount = 0 }: TopbarProps) => {
+export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPalette, onBell, onCopilot, notifCount = 0, onMenuOpen }: TopbarProps) => {
   const { user, isConfigured, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -50,6 +51,12 @@ export const Topbar = ({ lang, setLang, theme, onThemeToggle, breadcrumbs, onPal
 
   return (
     <header className="topbar">
+      <button className="mobile-hamburger" onClick={onMenuOpen} aria-label="Open menu">
+        <Ic name="panel" size={18} />
+      </button>
+      <div className="mobile-logo">
+        EastAfrica&nbsp;<span style={{ color: 'var(--text-3)', fontWeight: 400, fontSize: 11 }}>Export OS</span>
+      </div>
       <div className="crumbs">
         {breadcrumbs.map((b, i) => (
           <React.Fragment key={i}>
