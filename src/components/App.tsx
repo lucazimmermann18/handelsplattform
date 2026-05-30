@@ -52,6 +52,7 @@ import { ScreeningView } from '@/components/views/Screening';
 import { SupplierScorecardView } from '@/components/views/SupplierScorecard';
 import { EUDREngineView } from '@/components/views/EUDREngine';
 import { CountryIntelligenceView } from '@/components/views/CountryIntelligence';
+import { AvailabilityPlannerView } from '@/components/views/AvailabilityPlanner';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -219,6 +220,7 @@ export const App = () => {
       supplier_scorecard: 'nav_supplier_scorecard',
       eudr_engine: 'nav_eudr_engine',
       country_intelligence: 'nav_country_intelligence',
+      availability_planner: 'nav_availability_planner',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (extNav[route.view]) return [...base, t(lang, extNav[route.view])];
@@ -339,6 +341,7 @@ export const App = () => {
       case 'supplier_scorecard': return <SupplierScorecardView lang={lang} />;
       case 'eudr_engine': return <EUDREngineView lang={lang} />;
       case 'country_intelligence': return <CountryIntelligenceView lang={lang} />;
+      case 'availability_planner': return <AvailabilityPlannerView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }

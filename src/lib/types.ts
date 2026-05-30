@@ -511,6 +511,23 @@ export interface CompanyProfile {
   profileData?: Record<string, unknown>;
 }
 
+export interface HarvestCalendar {
+  id: string;
+  productId: string;
+  originCountry: string;
+  harvestMonths: number[];      // 1-12
+  processingWeeks: number;
+  exportStartMonth: number;     // 1-12
+  exportEndMonth: number;       // 1-12
+  processingTypes: string[];
+  typicalQtyMt: number | null;
+  priceIndex: Record<string, number> | null;  // {"1":100,...}
+  notes: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -545,4 +562,5 @@ export interface MockData {
   companyProfile: CompanyProfile | null;
   buyerContacts: BuyerContact[];
   buyerRequirements: BuyerRequirement[];
+  harvestCalendar: HarvestCalendar[];
 }

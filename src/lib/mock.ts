@@ -283,4 +283,5 @@ export const MOCK: MockData = {
   companyProfile: null as CompanyProfile | null,
   buyerContacts: [] as BuyerContact[],
   buyerRequirements: [] as BuyerRequirement[],
+  harvestCalendar: [],
 };
