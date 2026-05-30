@@ -11,29 +11,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Auto-create/update profile on auth user sign-in
-CREATE OR REPLACE FUNCTION handle_auth_user_profile()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  INSERT INTO profiles (id, email, display_name, avatar_color)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-    '#' || lpad(to_hex(floor(random() * 16777215)::int), 6, '0')
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    email        = EXCLUDED.email,
-    display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
-    updated_at   = NOW();
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT OR UPDATE ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_auth_user_profile();
+-- Note: profiles are created by the app on first login (no DB trigger needed)
 
 -- ─── TEAM MEETINGS ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS team_meetings (

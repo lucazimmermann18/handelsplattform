@@ -118,14 +118,22 @@ export function TeamWorkspaceView({ lang }: TeamWorkspaceViewProps) {
 
   useEffect(() => {
     import('@/lib/supabase/client').then(({ createClient }) => {
-      createClient().auth.getUser().then(({ data: authData }) => {
-        if (authData.user) {
-          setCurrentUserId(authData.user.id);
-          setCurrentUserName(
-            (authData.user.user_metadata?.full_name as string) ||
-            authData.user.email?.split('@')[0] || 'User'
-          );
-        }
+      const sb = createClient();
+      sb.auth.getUser().then(({ data: authData }) => {
+        if (!authData.user) return;
+        const uid = authData.user.id;
+        const email = authData.user.email ?? '';
+        const name =
+          (authData.user.user_metadata?.full_name as string | undefined) ||
+          email.split('@')[0] ||
+          'User';
+        setCurrentUserId(uid);
+        setCurrentUserName(name);
+        // Upsert profile so Team tab shows all logged-in users
+        sb.from('profiles').upsert(
+          { id: uid, email, display_name: name, updated_at: new Date().toISOString() },
+          { onConflict: 'id', ignoreDuplicates: false }
+        ).then(() => { /* refresh handled by realtime */ });
       });
     });
   }, []);
