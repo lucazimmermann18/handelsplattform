@@ -64,6 +64,9 @@ const NAV = [
     { id: 'import',   icon: 'upload',   label: 'nav_import' },
     { id: 'settings', icon: 'settings', label: 'nav_settings' },
   ]},
+  { group: 'group_team', items: [
+    { id: 'team_workspace', icon: 'chat', label: 'nav_team_workspace' },
+  ]},
 ];
 
 interface SidebarProps {
