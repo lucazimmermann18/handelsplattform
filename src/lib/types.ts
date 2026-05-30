@@ -528,6 +528,64 @@ export interface HarvestCalendar {
   updatedAt: string;
 }
 
+export interface TeamProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  role: string;
+  avatarColor: string;
+  createdAt: string;
+}
+
+export interface TeamMeeting {
+  id: string;
+  title: string;
+  meetingType: string;   // 'weekly' | 'strategy' | 'customer' | 'supplier' | 'other'
+  scheduledAt: string;   // ISO timestamp
+  durationMinutes: number;
+  location: string;
+  attendeeIds: string[]; // profile UUIDs
+  agenda: string;
+  status: string;        // 'planned' | 'completed' | 'cancelled'
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeetingNotes {
+  id: string;
+  meetingId: string;
+  content: string;
+  decisions: string[];
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionItem {
+  id: string;
+  meetingId: string | null;
+  title: string;
+  description: string;
+  assigneeId: string | null;   // profile UUID
+  dueDate: string | null;
+  priority: string;            // 'high' | 'medium' | 'low'
+  status: string;              // 'open' | 'in_progress' | 'done' | 'cancelled'
+  sortOrder: number;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionItemUpdate {
+  id: string;
+  actionItemId: string;
+  content: string;
+  authorId: string | null;
+  authorName: string;
+  createdAt: string;
+}
+
 export interface MockData {
   suppliers: Supplier[];
   buyers: Buyer[];
@@ -563,4 +621,9 @@ export interface MockData {
   buyerContacts: BuyerContact[];
   buyerRequirements: BuyerRequirement[];
   harvestCalendar: HarvestCalendar[];
+  profiles: TeamProfile[];
+  teamMeetings: TeamMeeting[];
+  meetingNotes: MeetingNotes[];
+  actionItems: ActionItem[];
+  actionItemUpdates: ActionItemUpdate[];
 }

@@ -284,4 +284,9 @@ export const MOCK: MockData = {
   buyerContacts: [] as BuyerContact[],
   buyerRequirements: [] as BuyerRequirement[],
   harvestCalendar: [],
+  profiles: [],
+  teamMeetings: [],
+  meetingNotes: [],
+  actionItems: [],
+  actionItemUpdates: [],
 };

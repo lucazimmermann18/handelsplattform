@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement, HarvestCalendar } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement, HarvestCalendar, TeamProfile, TeamMeeting, MeetingNotes, ActionItem, ActionItemUpdate } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -318,6 +318,69 @@ const mapHarvestCalendar = (r: any): HarvestCalendar => ({
   updatedAt: r.updated_at ?? '',
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapProfile = (r: any): TeamProfile => ({
+  id: r.id ?? '',
+  email: r.email ?? '',
+  displayName: r.display_name ?? '',
+  role: r.role ?? 'member',
+  avatarColor: r.avatar_color ?? '#2d6a4f',
+  createdAt: r.created_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapTeamMeeting = (r: any): TeamMeeting => ({
+  id: r.id ?? '',
+  title: r.title ?? '',
+  meetingType: r.meeting_type ?? 'other',
+  scheduledAt: r.scheduled_at ?? '',
+  durationMinutes: r.duration_minutes ?? 60,
+  location: r.location ?? '',
+  attendeeIds: r.attendee_ids ?? [],
+  agenda: r.agenda ?? '',
+  status: r.status ?? 'planned',
+  createdBy: r.created_by ?? null,
+  createdAt: r.created_at ?? '',
+  updatedAt: r.updated_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapMeetingNotes = (r: any): MeetingNotes => ({
+  id: r.id ?? '',
+  meetingId: r.meeting_id ?? '',
+  content: r.content ?? '',
+  decisions: r.decisions ?? [],
+  updatedBy: r.updated_by ?? null,
+  createdAt: r.created_at ?? '',
+  updatedAt: r.updated_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapActionItem = (r: any): ActionItem => ({
+  id: r.id ?? '',
+  meetingId: r.meeting_id ?? null,
+  title: r.title ?? '',
+  description: r.description ?? '',
+  assigneeId: r.assignee_id ?? null,
+  dueDate: r.due_date ?? null,
+  priority: r.priority ?? 'medium',
+  status: r.status ?? 'open',
+  sortOrder: r.sort_order ?? 0,
+  createdBy: r.created_by ?? null,
+  createdAt: r.created_at ?? '',
+  updatedAt: r.updated_at ?? '',
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapActionItemUpdate = (r: any): ActionItemUpdate => ({
+  id: r.id ?? '',
+  actionItemId: r.action_item_id ?? '',
+  content: r.content ?? '',
+  authorId: r.author_id ?? null,
+  authorName: r.author_name ?? '',
+  createdAt: r.created_at ?? '',
+});
+
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 interface DataContextType {
@@ -373,6 +436,11 @@ async function fetchAllData(): Promise<MockData> {
     { data: buyerContactsRaw },
     { data: buyerRequirementsRaw },
     { data: harvestCalendarRaw },
+    { data: profilesRaw },
+    { data: teamMeetingsRaw },
+    { data: meetingNotesRaw },
+    { data: actionItemsRaw },
+    { data: actionItemUpdatesRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -406,6 +474,11 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('buyer_contacts').select('*').order('last_name'),
     sb.from('buyer_requirements').select('*').order('created_at', { ascending: false }),
     sb.from('harvest_calendar').select('*').order('created_at'),
+    sb.from('profiles').select('*').order('display_name'),
+    sb.from('team_meetings').select('*').order('scheduled_at', { ascending: false }),
+    sb.from('meeting_notes').select('*').order('updated_at', { ascending: false }),
+    sb.from('action_items').select('*').order('sort_order, created_at'),
+    sb.from('action_item_updates').select('*').order('created_at'),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -456,6 +529,11 @@ async function fetchAllData(): Promise<MockData> {
     buyerContacts:     (buyerContactsRaw     ?? []).map(mapBuyerContact),
     buyerRequirements: (buyerRequirementsRaw ?? []).map(mapBuyerRequirement),
     harvestCalendar:   (harvestCalendarRaw   ?? []).map(mapHarvestCalendar),
+    profiles:           (profilesRaw           ?? []).map(mapProfile),
+    teamMeetings:       (teamMeetingsRaw        ?? []).map(mapTeamMeeting),
+    meetingNotes:       (meetingNotesRaw        ?? []).map(mapMeetingNotes),
+    actionItems:        (actionItemsRaw         ?? []).map(mapActionItem),
+    actionItemUpdates:  (actionItemUpdatesRaw   ?? []).map(mapActionItemUpdate),
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,
