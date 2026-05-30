@@ -14,9 +14,6 @@ const NAV = [
     { id: 'country_intelligence', icon: 'map',    label: 'nav_country_intelligence' },
     { id: 'cockpit',            icon: 'activity',  label: 'nav_cockpit' },
     { id: 'intelligence',       icon: 'sparkle',   label: 'nav_intelligence' },
-    { id: 'strategy',           icon: 'flag',      label: 'nav_strategy' },
-    { id: 'compliance_roadmap', icon: 'leaf',      label: 'nav_compliance_roadmap' },
-    { id: 'capital',            icon: 'finance',   label: 'nav_capital' },
   ]},
   { group: 'group_sales', items: [
     { id: 'deals',    icon: 'deals',   label: 'nav_deals',   countKey: 'deals' },
@@ -43,17 +40,10 @@ const NAV = [
   ]},
   { group: 'group_finance', items: [
     { id: 'compliance',   icon: 'customs', label: 'nav_compliance' },
-    { id: 'eudr',         icon: 'leaf',    label: 'nav_eudr' },
     { id: 'documents',    icon: 'doc',     label: 'nav_documents',  countKey: 'documents' },
     { id: 'finance',      icon: 'finance', label: 'nav_finance' },
     { id: 'tradefinance', icon: 'finance', label: 'nav_tradefinance' },
-    { id: 'payables',     icon: 'finance', label: 'nav_payables' },
-    { id: 'cbam',         icon: 'leaf',    label: 'nav_cbam' },
     { id: 'cashflow',     icon: 'finance', label: 'nav_cashflow' },
-    { id: 'insurance',    icon: 'doc',     label: 'nav_insurance' },
-    { id: 'cold_chain',   icon: 'ship',    label: 'nav_cold_chain' },
-    { id: 'market',       icon: 'chart',   label: 'nav_market' },
-    { id: 'complaints',   icon: 'bug',     label: 'nav_complaints', countKey: 'complaints_open' },
     { id: 'reports',      icon: 'chart',   label: 'nav_reports' },
     { id: 'heatmap',      icon: 'layers',  label: 'nav_heatmap' },
     { id: 'landed_cost', icon: 'finance',  label: 'nav_landed_cost' },
@@ -90,7 +80,6 @@ export const Sidebar = ({ active, onNav, lang }: SidebarProps) => {
       case 'products':        return data.products.length;
       case 'tasks':           return data.tasks.length;
       case 'documents':       return data.documents.length;
-      case 'complaints_open': return data.complaints.filter(c => c.status !== 'geschlossen').length;
       default:                return undefined;
     }
   };

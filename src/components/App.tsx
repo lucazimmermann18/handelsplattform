@@ -13,7 +13,6 @@ import { BuyersList, BuyerDetail } from '@/components/views/Buyers';
 import { ProductsList, ProductDetail } from '@/components/views/Products';
 import { OffersView } from '@/components/views/Offers';
 import { TasksView } from '@/components/views/Tasks';
-import { ComplaintsList, ComplaintDetail } from '@/components/views/Complaints';
 import { QualityView } from '@/components/views/Quality';
 import { InventoryView } from '@/components/views/Inventory';
 import { DocumentsView } from '@/components/views/Documents';
@@ -24,24 +23,15 @@ import { SettingsView } from '@/components/views/Settings';
 import { IntelligenceView } from '@/components/views/Intelligence';
 import { CockpitView } from '@/components/views/Cockpit';
 import { CashflowView } from '@/components/views/Cashflow';
-import { StrategyView } from '@/components/views/Strategy';
-import { CapitalView } from '@/components/views/Capital';
-import { ComplianceRoadmapView } from '@/components/views/ComplianceRoadmap';
 import { TradeFinanceView } from '@/components/views/TradeFinance';
 import { CalendarView } from '@/components/views/Calendar';
 import { SamplesView } from '@/components/views/Samples';
 import { ForwardersView } from '@/components/views/Forwarders';
 import { MatchingView } from '@/components/views/Matching';
 import { HeatmapView } from '@/components/views/Heatmap';
-import { MarketView } from '@/components/views/Market';
 import { ImportView } from '@/components/views/Import';
-import { ColdChainView } from '@/components/views/ColdChain';
-import { InsuranceView } from '@/components/views/Insurance';
-import { EUDRView } from '@/components/views/EUDR';
 import { DbHealthView } from '@/components/views/DbHealth';
 import { LotsView } from '@/components/views/Lots';
-import { PayablesView } from '@/components/views/Payables';
-import { CBAMView } from '@/components/views/CBAM';
 import { ServiceProvidersView } from '@/components/views/ServiceProviders';
 import { CompanyBuilderView } from '@/components/views/CompanyBuilder';
 import { BuyerFinderView } from '@/components/views/BuyerFinder';
@@ -204,18 +194,16 @@ export const App = () => {
       orders: 'nav_orders', shipments: 'nav_shipments', deals: 'nav_deals', offers: 'nav_offers',
       buyers: 'nav_buyers', suppliers: 'nav_suppliers', products: 'nav_products', quality: 'nav_quality',
       inventory: 'nav_inventory', compliance: 'nav_compliance', documents: 'nav_documents',
-      finance: 'nav_finance', tasks: 'nav_tasks', complaints: 'nav_complaints', reports: 'nav_reports',
+      finance: 'nav_finance', tasks: 'nav_tasks', reports: 'nav_reports',
       settings: 'nav_settings',
     };
     // Extended modules with dedicated nav_ keys
     const extNav: Record<string, string> = {
-      eudr: 'nav_eudr', matching: 'nav_matching', market: 'nav_market',
-      tradefinance: 'nav_tradefinance', calendar: 'nav_calendar', samples: 'nav_samples',
+      matching: 'nav_matching', tradefinance: 'nav_tradefinance',
+      calendar: 'nav_calendar', samples: 'nav_samples',
       forwarders: 'nav_forwarders', heatmap: 'nav_heatmap', intelligence: 'nav_intelligence',
-      cockpit: 'bc_cockpit', cashflow: 'nav_cashflow', strategy: 'nav_strategy',
-      compliance_roadmap: 'nav_compliance_roadmap', capital: 'nav_capital', import: 'nav_import',
-      cold_chain: 'bc_cold_chain', insurance: 'bc_insurance', db_health: 'bc_db_health',
-      lots: 'nav_lots', payables: 'nav_payables', cbam: 'nav_cbam',
+      cockpit: 'bc_cockpit', cashflow: 'nav_cashflow', import: 'nav_import',
+      db_health: 'bc_db_health', lots: 'nav_lots',
       company_builder: 'nav_company_builder', service_providers: 'nav_service_providers',
       business_plan: 'nav_business_plan',
       supplier_scorecard: 'nav_supplier_scorecard',
@@ -234,7 +222,6 @@ export const App = () => {
     if (['supplier_detail'].includes(route.view)) return 'suppliers';
     if (['buyer_detail'].includes(route.view)) return 'buyers';
     if (['product_detail'].includes(route.view)) return 'products';
-    if (['complaint_detail'].includes(route.view)) return 'complaints';
     return route.view;
   }, [route.view]);
 
@@ -284,12 +271,6 @@ export const App = () => {
         return <FinanceView lang={lang} />;
       case 'tasks':
         return <TasksView lang={lang} />;
-      case 'complaints':
-        return <ComplaintsList lang={lang} onOpen={(id) => navigate('complaint_detail', { id })} />;
-      case 'complaint_detail':
-        return route.id
-          ? <ComplaintDetail id={route.id} lang={lang} onBack={() => navigate('complaints')} />
-          : <ComplaintsList lang={lang} onOpen={(id) => navigate('complaint_detail', { id })} />;
       case 'reports':
         return <ReportsView lang={lang} />;
       case 'settings':
@@ -298,18 +279,10 @@ export const App = () => {
         return <DbHealthView />;
       case 'import':
         return <ImportView lang={lang} onNav={navigate} />;
-      case 'eudr':
-        return <EUDRView lang={lang} />;
-      case 'cold_chain':
-        return <ColdChainView lang={lang} />;
-      case 'insurance':
-        return <InsuranceView lang={lang} />;
       case 'matching':
         return <MatchingView lang={lang} onNav={navigate} />;
       case 'heatmap':
         return <HeatmapView lang={lang} />;
-      case 'market':
-        return <MarketView lang={lang} />;
       case 'tradefinance':
         return <TradeFinanceView lang={lang} />;
       case 'calendar':
@@ -326,15 +299,7 @@ export const App = () => {
         return <CockpitView lang={lang} onOpenOrder={openOrder} onNav={navigate} />;
       case 'cashflow':
         return <CashflowView lang={lang} />;
-      case 'strategy':
-        return <StrategyView lang={lang} />;
-      case 'compliance_roadmap':
-        return <ComplianceRoadmapView lang={lang} />;
-      case 'capital':
-        return <CapitalView lang={lang} />;
       case 'lots': return <LotsView lang={lang} />;
-      case 'payables': return <PayablesView lang={lang} />;
-      case 'cbam': return <CBAMView lang={lang} />;
       case 'company_builder': return <CompanyBuilderView lang={lang} />;
       case 'business_plan': return <BusinessPlanView lang={lang} onNav={navigate} />;
       case 'landed_cost': return <LandedCostView lang={lang} />;
