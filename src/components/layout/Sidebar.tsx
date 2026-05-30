@@ -34,6 +34,7 @@ const NAV = [
     { id: 'suppliers',         icon: 'supplier', label: 'nav_suppliers',        countKey: 'suppliers' },
     { id: 'supplier_scorecard', icon: 'chart',   label: 'nav_supplier_scorecard' },
     { id: 'products',          icon: 'product',  label: 'nav_products',         countKey: 'products' },
+    { id: 'availability_planner', icon: 'leaf', label: 'nav_availability_planner' },
     { id: 'quality',           icon: 'quality',  label: 'nav_quality' },
     { id: 'inventory',         icon: 'inv',      label: 'nav_inventory' },
     { id: 'tasks',             icon: 'task',     label: 'nav_tasks',            countKey: 'tasks' },

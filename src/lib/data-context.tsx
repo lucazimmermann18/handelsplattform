@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MOCK } from '@/lib/mock';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
-import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement } from '@/lib/types';
+import type { MockData, Supplier, Buyer, Product, Order, Deal, Alert, Task, Document, QualityCheck, InventoryItem, Offer, Complaint, Vessel, Forwarder, Sample, Certification, Regulation, Objective, SupplierNote, FieldVisit, Lot, Communication, ServiceProvider, CalendarEvent, SetupTask, CompanyProfile, BuyerContact, BuyerRequirement, HarvestCalendar } from '@/lib/types';
 
 // ─── DB Row → TypeScript interface mappers ────────────────────────────────────
 
@@ -300,6 +300,24 @@ const mapCommunication = (r: any): Communication => ({
   body: r.body ?? '', author: r.author ?? '',
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapHarvestCalendar = (r: any): HarvestCalendar => ({
+  id: r.id,
+  productId: r.product_id ?? '',
+  originCountry: r.origin_country ?? '',
+  harvestMonths: r.harvest_months ?? [],
+  processingWeeks: r.processing_weeks ?? 4,
+  exportStartMonth: r.export_start_month ?? 1,
+  exportEndMonth: r.export_end_month ?? 3,
+  processingTypes: r.processing_types ?? [],
+  typicalQtyMt: r.typical_qty_mt ?? null,
+  priceIndex: r.price_index ?? null,
+  notes: r.notes ?? '',
+  status: r.status ?? 'active',
+  createdAt: r.created_at ?? '',
+  updatedAt: r.updated_at ?? '',
+});
+
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 interface DataContextType {
@@ -354,6 +372,7 @@ async function fetchAllData(): Promise<MockData> {
     { data: companyProfileRaw },
     { data: buyerContactsRaw },
     { data: buyerRequirementsRaw },
+    { data: harvestCalendarRaw },
   ] = await Promise.all([
     sb.from('suppliers').select('*').order('name'),
     sb.from('buyers').select('*').order('name'),
@@ -386,6 +405,7 @@ async function fetchAllData(): Promise<MockData> {
     sb.from('company_profile').select('*').limit(1),
     sb.from('buyer_contacts').select('*').order('last_name'),
     sb.from('buyer_requirements').select('*').order('created_at', { ascending: false }),
+    sb.from('harvest_calendar').select('*').order('created_at'),
   ]);
 
   const ports: MockData['ports'] = {};
@@ -435,6 +455,7 @@ async function fetchAllData(): Promise<MockData> {
     companyProfile:    companyProfileRaw?.[0] ? mapCompanyProfile(companyProfileRaw[0]) : null,
     buyerContacts:     (buyerContactsRaw     ?? []).map(mapBuyerContact),
     buyerRequirements: (buyerRequirementsRaw ?? []).map(mapBuyerRequirement),
+    harvestCalendar:   (harvestCalendarRaw   ?? []).map(mapHarvestCalendar),
     // Static data that doesn't change
     statusBadge: MOCK.statusBadge,
     dealStages:  MOCK.dealStages,
