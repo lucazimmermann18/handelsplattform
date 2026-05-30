@@ -108,6 +108,7 @@ export const App = () => {
   const [buyerWizardOpen, setBuyerWizardOpen] = useState(false);
   const [productWizardOpen, setProductWizardOpen] = useState(false);
   const [emailModal, setEmailModal] = useState<EmailModalData | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const { data: M } = useData();
 
@@ -151,6 +152,10 @@ export const App = () => {
 
   const navigate = (view: string, extra: Partial<Route> = {}) => setRoute({ view, ...extra });
   const openOrder = (order: Order) => setRoute({ view: 'order_detail', order });
+  const mobileNavigate = (view: string) => {
+    navigate(view);
+    setMobileSidebarOpen(false);
+  };
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -344,13 +349,65 @@ export const App = () => {
           onBell={() => setNotifOpen(true)}
           onCopilot={() => setCopilotOpen(true)}
           notifCount={notifBadgeCount}
+          onMenuOpen={() => setMobileSidebarOpen(true)}
         />
 
         <Sidebar active={activeNav} onNav={navigate} lang={lang} />
 
         <main className="main">{view}</main>
 
+        {/* Mobile bottom navigation */}
+        <nav className="mobile-nav">
+          {([
+            { id: 'dashboard',      icon: 'dashboard', label: lang === 'de' ? 'Start'    : 'Home'      },
+            { id: 'orders',         icon: 'box',       label: lang === 'de' ? 'Orders'   : 'Orders'    },
+            { id: 'suppliers',      icon: 'supplier',  label: lang === 'de' ? 'Lieferer' : 'Suppliers' },
+            { id: 'team_workspace', icon: 'chat',      label: lang === 'de' ? 'Team'     : 'Team'      },
+          ] as const).map(item => (
+            <button
+              key={item.id}
+              className={`mobile-nav-item${activeNav === item.id ? ' active' : ''}`}
+              onClick={() => mobileNavigate(item.id)}
+            >
+              <span className="ico"><Ic name={item.icon} size={20} /></span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+          <button
+            className={`mobile-nav-item${mobileSidebarOpen ? ' active' : ''}`}
+            onClick={() => setMobileSidebarOpen(o => !o)}
+          >
+            <span className="ico"><Ic name="more" size={20} /></span>
+            <span>{lang === 'de' ? 'Mehr' : 'More'}</span>
+          </button>
+        </nav>
+
       </div>
+
+      {/* Mobile sidebar drawer */}
+      {mobileSidebarOpen && (
+        <>
+          <div
+            className="mobile-sidebar-backdrop"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="mobile-sidebar-panel">
+            <div className="mobile-sidebar-header">
+              <div className="logo-row">
+                <img src="/logo.svg" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                <span>EastAfrica <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>Export OS</span></span>
+              </div>
+              <button
+                className="close-btn"
+                onClick={() => setMobileSidebarOpen(false)}
+              >
+                <Ic name="x" size={16} />
+              </button>
+            </div>
+            <Sidebar active={activeNav} onNav={mobileNavigate} lang={lang} />
+          </div>
+        </>
+      )}
 
       {/* Command Palette */}
       <CommandPalette
