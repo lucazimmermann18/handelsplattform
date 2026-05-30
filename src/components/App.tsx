@@ -51,6 +51,7 @@ import { HSLookupView } from '@/components/views/HSLookup';
 import { ScreeningView } from '@/components/views/Screening';
 import { SupplierScorecardView } from '@/components/views/SupplierScorecard';
 import { EUDREngineView } from '@/components/views/EUDREngine';
+import { CountryIntelligenceView } from '@/components/views/CountryIntelligence';
 import { EmailModal, type EmailModalData } from '@/components/ui/EmailModal';
 import { CopilotDrawer } from '@/components/ui/CopilotDrawer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -217,6 +218,7 @@ export const App = () => {
       business_plan: 'nav_business_plan',
       supplier_scorecard: 'nav_supplier_scorecard',
       eudr_engine: 'nav_eudr_engine',
+      country_intelligence: 'nav_country_intelligence',
     };
     if (navMap[route.view]) return [...base, t(lang, navMap[route.view])];
     if (extNav[route.view]) return [...base, t(lang, extNav[route.view])];
@@ -336,6 +338,7 @@ export const App = () => {
       case 'screening': return <ScreeningView lang={lang} />;
       case 'supplier_scorecard': return <SupplierScorecardView lang={lang} />;
       case 'eudr_engine': return <EUDREngineView lang={lang} />;
+      case 'country_intelligence': return <CountryIntelligenceView lang={lang} />;
       default:
         return <Dashboard lang={lang} onNav={navigate} onOpenOrder={openOrder} />;
     }
