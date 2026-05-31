@@ -9,54 +9,87 @@ const TABLE_GROUPS = [
   {
     label: 'Kern-Handelsdaten',
     tables: [
-      { name: 'suppliers',      label: 'Lieferanten' },
-      { name: 'buyers',         label: 'Käufer' },
-      { name: 'products',       label: 'Produkte' },
-      { name: 'orders',         label: 'Aufträge' },
-      { name: 'deals',          label: 'Deals' },
-      { name: 'offers',         label: 'Angebote' },
+      { name: 'suppliers',          label: 'Lieferanten' },
+      { name: 'buyers',             label: 'Käufer' },
+      { name: 'products',           label: 'Produkte' },
+      { name: 'orders',             label: 'Aufträge' },
+      { name: 'deals',              label: 'Deals' },
+      { name: 'offers',             label: 'Angebote' },
     ],
   },
   {
     label: 'Logistik & Qualität',
     tables: [
-      { name: 'quality_checks', label: 'Qualitätsprüfungen' },
-      { name: 'inventory',      label: 'Lagerbestand' },
-      { name: 'vessels',        label: 'Schiffe' },
-      { name: 'ports',          label: 'Häfen' },
-      { name: 'forwarders',     label: 'Spediteure' },
-      { name: 'samples',        label: 'Muster' },
+      { name: 'quality_checks',     label: 'Qualitätsprüfungen' },
+      { name: 'inventory',          label: 'Lagerbestand' },
+      { name: 'vessels',            label: 'Schiffe' },
+      { name: 'ports',              label: 'Häfen' },
+      { name: 'forwarders',         label: 'Spediteure' },
+      { name: 'samples',            label: 'Muster' },
+      { name: 'lots',               label: 'Lots / Partien' },
+      { name: 'communications',     label: 'Kommunikation' },
+      { name: 'service_providers',  label: 'Dienstleister' },
     ],
   },
   {
-    label: 'Dokumente & Kommunikation',
+    label: 'Dokumente & Aufgaben',
     tables: [
-      { name: 'documents',      label: 'Dokumente' },
-      { name: 'tasks',          label: 'Aufgaben' },
-      { name: 'complaints',     label: 'Reklamationen' },
-      { name: 'alerts',         label: 'Alerts' },
+      { name: 'documents',          label: 'Dokumente' },
+      { name: 'tasks',              label: 'Aufgaben' },
+      { name: 'alerts',             label: 'Alerts' },
+      { name: 'calendar_events',    label: 'Kalender-Termine' },
     ],
   },
   {
     label: 'Finanzen & Reporting',
     tables: [
-      { name: 'rev_trend',      label: 'Umsatz-Trend' },
+      { name: 'rev_trend',          label: 'Umsatz-Trend' },
     ],
   },
   {
     label: 'Strategie & Compliance',
     tables: [
-      { name: 'okrs',           label: 'OKRs' },
-      { name: 'key_results',    label: 'Key Results' },
-      { name: 'certifications', label: 'Zertifizierungen' },
-      { name: 'regulations',    label: 'Regulierungen' },
+      { name: 'okrs',               label: 'OKRs' },
+      { name: 'key_results',        label: 'Key Results' },
+      { name: 'certifications',     label: 'Zertifizierungen' },
+      { name: 'regulations',        label: 'Regulierungen' },
     ],
   },
   {
     label: 'Lieferanten-Detail',
     tables: [
-      { name: 'supplier_notes', label: 'Lieferanten-Notizen' },
-      { name: 'field_visits',   label: 'Field Visits' },
+      { name: 'supplier_notes',     label: 'Lieferanten-Notizen' },
+      { name: 'field_visits',       label: 'Field Visits' },
+    ],
+  },
+  {
+    label: 'Käufer-Detail',
+    tables: [
+      { name: 'buyer_contacts',     label: 'Käufer-Kontakte' },
+      { name: 'buyer_requirements', label: 'Käufer-Anforderungen' },
+    ],
+  },
+  {
+    label: 'Setup & Unternehmen',
+    tables: [
+      { name: 'setup_tasks',        label: 'Setup-Aufgaben' },
+      { name: 'company_profile',    label: 'Unternehmensprofil' },
+    ],
+  },
+  {
+    label: 'Verfügbarkeitsplanung',
+    tables: [
+      { name: 'harvest_calendar',   label: 'Ernte-Kalender' },
+    ],
+  },
+  {
+    label: 'Team Workspace',
+    tables: [
+      { name: 'profiles',           label: 'Nutzer-Profile' },
+      { name: 'team_meetings',      label: 'Meetings' },
+      { name: 'meeting_notes',      label: 'Meeting-Protokolle' },
+      { name: 'action_items',       label: 'Aktionspunkte' },
+      { name: 'action_item_updates', label: 'Aufgaben-Updates' },
     ],
   },
 ];
