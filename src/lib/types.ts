@@ -293,6 +293,7 @@ export interface Document {
   issued: string | null;
   expires: string | null;
   size: string;
+  fileUrl: string | null;
 }
 
 export interface QualityCheck {

@@ -152,7 +152,7 @@ const mapQuality = (r: any): QualityCheck => ({
 const mapDocument = (r: any): Document => ({
   id: r.id, name: r.name, type: r.type ?? '', order: r.order_id ?? null,
   status: r.status ?? '', issued: r.issued_at ?? null, expires: r.expires_at ?? null,
-  size: r.file_size ?? '—',
+  size: r.file_size ?? '—', fileUrl: r.file_url ?? null,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -168,16 +168,16 @@ const tasks: Task[] = [
 
 // Documents
 const documents: Document[] = [
-  { id: 'DOC-04412', name: 'Phytosanitary Cert TZ.pdf', type: 'Phytosanitary', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(14), expires: daysFromNow(166), size: '412 KB' },
-  { id: 'DOC-04408', name: 'Commercial Invoice 0144.pdf', type: 'Commercial Invoice', order: 'ORD-2026-0144', status: 'Entwurf', issued: daysAgo(2), expires: null, size: '89 KB' },
-  { id: 'DOC-04401', name: 'Bill of Lading MAEU2284991.pdf', type: 'B/L', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(11), expires: null, size: '267 KB' },
-  { id: 'DOC-04388', name: 'Organic EU Cert SUP-024.pdf', type: 'Zertifikat', order: null, status: 'gültig', issued: daysAgo(180), expires: daysFromNow(184), size: '1.2 MB' },
-  { id: 'DOC-04381', name: 'Organic EU Cert SUP-018.pdf', type: 'Zertifikat', order: null, status: 'läuft ab', issued: daysAgo(351), expires: daysFromNow(14), size: '1.1 MB' },
-  { id: 'DOC-04372', name: 'Packing List 0137.xlsx', type: 'Packing List', order: 'ORD-2026-0137', status: 'gültig', issued: daysAgo(20), expires: null, size: '34 KB' },
-  { id: 'DOC-04361', name: 'COA Lab SGS Cashew W320.pdf', type: 'Laborbericht', order: 'ORD-2026-0144', status: 'gültig', issued: daysAgo(8), expires: daysFromNow(82), size: '548 KB' },
-  { id: 'DOC-04349', name: 'EU Vet Approval SUP-072.pdf', type: 'Behördendokument', order: 'ORD-2026-0118', status: 'fehlt', issued: null, expires: null, size: '—' },
-  { id: 'DOC-04341', name: 'Certificate of Origin 0142.pdf', type: 'Ursprung', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(13), expires: null, size: '78 KB' },
-  { id: 'DOC-04335', name: 'Sales Contract Bio-Importeur.pdf', type: 'Vertrag', order: 'ORD-2026-0144', status: 'gültig', issued: daysAgo(22), expires: null, size: '1.8 MB' },
+  { id: 'DOC-04412', name: 'Phytosanitary Cert TZ.pdf', type: 'Phytosanitary', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(14), expires: daysFromNow(166), size: '412 KB', fileUrl: null },
+  { id: 'DOC-04408', name: 'Commercial Invoice 0144.pdf', type: 'Commercial Invoice', order: 'ORD-2026-0144', status: 'Entwurf', issued: daysAgo(2), expires: null, size: '89 KB', fileUrl: null },
+  { id: 'DOC-04401', name: 'Bill of Lading MAEU2284991.pdf', type: 'B/L', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(11), expires: null, size: '267 KB', fileUrl: null },
+  { id: 'DOC-04388', name: 'Organic EU Cert SUP-024.pdf', type: 'Zertifikat', order: null, status: 'gültig', issued: daysAgo(180), expires: daysFromNow(184), size: '1.2 MB', fileUrl: null },
+  { id: 'DOC-04381', name: 'Organic EU Cert SUP-018.pdf', type: 'Zertifikat', order: null, status: 'läuft ab', issued: daysAgo(351), expires: daysFromNow(14), size: '1.1 MB', fileUrl: null },
+  { id: 'DOC-04372', name: 'Packing List 0137.xlsx', type: 'Packing List', order: 'ORD-2026-0137', status: 'gültig', issued: daysAgo(20), expires: null, size: '34 KB', fileUrl: null },
+  { id: 'DOC-04361', name: 'COA Lab SGS Cashew W320.pdf', type: 'Laborbericht', order: 'ORD-2026-0144', status: 'gültig', issued: daysAgo(8), expires: daysFromNow(82), size: '548 KB', fileUrl: null },
+  { id: 'DOC-04349', name: 'EU Vet Approval SUP-072.pdf', type: 'Behördendokument', order: 'ORD-2026-0118', status: 'fehlt', issued: null, expires: null, size: '—', fileUrl: null },
+  { id: 'DOC-04341', name: 'Certificate of Origin 0142.pdf', type: 'Ursprung', order: 'ORD-2026-0142', status: 'gültig', issued: daysAgo(13), expires: null, size: '78 KB', fileUrl: null },
+  { id: 'DOC-04335', name: 'Sales Contract Bio-Importeur.pdf', type: 'Vertrag', order: 'ORD-2026-0144', status: 'gültig', issued: daysAgo(22), expires: null, size: '1.8 MB', fileUrl: null },
 ];
 
 // Quality checks

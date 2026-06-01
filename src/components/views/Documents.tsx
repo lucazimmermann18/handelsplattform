@@ -38,9 +38,26 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
   const [uploadOpen, setUploadOpen] = useState(false);
   if (!M) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Laden…</div>;
 
-  const handleDownload = (name: string) => {
-    setDlNote(`"${name}" — kein Datei-Storage hinterlegt`);
-    setTimeout(() => setDlNote(null), 2500);
+  const handleDownload = async (name: string, fileUrl: string | null) => {
+    if (!fileUrl) {
+      setDlNote(`"${name}" — keine Datei hinterlegt`);
+      setTimeout(() => setDlNote(null), 3000);
+      return;
+    }
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const sb = createClient();
+      const { data, error } = await sb.storage.from('documents').createSignedUrl(fileUrl, 120);
+      if (error || !data?.signedUrl) {
+        setDlNote(`"${name}" — Fehler beim Laden: ${error?.message ?? 'Unbekannt'}`);
+        setTimeout(() => setDlNote(null), 4000);
+        return;
+      }
+      window.open(data.signedUrl, '_blank');
+    } catch (e) {
+      setDlNote(`"${name}" — ${(e as Error).message}`);
+      setTimeout(() => setDlNote(null), 4000);
+    }
   };
 
   const filtered = M.documents.filter(d => {
@@ -167,7 +184,7 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
                     <td>
                       <div className="row" style={{ gap: 4 }}>
                         {!missing && (
-                          <button className="btn sm ghost" onClick={() => handleDownload(d.name)}>
+                          <button className="btn sm ghost" onClick={() => { void handleDownload(d.name, d.fileUrl); }}>
                             <Ic name="download" size={11} />
                           </button>
                         )}
@@ -184,7 +201,7 @@ export const DocumentsView = ({ lang }: DocumentsViewProps) => {
                                   <Ic name="doc" size={11} /> ID kopieren
                                 </button>
                                 <button className="btn sm ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: 11, padding: '5px 10px' }}
-                                  onClick={() => { handleDownload(d.name); setDocMenu(null); }}>
+                                  onClick={() => { void handleDownload(d.name, d.fileUrl); setDocMenu(null); }}>
                                   <Ic name="info" size={11} /> Details
                                 </button>
                               </div>
